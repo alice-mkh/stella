@@ -45,6 +45,8 @@
   }
 #elif defined(__LIB_RETRO__)
   #include "OSystemLIBRETRO.hxx"
+#elif defined(__HIGHSCORE__)
+  #include "OSystemHIGHSCORE.hxx"
 #else
   #error Unsupported platform!
 #endif
@@ -52,6 +54,9 @@
 #if defined(__LIB_RETRO__)
   #include "EventHandlerLIBRETRO.hxx"
   #include "FBBackendLIBRETRO.hxx"
+#elif defined(__HIGHSCORE__)
+  #include "EventHandlerHIGHSCORE.hxx"
+  #include "FBBackendHIGHSCORE.hxx"
 #elif defined(SDL_SUPPORT)
   #include "EventHandlerSDL2.hxx"
   #include "FBBackendSDL2.hxx"
@@ -62,6 +67,8 @@
 #if defined(SOUND_SUPPORT)
   #if defined(__LIB_RETRO__)
     #include "SoundLIBRETRO.hxx"
+  #elif defined(__HIGHSCORE__)
+    #include "SoundHIGHSCORE.hxx"
   #elif defined(SDL_SUPPORT)
     #include "SoundSDL2.hxx"
   #else
@@ -101,6 +108,8 @@ class MediaFactory
       return make_unique<OSystemMACOS>();
     #elif defined(__LIB_RETRO__)
       return make_unique<OSystemLIBRETRO>();
+    #elif defined(__HIGHSCORE__)
+      return make_unique<OSystemHIGHSCORE>();
     #else
       #error Unsupported platform for OSystem!
     #endif
@@ -132,6 +141,8 @@ class MediaFactory
     {
     #if defined(__LIB_RETRO__)
       return make_unique<FBBackendLIBRETRO>(osystem);
+    #elif defined(__HIGHSCORE__)
+      return make_unique<FBBackendHIGHSCORE>(osystem);
     #elif defined(SDL_SUPPORT)
       return make_unique<FBBackendSDL2>(osystem);
     #else
@@ -144,6 +155,8 @@ class MediaFactory
     #if defined(SOUND_SUPPORT)
       #if defined(__LIB_RETRO__)
         return make_unique<SoundLIBRETRO>(osystem, audioSettings);
+      #elif defined(__HIGHSCORE__)
+        return make_unique<SoundHIGHSCORE>(osystem, audioSettings);
       #elif defined(SOUND_SUPPORT) && defined(SDL_SUPPORT)
         return make_unique<SoundSDL2>(osystem, audioSettings);
       #else
@@ -158,6 +171,8 @@ class MediaFactory
     {
     #if defined(__LIB_RETRO__)
       return make_unique<EventHandlerLIBRETRO>(osystem);
+    #elif defined(__HIGHSCORE__)
+      return make_unique<EventHandlerHIGHSCORE>(osystem);
     #elif defined(SDL_SUPPORT)
       return make_unique<EventHandlerSDL2>(osystem);
     #else

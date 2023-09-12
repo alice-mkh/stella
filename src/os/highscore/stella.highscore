@@ -1,0 +1,7 @@
+[Highscore]
+Name=Stella
+Module=stella-highscore.so
+Copyright=Copyright (C) 1995-2023 by Bradford W. Mott, Stephen Anthony and the Stella Team
+Website=https://stella-emu.github.io/
+License=GPL-2.0-or-later
+Platforms=Atari2600;
