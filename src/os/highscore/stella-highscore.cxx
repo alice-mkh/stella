@@ -128,10 +128,10 @@ stella_core_poll_input (HsCore *core, HsInputState *input_state)
 
   self->stella->setInputEvent (Event::ConsoleColor,      input_state->atari_2600.tv_type == HS_ATARI_2600_TV_TYPE_COLOR);
   self->stella->setInputEvent (Event::ConsoleBlackWhite, input_state->atari_2600.tv_type == HS_ATARI_2600_TV_TYPE_BLACK_WHITE);
-  self->stella->setInputEvent (Event::ConsoleLeftDiffA,  input_state->atari_2600.left_difficulty == HS_ATARI_2600_DIFFICULTY_A);
-  self->stella->setInputEvent (Event::ConsoleLeftDiffB,  input_state->atari_2600.left_difficulty == HS_ATARI_2600_DIFFICULTY_B);
-  self->stella->setInputEvent (Event::ConsoleRightDiffA, input_state->atari_2600.right_difficulty == HS_ATARI_2600_DIFFICULTY_A);
-  self->stella->setInputEvent (Event::ConsoleRightDiffB, input_state->atari_2600.right_difficulty == HS_ATARI_2600_DIFFICULTY_B);
+  self->stella->setInputEvent (Event::ConsoleLeftDiffA,  input_state->atari_2600.left_difficulty == HS_ATARI_2600_DIFFICULTY_ADVANCED);
+  self->stella->setInputEvent (Event::ConsoleLeftDiffB,  input_state->atari_2600.left_difficulty == HS_ATARI_2600_DIFFICULTY_BEGINNER);
+  self->stella->setInputEvent (Event::ConsoleRightDiffA, input_state->atari_2600.right_difficulty == HS_ATARI_2600_DIFFICULTY_ADVANCED);
+  self->stella->setInputEvent (Event::ConsoleRightDiffB, input_state->atari_2600.right_difficulty == HS_ATARI_2600_DIFFICULTY_BEGINNER);
   self->stella->setInputEvent (Event::ConsoleSelect,     input_state->atari_2600.select_switch);
   self->stella->setInputEvent (Event::ConsoleReset,      input_state->atari_2600.reset_switch);
 }
