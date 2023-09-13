@@ -185,7 +185,6 @@ else
   error('Unsupported CPU family')
 endif
 
-
 shared_library('stella-highscore',
   stella_source,
   dependencies : stella_deps,

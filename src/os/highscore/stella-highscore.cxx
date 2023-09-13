@@ -28,7 +28,7 @@ stella_core_load_rom (HsCore      *core,
                       GError     **error)
 {
   StellaCore *self = STELLA_CORE (core);
-  char *data;
+  g_autofree char *data = NULL;
   gsize length;
 
   g_set_str (&self->save_path, save_path);
@@ -184,7 +184,7 @@ stella_core_load_state (HsCore          *core,
   StellaCore *self = STELLA_CORE (core);
   g_autoptr (GFile) file = g_file_new_for_path (path);
   GError *error = NULL;
-  char *data;
+  g_autofree char *data = NULL;
   size_t size;
 
   if (!g_file_load_contents (file, NULL, &data, &size, NULL, &error)) {
