@@ -128,10 +128,10 @@ stella_core_poll_input (HsCore *core, HsInputState *input_state)
 
   self->stella->setInputEvent (Event::ConsoleColor,      input_state->atari_2600.tv_type == HS_ATARI_2600_TV_TYPE_COLOR);
   self->stella->setInputEvent (Event::ConsoleBlackWhite, input_state->atari_2600.tv_type == HS_ATARI_2600_TV_TYPE_BLACK_WHITE);
-  self->stella->setInputEvent (Event::ConsoleLeftDiffA,  input_state->atari_2600.left_difficulty == HS_ATARI_2600_DIFFICULTY_ADVANCED);
-  self->stella->setInputEvent (Event::ConsoleLeftDiffB,  input_state->atari_2600.left_difficulty == HS_ATARI_2600_DIFFICULTY_BEGINNER);
-  self->stella->setInputEvent (Event::ConsoleRightDiffA, input_state->atari_2600.right_difficulty == HS_ATARI_2600_DIFFICULTY_ADVANCED);
-  self->stella->setInputEvent (Event::ConsoleRightDiffB, input_state->atari_2600.right_difficulty == HS_ATARI_2600_DIFFICULTY_BEGINNER);
+  self->stella->setInputEvent (Event::ConsoleLeftDiffA,  input_state->atari_2600.difficulty[0] == HS_ATARI_2600_DIFFICULTY_ADVANCED);
+  self->stella->setInputEvent (Event::ConsoleLeftDiffB,  input_state->atari_2600.difficulty[0] == HS_ATARI_2600_DIFFICULTY_BEGINNER);
+  self->stella->setInputEvent (Event::ConsoleRightDiffA, input_state->atari_2600.difficulty[1] == HS_ATARI_2600_DIFFICULTY_ADVANCED);
+  self->stella->setInputEvent (Event::ConsoleRightDiffB, input_state->atari_2600.difficulty[1] == HS_ATARI_2600_DIFFICULTY_BEGINNER);
   self->stella->setInputEvent (Event::ConsoleSelect,     input_state->atari_2600.select_switch);
   self->stella->setInputEvent (Event::ConsoleReset,      input_state->atari_2600.reset_switch);
 }
@@ -302,8 +302,17 @@ stella_core_init (StellaCore *self)
 }
 
 static HsAtari2600Controller
-get_controller_from_type (Controller::Type type)
+stella_atari_2600_core_get_controller (HsAtari2600Core *core, guint player)
 {
+  StellaCore *self = STELLA_CORE (core);
+
+  Controller::Type type;
+
+  if (player == 0)
+    type = self->stella->getLeftControllerType ();
+  else
+    type = self->stella->getRightControllerType ();
+
   switch (type) {
   case Controller::Type::Joystick:
   case Controller::Type::Genesis:
@@ -322,27 +331,17 @@ get_controller_from_type (Controller::Type type)
   }
 }
 
-static HsAtari2600Controller
-stella_atari_2600_core_get_left_controller (HsAtari2600Core *core)
+static HsAtari2600Difficulty
+stella_atari_2600_core_get_default_difficulty (HsAtari2600Core *core, guint player)
 {
-  StellaCore *self = STELLA_CORE (core);
-
-  return get_controller_from_type (self->stella->getLeftControllerType ());
-}
-
-static HsAtari2600Controller
-stella_atari_2600_core_get_right_controller (HsAtari2600Core *core)
-{
-  StellaCore *self = STELLA_CORE (core);
-
-  return get_controller_from_type (self->stella->getRightControllerType ());
+  return HS_ATARI_2600_DIFFICULTY_ADVANCED;
 }
 
 static void
 stella_atari_2600_core_init (HsAtari2600CoreInterface *iface)
 {
-  iface->get_left_controller = stella_atari_2600_core_get_left_controller;
-  iface->get_right_controller = stella_atari_2600_core_get_right_controller;
+  iface->get_controller = stella_atari_2600_core_get_controller;
+  iface->get_default_difficulty = stella_atari_2600_core_get_default_difficulty;
 }
 
 guint32
