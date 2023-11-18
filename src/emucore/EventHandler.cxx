@@ -16,7 +16,6 @@
 //============================================================================
 
 #include <sstream>
-#include <map>
 
 #include "Logger.hxx"
 
@@ -24,11 +23,8 @@
 #include "Console.hxx"
 #include "PaletteHandler.hxx"
 #include "FrameBuffer.hxx"
-#include "FSNode.hxx"
 #include "OSystem.hxx"
-#include "Joystick.hxx"
 #include "Paddles.hxx"
-#include "MindLink.hxx"
 #include "Lightgun.hxx"
 #include "PointingDevice.hxx"
 #include "Driving.hxx"
@@ -400,7 +396,7 @@ void EventHandler::handleSystemEvent(SystemEvent e, int, int)
       break;
 
     default:  // handle other events as testing requires
-      // cerr << "handleSystemEvent: " << e << endl;
+      // cerr << "handleSystemEvent: " << e << '\n';
       break;
   }
 }

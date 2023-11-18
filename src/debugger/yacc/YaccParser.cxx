@@ -21,7 +21,6 @@
 #include "YaccParser.hxx"
 
 namespace YaccParser {
-#include <cstdio>
 #include <cctype>
 
 #include "y.tab.h"
@@ -174,7 +173,7 @@ int const_to_int(char* ch)
       return ret;
 
     default:
-      cerr << "INVALID BASE in lexer!" << endl;
+      cerr << "INVALID BASE in lexer!\n";
       return 0;
   }
 }

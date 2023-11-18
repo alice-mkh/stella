@@ -15,7 +15,6 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#include <cassert>
 #include <iostream>
 
 #include "Device.hxx"
@@ -23,7 +22,6 @@
 #include "M6532.hxx"
 #include "TIA.hxx"
 #include "Cart.hxx"
-#include "TimerManager.hxx"
 #include "System.hxx"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -243,7 +241,7 @@ bool System::save(Serializer& out) const
   }
   catch(...)
   {
-    cerr << "ERROR: System::save" << endl;
+    cerr << "ERROR: System::save\n";
     return false;
   }
 
@@ -272,7 +270,7 @@ bool System::load(Serializer& in)
   }
   catch(...)
   {
-    cerr << "ERROR: System::load" << endl;
+    cerr << "ERROR: System::load\n";
     return false;
   }
 

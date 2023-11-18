@@ -15,8 +15,6 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#include <map>
-
 #include "bspf.hxx"
 
 #include "Version.hxx"
@@ -37,15 +35,11 @@
 #include "Cart.hxx"
 
 #include "CartDebug.hxx"
-#include "CartDebugWidget.hxx"
-#include "CartRamWidget.hxx"
 #include "CpuDebug.hxx"
 #include "RiotDebug.hxx"
 #include "TIADebug.hxx"
 
 #include "TiaInfoWidget.hxx"
-#include "TiaOutputWidget.hxx"
-#include "TiaZoomWidget.hxx"
 #include "EditTextWidget.hxx"
 
 #include "RomWidget.hxx"
@@ -178,13 +172,13 @@ string Debugger::autoExec(StringList* history)
 
   // autoexec.script is always run
   const FSNode autoexec(myOSystem.baseDir().getPath() + "autoexec.script");
-  buf << "autoExec():" << endl
-      << myParser->exec(autoexec, history) << endl;
+  buf << "autoExec():\n"
+      << myParser->exec(autoexec, history) << '\n';
 
   // Also, "romname.script" if present
   const string path = myOSystem.userDir().getPath() + myOSystem.romFile().getNameWithExt(".script");
   const FSNode romname(path);
-  buf << myParser->exec(romname, history) << endl;
+  buf << myParser->exec(romname, history) << '\n';
 
   // Init builtins
   for(const auto& func: ourBuiltinFunctions)
@@ -194,7 +188,7 @@ string Debugger::autoExec(StringList* history)
     if(res == 0)
       addFunction(func.name, func.defn, YaccParser::getResult(), true);
     else
-      cerr << "ERROR in builtin function!" << endl;
+      cerr << "ERROR in builtin function!\n";
   }
   return buf.str();
 }
@@ -467,7 +461,7 @@ void Debugger::log(string_view triggerMsg)
       else
         msg << "B/";
     }
-    msg << "Addr Code     Disam";
+    msg << "Addr Code     Disasm";
     Logger::log(msg.str());
     myFirstLog = false;
   }
@@ -485,7 +479,6 @@ void Debugger::log(string_view triggerMsg)
       break;
   }
 
-  const CartDebug::DisassemblyTag& tag = disasm.list[pos];
   ostringstream msg;
 
   msg << std::left << std::setw(10) << std::setfill(' ') << triggerMsg;
@@ -515,13 +508,17 @@ void Debugger::log(string_view triggerMsg)
   else
     msg << " ";
 
-  msg << Base::HEX4 << pc << " "
-    << std::left << std::setw(8) << std::setfill(' ') << tag.bytes << " "
-    << tag.disasm.substr(0, 7);
+  if(disasm.list.size() > pos)
+  {
+    const CartDebug::DisassemblyTag& tag = disasm.list[pos];
 
-  if(tag.disasm.length() > 8)
-    msg << tag.disasm.substr(8);
+    msg << Base::HEX4 << pc << " "
+      << std::left << std::setw(8) << std::setfill(' ') << tag.bytes << " "
+      << tag.disasm.substr(0, 7);
 
+    if(tag.disasm.length() > 8)
+      msg << tag.disasm.substr(8);
+  }
   Logger::log(msg.str());
 }
 
@@ -860,7 +857,7 @@ string Debugger::builtinHelp()
     if(len > i_maxlen)  i_maxlen = len;
   }
 
-  buf << std::setfill(' ') << endl << "Built-in functions:" << endl;
+  buf << std::setfill(' ') << "\nBuilt-in functions:\n";
   for(const auto& func: ourBuiltinFunctions)
   {
     buf << std::setw(static_cast<int>(c_maxlen)) << std::left << func.name
@@ -868,7 +865,7 @@ string Debugger::builtinHelp()
         << std::setw(static_cast<int>(i_maxlen)) << std::left << func.defn
         << std::setw(4) << "}"
         << func.help
-        << endl;
+        << '\n';
   }
 
   // Get column widths for aligned output (pseudo-registers)
@@ -879,13 +876,13 @@ string Debugger::builtinHelp()
     if(len > c_maxlen)  c_maxlen = len;
   }
 
-  buf << endl << "Pseudo-registers:" << endl;
+  buf << "\nPseudo-registers:\n";
   for(const auto& reg: ourPseudoRegisters)
   {
     buf << std::setw(static_cast<int>(c_maxlen)) << std::left << reg.name
         << std::setw(2) << " "
         << std::setw(static_cast<int>(i_maxlen)) << std::left << reg.help
-        << endl;
+        << '\n';
   }
 
   return buf.str();

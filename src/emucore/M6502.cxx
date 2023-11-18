@@ -95,6 +95,7 @@ void M6502::reset()
   myReadFromWritePortBreak = devSettings ? mySettings.getBool("dev.rwportbreak") : false;
   myWriteToReadPortBreak = devSettings ? mySettings.getBool("dev.wrportbreak") : false;
   myLogBreaks = mySettings.getBool("dbg.logbreaks");
+  myLogTrace = mySettings.getBool("dbg.logtrace");
 
   myLastBreakCycle = ULLONG_MAX;
 }
@@ -317,6 +318,14 @@ inline void M6502::_execute(uInt64 cycles, DispatchResult& result)
             return;
           }
         }
+
+        if(myLogTrace && myDebugger)
+        {
+          // Make sure that the TIA state matches the current system clock.
+          // Else Scanlines, Cycles and Pixels are not updated for logging.
+          mySystem->tia().updateEmulation();
+          myDebugger->log("trace");
+        }
       }
 
       const int cond = evalCondSaveStates();
@@ -506,7 +515,7 @@ bool M6502::save(Serializer& out) const
   }
   catch(...)
   {
-    cerr << "ERROR: M6502::save" << endl;
+    cerr << "ERROR: M6502::save\n";
     return false;
   }
 
@@ -557,7 +566,7 @@ bool M6502::load(Serializer& in)
   }
   catch(...)
   {
-    cerr << "ERROR: M6502::load" << endl;
+    cerr << "ERROR: M6502::load\n";
     return false;
   }
 

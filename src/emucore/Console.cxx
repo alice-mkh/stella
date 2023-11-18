@@ -15,8 +15,6 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#include <cassert>
-#include <stdexcept>
 #include <regex>
 
 #include "AtariVox.hxx"
@@ -25,7 +23,6 @@
 #include "Control.hxx"
 #include "CartCM.hxx"
 #include "Driving.hxx"
-#include "Event.hxx"
 #include "EventHandler.hxx"
 #include "ControllerDetector.hxx"
 #include "Joystick.hxx"
@@ -55,7 +52,6 @@
 #include "FrameBuffer.hxx"
 #include "TIASurface.hxx"
 #include "OSystem.hxx"
-#include "Serializable.hxx"
 #include "Serializer.hxx"
 #include "TimerManager.hxx"
 #include "Version.hxx"
@@ -394,7 +390,7 @@ bool Console::save(Serializer& out) const
   }
   catch(...)
   {
-    cerr << "ERROR: Console::save" << endl;
+    cerr << "ERROR: Console::save\n";
     return false;
   }
 
@@ -417,7 +413,7 @@ bool Console::load(Serializer& in)
   }
   catch(...)
   {
-    cerr << "ERROR: Console::load" << endl;
+    cerr << "ERROR: Console::load\n";
     return false;
   }
 

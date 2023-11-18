@@ -17,7 +17,6 @@
 
 #include <regex>
 #include <atomic>
-#include <sstream>
 #include <thread>
 
 #include "bspf.hxx"
@@ -332,7 +331,7 @@ bool PlusROM::save(Serializer& out) const
   }
   catch(...)
   {
-    cerr << "ERROR: PlusROM::save" << endl;
+    cerr << "ERROR: PlusROM::save\n";
     return false;
   }
 
@@ -354,7 +353,7 @@ bool PlusROM::load(Serializer& in)
   }
   catch(...)
   {
-    cerr << "ERROR: PlusROM::load" << endl;
+    cerr << "ERROR: PlusROM::load\n";
     return false;
   }
 
@@ -433,7 +432,8 @@ void PlusROM::send()
     // as the thread is running. Thus, the request can only be destructed once
     // the thread has finished, and we can safely evict it from the deque at
     // any time.
-    std::thread thread([=]() {
+    std::thread thread([=]() // NOLINT (cppcoreguidelines-misleading-capture-default-by-value)
+    {
       request->execute();
       switch(request->getState())
       {

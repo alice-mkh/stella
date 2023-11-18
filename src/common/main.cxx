@@ -15,13 +15,10 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#include <cstdlib>
-
 #include "bspf.hxx"
 #include "Logger.hxx"
 #include "MediaFactory.hxx"
 #include "Console.hxx"
-#include "Event.hxx"
 #include "EventHandler.hxx"
 #include "FrameBuffer.hxx"
 #include "PropsSet.hxx"
@@ -30,7 +27,6 @@
 #include "FSNode.hxx"
 #include "OSystem.hxx"
 #include "PNGLibrary.hxx"
-#include "System.hxx"
 #include "TIASurface.hxx"
 #include "ProfilingRunner.hxx"
 
@@ -118,7 +114,7 @@ void parseCommandLine(int ac, const char* const av[],
 
       if(++i >= ac)
       {
-        cerr << "Missing argument for '" << key << "'" << endl;
+        cerr << "Missing argument for '" << key << "'\n";
         continue;
       }
       if(key == "basedir" || key == "break")
@@ -131,12 +127,12 @@ void parseCommandLine(int ac, const char* const av[],
   }
 
 #if 0
-  cout << "Global opts:" << endl;
+  cout << "Global opts:\n";
   for(const auto& [key, value]: globalOpts)
-    cout << " -> " << key << ": " << value << endl;
-  cout << "Local opts:" << endl;
+    cout << " -> " << key << ": " << value << '\n';
+  cout << "Local opts:\n";
   for(const auto& [key, value]: localOpts)
-    cout << " -> " << key << ": " << value << endl;
+    cout << " -> " << key << ": " << value << '\n';
 #endif
 }
 
@@ -184,7 +180,7 @@ void attachConsole()
     SetConsoleCursorPosition(hConsole, pos);
   }
   else
-    cout << endl << endl;
+    cout << "\n\n";
 #endif
 }
 
@@ -192,7 +188,7 @@ void attachConsole()
 void freeConsole()
 {
 #if defined(BSPF_WINDOWS)
-  cout << "Press \"Enter\"" << endl << std::flush;
+  cout << "Press \"Enter\"" << '\n' << std::flush;
   FreeConsole();
 #endif
 }
@@ -217,7 +213,7 @@ int main(int ac, char* av[])
     }
     catch(const runtime_error& e)
     {
-      cerr << e.what() << endl;
+      cerr << e.what() << '\n';
       return 0;
     }
   }

@@ -15,7 +15,6 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#include "System.hxx"
 #include "CartTVBoy.hxx"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -63,7 +62,7 @@ bool CartridgeTVBoy::save(Serializer& out) const
   }
   catch(...)
   {
-    cerr << "ERROR: CartridgeTVBoy::save" << endl;
+    cerr << "ERROR: CartridgeTVBoy::save\n";
     return false;
   }
 
@@ -80,7 +79,7 @@ bool CartridgeTVBoy::load(Serializer& in)
   }
   catch(...)
   {
-    cerr << "ERROR: CartridgeTVBoy::load" << endl;
+    cerr << "ERROR: CartridgeTVBoy::load\n";
     return false;
   }
 

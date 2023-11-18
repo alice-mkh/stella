@@ -21,7 +21,6 @@
 
 #include "bspf.hxx"
 #include "Bankswitch.hxx"
-#include "OSystem.hxx"
 #include "FSNodeFactory.hxx"
 #include "FSNodeZIP.hxx"
 
@@ -47,7 +46,7 @@ FSNodeZIP::FSNodeZIP(string_view p)
 #endif
   }
 
-// cerr << " => p: " << p << endl;
+// cerr << " => p: " << p << '\n';
 
   // Open file at least once to initialize the virtual file count
   try
@@ -105,7 +104,7 @@ FSNodeZIP::FSNodeZIP(string_view p)
 
   setFlags(_zipFile, _virtualPath, _realNode);
 // cerr << "==============================================================\n";
-// cerr << _name << ", file: " << _isFile << ", dir: " << _isDirectory << endl << endl;
+// cerr << _name << ", file: " << _isFile << ", dir: " << _isDirectory << "\n\n";
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -115,7 +114,7 @@ FSNodeZIP::FSNodeZIP(const string& zipfile, const string& virtualpath,
     _isDirectory{isdir},
     _isFile{!isdir}
 {
-// cerr << "=> c'tor 2: " << zipfile << ", " << virtualpath << ", " << isdir << endl;
+// cerr << "=> c'tor 2: " << zipfile << ", " << virtualpath << ", " << isdir << '\n';
   setFlags(zipfile, virtualpath, realnode);
 }
 
@@ -163,6 +162,7 @@ bool FSNodeZIP::exists() const
     catch(const runtime_error&)
     {
       // TODO: Actually present the error passed in back to the user
+      cerr << "ERROR: FSNodeZIP::exists()\n";
     }
   }
 

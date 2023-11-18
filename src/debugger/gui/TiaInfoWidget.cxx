@@ -21,7 +21,6 @@
 #include "Debugger.hxx"
 #include "RiotDebug.hxx"
 #include "TIADebug.hxx"
-#include "TIA.hxx"
 #include "Widget.hxx"
 #include "EditTextWidget.hxx"
 #include "GuiObject.hxx"
@@ -145,7 +144,7 @@ TiaInfoWidget::TiaInfoWidget(GuiObject* boss, const GUI::Font& lfont,
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void TiaInfoWidget::handleMouseDown(int x, int y, MouseButton b, int clickCount)
 {
-//cerr << "TiaInfoWidget button press: x = " << x << ", y = " << y << endl;
+//cerr << "TiaInfoWidget button press: x = " << x << ", y = " << y << '\n';
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

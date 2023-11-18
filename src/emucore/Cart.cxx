@@ -18,7 +18,6 @@
 #include "FSNode.hxx"
 #include "Settings.hxx"
 #include "System.hxx"
-#include "MD5.hxx"
 #ifdef DEBUGGER_SUPPORT
   #include "Debugger.hxx"
   #include "Base.hxx"
@@ -58,7 +57,7 @@ bool Cartridge::saveROM(const FSNode& out) const
     const ByteBuffer& image = getImage(size);
     if(size == 0)
     {
-      cerr << "save not supported" << endl;
+      cerr << "save not supported\n";
       return false;
     }
     out.write(image, size);

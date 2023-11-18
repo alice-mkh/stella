@@ -18,7 +18,6 @@
 #include <cstdlib>
 
 #include "FSNode.hxx"
-#include "Version.hxx"
 #include "OSystemUNIX.hxx"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,7 +32,7 @@ void OSystemUNIX::getBaseDirectories(string& basedir, string& homedir,
 
   // Check to see if basedir overrides are active
   if(useappdir)
-    cout << "ERROR: base dir in app folder not supported" << endl;
+    cout << "ERROR: base dir in app folder not supported\n";
   else if(!usedir.empty())
     basedir = FSNode(usedir).getPath();
 }

@@ -411,6 +411,11 @@ void PromptWidget::loadConfig()
       print(DebuggerParser::inverse(" logBreaks enabled "));
       extra = true;
     }
+    if(instance().settings().getBool("dbg.logtrace"))
+    {
+      print(DebuggerParser::inverse(" logTrace enabled "));
+      extra = true;
+    }
     if(extra)
       print("\n");
 
@@ -954,17 +959,18 @@ string PromptWidget::saveBuffer(const FSNode& file)
     for(int j = start; j <= end; ++j)
       out << static_cast<char>(_buffer[j] & 0xff);
 
-    // add a \n
-    out << endl;
+    out << '\n';
   }
 
   try {
     if(file.write(out) > 0)
       return "saved " + file.getShortPath() + " OK";
+    else
+      return "unable to save session";
   }
-  catch(...) { }
-
-  return "unable to save session";
+  catch(...) {
+    return "unable to save session";
+  }
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -26,7 +26,6 @@
 #include "Props.hxx"
 #include "PropsSet.hxx"
 #include "TimerManager.hxx"
-#include "FBSurfaceSDL2.hxx"
 
 #include "RomImageWidget.hxx"
 
@@ -57,7 +56,7 @@ void RomImageWidget::setProperties(const FSNode& node,
 #ifdef DEBUGGER_SUPPORT
   else
   {
-    cerr << "RomImageWidget::setProperties: else!" << endl;
+    cerr << "RomImageWidget::setProperties: else!\n";
     Logger::debug("RomImageWidget::setProperties: else!");
   }
 #endif
@@ -76,7 +75,7 @@ void RomImageWidget::clearProperties()
 #ifdef DEBUGGER_SUPPORT
   else
   {
-    cerr << "RomImageWidget::clearProperties: else!" << endl;
+    cerr << "RomImageWidget::clearProperties: else!\n";
     Logger::debug("RomImageWidget::clearProperties: else!");
   }
 #endif

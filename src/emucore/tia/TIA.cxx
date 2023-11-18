@@ -19,10 +19,8 @@
 #include "M6502.hxx"
 #include "M6532.hxx"
 #include "Control.hxx"
-#include "Paddles.hxx"
 #include "DelayQueueIteratorImpl.hxx"
 #include "TIAConstants.hxx"
-#include "frame-manager/FrameManager.hxx"
 #include "AudioQueue.hxx"
 #include "DispatchResult.hxx"
 #include "Base.hxx"
@@ -321,7 +319,7 @@ bool TIA::save(Serializer& out) const
   }
   catch(...)
   {
-    cerr << "ERROR: TIA::save" << endl;
+    cerr << "ERROR: TIA::save\n";
     return false;
   }
 
@@ -399,7 +397,7 @@ bool TIA::load(Serializer& in)
   }
   catch(...)
   {
-    cerr << "ERROR: TIA::load" << endl;
+    cerr << "ERROR: TIA::load\n";
     return false;
   }
 
@@ -912,7 +910,7 @@ bool TIA::saveDisplay(Serializer& out) const
   }
   catch(...)
   {
-    cerr << "ERROR: TIA::saveDisplay" << endl;
+    cerr << "ERROR: TIA::saveDisplay\n";
     return false;
   }
 
@@ -932,7 +930,7 @@ bool TIA::loadDisplay(const Serializer& in)
   }
   catch(...)
   {
-    cerr << "ERROR: TIA::loadDisplay" << endl;
+    cerr << "ERROR: TIA::loadDisplay\n";
     return false;
   }
 
