@@ -8,7 +8,7 @@
 //  SS  SS   tt   ee      ll   ll  aa  aa
 //   SSSS     ttt  eeeee llll llll  aaaaa
 //
-// Copyright (c) 1995-2023 by Bradford W. Mott, Stephen Anthony
+// Copyright (c) 1995-2024 by Bradford W. Mott, Stephen Anthony
 // and the Stella Team
 //
 // See the file "License.txt" for information on usage and redistribution of
@@ -456,7 +456,7 @@ void VideoAudioDialog::addBezelTab()
   // Enable bezels
   myBezelEnableCheckbox = new CheckboxWidget(myTab, _font, xpos, ypos,
                                              "Enable bezels", kBezelEnableChanged);
-  //myBezelEnableCheckbox->setToolTip(Event::BezelToggle);
+  myBezelEnableCheckbox->setToolTip(Event::ToggleBezel);
   wid.push_back(myBezelEnableCheckbox);
   xpos += INDENT;
   ypos += lineHeight + VGAP;
