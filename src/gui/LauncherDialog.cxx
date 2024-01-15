@@ -61,6 +61,7 @@
 #include "Version.hxx"
 #include "MediaFactory.hxx"
 #include "LauncherDialog.hxx"
+#include "Random.hxx"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 LauncherDialog::LauncherDialog(OSystem& osystem, DialogContainer& parent,
@@ -129,10 +130,12 @@ void LauncherDialog::addFilteringWidgets(int& ypos)
 
     // Figure out general icon button size
     const GUI::Icon& reloadIcon = smallIcon ? GUI::icon_reload_small : GUI::icon_reload_large;
+    const GUI::Icon& randomIcon = smallIcon ? GUI::icon_random_small : GUI::icon_random_large;
     const GUI::Icon& dummyIcon = reloadIcon;  //-- used for sizing all the other icons
     const int iconWidth = dummyIcon.width();
     const int iconGap = ((fontWidth + 1) & ~0b1) + 1; // round up to next even
     const int iconButtonWidth = iconWidth + iconGap;
+    const int randomButtonWidth = randomIcon.width() + iconGap;
 
     int xpos = HBORDER;
 
@@ -151,8 +154,8 @@ void LauncherDialog::addFilteringWidgets(int& ypos)
     int fwFilter = EditTextWidget::calcWidth(_font, "123456"); // at least 6 chars
 
     // Calculate how much space everything will take
-    int wTotal = xpos + (iconButtonWidth * 3) + lwFilter + fwFilter + lwFound + bwSettings
-      + LBL_GAP * 6 + btnGap * 2 + HBORDER;
+    int wTotal = xpos + (iconButtonWidth * 2) + randomButtonWidth + lwFilter + fwFilter + lwFound + bwSettings
+      + LBL_GAP * 5 + btnGap * 3 + HBORDER;
 
     // make sure there is space for at least 6 characters in the filter field
     if(_w < wTotal)
@@ -175,7 +178,7 @@ void LauncherDialog::addFilteringWidgets(int& ypos)
     // Show the reload button
     myReloadButton = new ButtonWidget(this, _font, xpos, ypos - btnYOfs,
                                       iconButtonWidth, buttonHeight, reloadIcon, kReloadCmd);
-    myReloadButton->setToolTip("Reload listing. (Ctrl+R)");
+    myReloadButton->setToolTip("Reload listing (Ctrl+R)");
     wid.push_back(myReloadButton);
     xpos = myReloadButton->getRight() + LBL_GAP * 2;
 
@@ -203,13 +206,24 @@ void LauncherDialog::addFilteringWidgets(int& ypos)
     // Show the files counter
     myRomCount = new StaticTextWidget(this, _font, xpos, ypos,
                                       lwFound, fontHeight, "", TextAlign::Right);
+    xpos = myRomCount->getRight() + LBL_GAP;
+
+    // Show the random ROM button
+    myRandomRomButton = new ButtonWidget(this, _font, xpos, ypos - btnYOfs,
+                                         randomButtonWidth, buttonHeight, randomIcon, kLoadRndRomCmd);
+#ifndef BSPF_MACOS
+    myRandomRomButton->setToolTip("Load random ROM (Alt+R)");
+#else
+    myRandomRomButton->setToolTip("Load random ROM (Cmd+R)");
+#endif
+    wid.push_back(myRandomRomButton);
 
     // Show the Settings / Options button (positioned from the right)
     xpos = _w - HBORDER - bwSettings;
     mySettingsButton = new ButtonWidget(this, _font, xpos, ypos - btnYOfs,
                                         iconWidth, buttonHeight, settingsIcon,
                                         iconGap, lblSettings, kOptionsCmd);
-    mySettingsButton-> setToolTip("(Ctrl+O)");
+    mySettingsButton-> setToolTip("Open Options dialog (Ctrl+O)");
     wid.push_back(mySettingsButton);
 
     ypos = mySettingsButton->getBottom() + Dialog::vGap();
@@ -784,58 +798,65 @@ void LauncherDialog::handleKeyDown(StellaKey key, StellaMod mod, bool repeated)
   // context menu keys
   bool handled = false;
 
-  if(StellaModTest::isControl(mod) &&
-    !(myPattern && myPattern->isHighlighted()
+  if(!(myPattern && myPattern->isHighlighted()
       && instance().eventHandler().checkEventForKey(EventMode::kEditMode, key, mod)))
   {
-    handled = true;
-    switch(key)
+    if(StellaModTest::isControl(mod))
     {
-      case KBDK_D:
-        sendCommand(kSubDirsCmd, 0, 0);
-        break;
+      handled = true;
+      switch(key)
+      {
+        case KBDK_D:
+          sendCommand(kSubDirsCmd, 0, 0);
+          break;
 
-      case KBDK_E:
-        toggleExtensions();
-        break;
+        case KBDK_E:
+          toggleExtensions();
+          break;
 
-      case KBDK_F:
-        myList->toggleUserFavorite();
-        break;
+        case KBDK_F:
+          myList->toggleUserFavorite();
+          break;
 
-      case KBDK_G:
-        openGameProperties();
-        break;
+        case KBDK_G:
+          openGameProperties();
+          break;
 
-      case KBDK_H:
-        if(instance().highScores().enabled())
-          openHighScores();
-        break;
+        case KBDK_H:
+          if(instance().highScores().enabled())
+            openHighScores();
+          break;
 
-      case KBDK_O:
-        openSettings();
-        break;
+        case KBDK_O:
+          openSettings();
+          break;
 
-      case KBDK_P:
-        openGlobalProps();
-        break;
+        case KBDK_P:
+          openGlobalProps();
+          break;
 
-      case KBDK_R:
-        reload();
-        break;
+        case KBDK_R:
+          reload();
+          break;
 
-      case KBDK_S:
-        toggleSorting();
-        break;
+        case KBDK_S:
+          toggleSorting();
+          break;
 
-      case KBDK_X:
-        myList->removeFavorite();
-        reload();
-        break;
+        case KBDK_X:
+          myList->removeFavorite();
+          reload();
+          break;
 
-      default:
-        handled = false;
-        break;
+        default:
+          handled = false;
+          break;
+      }
+    }
+    else if(StellaModTest::isAlt(mod) && key == KBDK_R)
+    {
+      loadRandomRom();
+      handled = true;
     }
   }
   if(!handled)
@@ -991,6 +1012,10 @@ void LauncherDialog::handleCommand(CommandSender* sender, int cmd,
       [[fallthrough]];
     case FileListWidget::ItemActivated:
       loadRom();
+      break;
+
+    case kLoadRndRomCmd:
+      loadRandomRom();
       break;
 
     case kOptionsCmd:
@@ -1225,6 +1250,19 @@ void LauncherDialog::openContextMenu(int x, int y)
 
   // Add menu at current x,y mouse location
   contextMenu().show(x + getAbsX(), y + getAbsY(), surface().dstRect(), 0);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void LauncherDialog::loadRandomRom()
+{
+  const Random rand;
+  int tries = 100; // limit to 100 tries, in case the directory contains no ROMs
+
+  do {
+    myList->setSelected(rand.next() % myList->getList().size());
+  } while(myList->isDirectory(myList->selected()) && --tries);
+  if(tries)
+    loadRom();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

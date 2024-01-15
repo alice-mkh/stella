@@ -47,22 +47,28 @@ NavigationWidget::NavigationWidget(GuiObject* boss, const GUI::Font& font,
     const int iconWidth = homeIcon.width();
     const int buttonWidth = iconWidth + ((fontWidth + 1) & ~0b1) + 1; // round up to next odd
     const int buttonHeight = h;
+#ifndef BSPF_MACOS
+    const string altKey = "Alt";
+#else
+    const string altKey = "Cmd";
+#endif
+
 
     myHomeButton = new ButtonWidget(boss, _font, xpos, ypos,
       buttonWidth, buttonHeight, homeIcon, FileListWidget::kHomeDirCmd);
-    myHomeButton->setToolTip("Go back to initial directory. (Alt+Pos1)");
+    myHomeButton->setToolTip("Go back to initial directory. (" + altKey + "+Pos1)");
     boss->addFocusWidget(myHomeButton);
     xpos = myHomeButton->getRight() + BTN_GAP;
 
     myPrevButton = new ButtonWidget(boss, _font, xpos, ypos,
       buttonWidth, buttonHeight, prevIcon, FileListWidget::kPrevDirCmd);
-    myPrevButton->setToolTip("Go back in directory history. (Alt+Left)");
+    myPrevButton->setToolTip("Go back in directory history. (" + altKey + "+Left)");
     boss->addFocusWidget(myPrevButton);
     xpos = myPrevButton->getRight() + BTN_GAP;
 
     myNextButton = new ButtonWidget(boss, _font, xpos, ypos,
       buttonWidth, buttonHeight, nextIcon, FileListWidget::kNextDirCmd);
-    myNextButton->setToolTip("Go forward in directory history. (Alt+Right)");
+    myNextButton->setToolTip("Go forward in directory history. (" + altKey + "+Right)");
     boss->addFocusWidget(myNextButton);
     xpos = myNextButton->getRight() + BTN_GAP;
 
@@ -109,20 +115,60 @@ void NavigationWidget::setWidth(int w)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void NavigationWidget::updateUI()
+void NavigationWidget::setVisible(bool isVisible)
 {
-  // Only enable the navigation buttons if function is available
-  if(myUseMinimalUI)
+  if(isVisible)
   {
-    myDir->setText(myList->currentDir().getShortPath());
+    this->clearFlags(FLAG_INVISIBLE);
+    this->setEnabled(true);
+    myHomeButton->clearFlags(FLAG_INVISIBLE);
+    myHomeButton->setEnabled(true);
+    myPrevButton->clearFlags(FLAG_INVISIBLE);
+    myHomeButton->setEnabled(true);
+    myNextButton->clearFlags(FLAG_INVISIBLE);
+    myHomeButton->setEnabled(true);
+    myUpButton->clearFlags(FLAG_INVISIBLE);
+    myHomeButton->setEnabled(true);
+    myPath->clearFlags(FLAG_INVISIBLE);
+    myPath->setEnabled(true);
   }
   else
   {
-    myHomeButton->setEnabled(myList->hasPrevHistory());
-    myPrevButton->setEnabled(myList->hasPrevHistory());
-    myNextButton->setEnabled(myList->hasNextHistory());
-    myUpButton->setEnabled(myList->currentDir().hasParent());
-    myPath->setPath(myList->currentDir().getShortPath());
+    this->setFlags(FLAG_INVISIBLE);
+    this->setEnabled(false);
+    myHomeButton->setFlags(FLAG_INVISIBLE);
+    myHomeButton->setEnabled(false);
+    myPrevButton->setFlags(FLAG_INVISIBLE);
+    myPrevButton->setEnabled(false);
+    myNextButton->setFlags(FLAG_INVISIBLE);
+    myNextButton->setEnabled(false);
+    myUpButton->setFlags(FLAG_INVISIBLE);
+    myUpButton->setEnabled(false);
+
+    myPath->setFlags(FLAG_INVISIBLE);
+    myPath->setEnabled(false);
+    myPath->setPath("");
+  }
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void NavigationWidget::updateUI()
+{
+  if(isVisible())
+  {
+    // Only enable the navigation buttons if function is available
+    if(myUseMinimalUI)
+    {
+      myDir->setText(myList->currentDir().getShortPath());
+    }
+    else
+    {
+      myHomeButton->setEnabled(myList->hasPrevHistory());
+      myPrevButton->setEnabled(myList->hasPrevHistory());
+      myNextButton->setEnabled(myList->hasNextHistory());
+      myUpButton->setEnabled(myList->currentDir().hasParent());
+      myPath->setPath(myList->currentDir().getShortPath());
+    }
   }
 }
 

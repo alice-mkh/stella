@@ -137,9 +137,11 @@ class GameInfoDialog : public Dialog, public CommandSender
     EditTextWidget*   myModelNo{nullptr};
     EditTextWidget*   myRarity{nullptr};
     EditTextWidget*   myNote{nullptr};
-    ButtonWidget*     myUrlButton{nullptr};
     EditTextWidget*   myUrl{nullptr};
+    ButtonWidget*     myUrlButton{nullptr};
     EditTextWidget*   myBezelName{nullptr};
+    ButtonWidget*     myBezelButton{nullptr};
+    StaticTextWidget* myBezelDetected{nullptr};
 
     // High Scores properties
     CheckboxWidget*   myHighScores{nullptr};
@@ -179,21 +181,22 @@ class GameInfoDialog : public Dialog, public CommandSender
     EditTextWidget*   myHighScoreNotes{nullptr};
 
     enum {
-      kBSTypeChanged   = 'Btch',
-      kBSFilterChanged = 'Bfch',
-      kVCenterChanged  = 'Vcch',
-      kPhosphorChanged = 'PPch',
-      kPPBlendChanged  = 'PBch',
-      kLeftCChanged    = 'LCch',
-      kRightCChanged   = 'RCch',
-      kQuadTariPressed = 'QTpr',
-      kMCtrlChanged    = 'MCch',
-      kEEButtonPressed = 'EEgb',
-      kHiScoresChanged = 'HSch',
-      kPXCenterChanged = 'Pxch',
-      kPYCenterChanged = 'Pych',
-      kExportPressed   = 'Expr',
-      kLinkPressed     = 'Lkpr'
+      kBSTypeChanged    = 'Btch',
+      kBSFilterChanged  = 'Bfch',
+      kVCenterChanged   = 'Vcch',
+      kPhosphorChanged  = 'PPch',
+      kPPBlendChanged   = 'PBch',
+      kLeftCChanged     = 'LCch',
+      kRightCChanged    = 'RCch',
+      kQuadTariPressed  = 'QTpr',
+      kMCtrlChanged     = 'MCch',
+      kEEButtonPressed  = 'EEgb',
+      kHiScoresChanged  = 'HSch',
+      kPXCenterChanged  = 'Pxch',
+      kPYCenterChanged  = 'Pych',
+      kExportPressed    = 'Expr',
+      kLinkPressed      = 'Lkpr',
+      kBezelFilePressed = 'BFpr'
     };
 
     enum { kLinkId };
