@@ -109,6 +109,8 @@ class TIA : public Device
     friend class TIADebug;
     friend class RiotDebug;
 
+    using onPhosphorCallback = std::function<void(bool)>;
+
     /**
       Create a new TIA for the specified console
 
@@ -116,7 +118,7 @@ class TIA : public Device
       @param settings  The settings object for this TIA device
     */
     TIA(ConsoleIO& console, const ConsoleTimingProvider& timingProvider,
-        Settings& settings);
+        Settings& settings, const onPhosphorCallback callback);
     ~TIA() override = default;
 
   public:
@@ -277,6 +279,8 @@ class TIA : public Device
       Enables/disables color-loss for PAL modes only.
 
       @param enabled  Whether to enable or disable PAL color-loss mode
+
+      @return  True if color-loss got enabled
     */
     bool enableColorLoss(bool enabled);
 
@@ -293,6 +297,19 @@ class TIA : public Device
       @return  Colour-loss is active for this frame
     */
     bool colorLossActive() const { return myColorLossActive; }
+
+    /**
+      Enables/disables auto-phosphor.
+
+      @param enabled  Whether to use auto-phosphor mode
+      @param autoOn  Whether to only ENABLE phosphor mode
+    */
+    void enableAutoPhosphor(bool enabled, bool autoOn = false)
+    {
+      myAutoPhosphorEnabled = enabled;
+      myAutoPhosphorAutoOn = autoOn;
+      myAutoPhosphorActive = false;
+    }
 
     /**
       Answers the current color clock we've gotten to on this scanline.
@@ -965,7 +982,21 @@ class TIA : public Device
     bool myColorLossEnabled{false};
     bool myColorLossActive{false};
 
-    std::array<uInt32, 16> myColorCounts;
+    /**
+    * Auto-phosphor detection variables.
+    */
+    static constexpr int FLICKER_FRAMES = 1 + 4; // compare current frame with previous 4 frames
+    using ObjectPos = BSPF::array2D<uInt8, TIAConstants::frameBufferHeight, FLICKER_FRAMES>;
+    using ObjectGfx = BSPF::array2D<uInt32, TIAConstants::frameBufferHeight, FLICKER_FRAMES>;
+
+    bool myAutoPhosphorEnabled{false};
+    bool myAutoPhosphorAutoOn{false};
+    bool myAutoPhosphorActive{false};
+    ObjectPos myPosP0, myPosP1, myPosM0, myPosM1, myPosBL;
+    ObjectGfx myPatPF;
+    int myFlickerFrame{0}, myFlickerCount{0};
+    uInt32 myFrameEnd{0};
+    onPhosphorCallback myPhosphorCallback;
 
   #ifdef DEBUGGER_SUPPORT
     /**

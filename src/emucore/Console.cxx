@@ -123,7 +123,17 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
   // Create subsystems for the console
   my6502 = make_unique<M6502>(myOSystem.settings());
   myRiot = make_unique<M6532>(*this, myOSystem.settings());
-  myTIA  = make_unique<TIA>(*this, [this]() { return timing(); },  myOSystem.settings());
+
+  const TIA::onPhosphorCallback callback = [&frameBuffer = this->myOSystem.frameBuffer()](bool enable)
+  {
+    frameBuffer.tiaSurface().enablePhosphor(enable);
+#ifdef DEBUG_BUILD
+    ostringstream msg;
+    msg << "Phosphor effect automatically " << (enable ? "enabled" : "disabled");
+    frameBuffer.showTextMessage(msg.str());
+#endif
+  };
+  myTIA  = make_unique<TIA>(*this, [this]() { return timing(); }, myOSystem.settings(), callback);
   myFrameManager = make_unique<FrameManager>();
   mySwitches = make_unique<Switches>(myEvent, myProperties, myOSystem.settings());
 
@@ -524,19 +534,21 @@ void Console::setFormat(uInt32 format, bool force)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Console::toggleColorLoss(bool toggle)
 {
-  const bool colorloss = !myTIA->colorLossEnabled();
-  if(myTIA->enableColorLoss(colorloss))
+  bool colorloss = myTIA->colorLossEnabled();
+  if(toggle)
   {
-    myOSystem.settings().setValue(
-      myOSystem.settings().getBool("dev.settings") ? "dev.colorloss" : "plr.colorloss", colorloss);
-
-    const string message = string("PAL color-loss ") +
-                           (colorloss ? "enabled" : "disabled");
-    myOSystem.frameBuffer().showTextMessage(message);
+    colorloss = !colorloss;
+    if(myTIA->enableColorLoss(colorloss))
+      myOSystem.settings().setValue(
+        myOSystem.settings().getBool("dev.settings") ? "dev.colorloss" : "plr.colorloss", colorloss);
+    else {
+      myOSystem.frameBuffer().showTextMessage(
+        "PAL color-loss not available in non PAL modes");
+      return;
+    }
   }
-  else
-    myOSystem.frameBuffer().showTextMessage(
-      "PAL color-loss not available in non PAL modes");
+  const string message = string("PAL color-loss ") + (colorloss ? "enabled" : "disabled");
+  myOSystem.frameBuffer().showTextMessage(message);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -553,12 +565,14 @@ void Console::toggleInter(bool toggle)
     bool enabled = myOSystem.settings().getBool("tia.inter");
 
     if(toggle)
+    {
       enabled = !enabled;
 
-    myOSystem.settings().setValue("tia.inter", enabled);
+      myOSystem.settings().setValue("tia.inter", enabled);
 
-    // ... and apply potential setting changes to the TIA surface
-    myOSystem.frameBuffer().tiaSurface().updateSurfaceSettings();
+      // Apply potential setting changes to the TIA surface
+      myOSystem.frameBuffer().tiaSurface().updateSurfaceSettings();
+    }
     ostringstream ss;
 
     ss << "Interpolation " << (enabled ? "enabled" : "disabled");
@@ -613,20 +627,69 @@ void Console::changeSpeed(int direction)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void Console::togglePhosphor()
+void Console::togglePhosphor(bool toggle)
 {
-  if(myOSystem.frameBuffer().tiaSurface().phosphorEnabled())
+  bool enable = myOSystem.frameBuffer().tiaSurface().phosphorEnabled();
+
+  if(toggle)
   {
-    myProperties.set(PropType::Display_Phosphor, "NO");
-    myOSystem.frameBuffer().tiaSurface().enablePhosphor(false);
-    myOSystem.frameBuffer().showTextMessage("Phosphor effect disabled");
+    enable = !enable;
+    if(!enable)
+      myProperties.set(PropType::Display_Phosphor, "NO");
+    else
+      myProperties.set(PropType::Display_Phosphor, "YES");
+    myOSystem.frameBuffer().tiaSurface().enablePhosphor(enable);
+
+    // disable auto-phosphor
+    myTIA->enableAutoPhosphor(false);
   }
-  else
+
+  ostringstream msg;
+  msg << "Phosphor effect " << (enable ? "enabled" : "disabled");
+  myOSystem.frameBuffer().showTextMessage(msg.str());
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void Console::cyclePhosphorMode(int direction)
+{
+  static constexpr std::array<string_view, PhosphorHandler::NumTypes> MESSAGES = {
+    "by ROM", "always on", "auto-enabled", "auto-enabled/disabled"
+  };
+  PhosphorHandler::PhosphorMode mode =
+    PhosphorHandler::toPhosphorMode(myOSystem.settings().getString(PhosphorHandler::SETTING_MODE));
+
+  if(direction)
   {
-    myProperties.set(PropType::Display_Phosphor, "YES");
-    myOSystem.frameBuffer().tiaSurface().enablePhosphor(true);
-    myOSystem.frameBuffer().showTextMessage("Phosphor effect enabled");
+    mode = static_cast<PhosphorHandler::PhosphorMode>
+      (BSPF::clampw(mode + direction, 0, static_cast<int>(PhosphorHandler::NumTypes - 1)));
+    switch(mode)
+    {
+      case PhosphorHandler::Always:
+        myOSystem.frameBuffer().tiaSurface().enablePhosphor(
+          true, myOSystem.settings().getInt(PhosphorHandler::SETTING_BLEND));
+        myTIA->enableAutoPhosphor(false);
+        break;
+
+      case PhosphorHandler::Auto_on:
+      case PhosphorHandler::Auto:
+        myOSystem.frameBuffer().tiaSurface().enablePhosphor(
+          false, myOSystem.settings().getInt(PhosphorHandler::SETTING_BLEND));
+        myTIA->enableAutoPhosphor(true, mode == PhosphorHandler::Auto_on);
+        break;
+
+      default: // PhosphorHandler::ByRom
+        myOSystem.frameBuffer().tiaSurface().enablePhosphor(
+          myProperties.get(PropType::Display_Phosphor) == "YES",
+          BSPF::stoi(myProperties.get(PropType::Display_PPBlend)));
+        myTIA->enableAutoPhosphor(false);
+        break;
+    }
+    myOSystem.settings().setValue(PhosphorHandler::SETTING_MODE,
+                                  PhosphorHandler::toPhosphorName(mode));
   }
+  ostringstream msg;
+  msg << "Phosphor mode " << MESSAGES[mode];
+  myOSystem.frameBuffer().showTextMessage(msg.str());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -693,7 +756,7 @@ void Console::initializeAudio()
     .updateAudioQueueExtraFragments(myAudioSettings.bufferSize())
     .updateAudioQueueHeadroom(myAudioSettings.headroom())
     .updateSpeedFactor(myOSystem.settings().getBool("turbo")
-      ? 20.0F
+      ? 50.0F
       : myOSystem.settings().getFloat("speed"));
 
   createAudioQueue();
@@ -1160,16 +1223,17 @@ void Console::changePaddleAxesRange(int direction)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Console::toggleAutoFire(bool toggle)
 {
-  const bool enabled = myOSystem.settings().getBool("autofire");
+  bool enabled = myOSystem.settings().getBool("autofire");
 
   if(toggle)
   {
-    myOSystem.settings().setValue("autofire", !enabled);
-    Controller::setAutoFire(!enabled);
+    enabled = !enabled;
+    myOSystem.settings().setValue("autofire", enabled);
+    Controller::setAutoFire(enabled);
   }
 
   ostringstream ss;
-  ss << "Autofire " << (!enabled ? "enabled" : "disabled");
+  ss << "Autofire " << (enabled ? "enabled" : "disabled");
   myOSystem.frameBuffer().showTextMessage(ss.str());
 }
 

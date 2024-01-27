@@ -23,6 +23,7 @@
 #include "TIAConstants.hxx"
 #include "AudioQueue.hxx"
 #include "DispatchResult.hxx"
+#include "PhosphorHandler.hxx"
 #include "Base.hxx"
 
 enum CollisionMask: uInt32 {
@@ -63,7 +64,7 @@ static constexpr uInt8 resxLateHblankThreshold = TIAConstants::H_CYCLES - 3;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TIA::TIA(ConsoleIO& console, const ConsoleTimingProvider& timingProvider,
-         Settings& settings)
+         Settings& settings, const onPhosphorCallback callback)
   : myConsole{console},
     myTimingProvider{timingProvider},
     mySettings{settings},
@@ -72,7 +73,8 @@ TIA::TIA(ConsoleIO& console, const ConsoleTimingProvider& timingProvider,
     myMissile1{~CollisionMask::missile1 & 0x7FFF},
     myPlayer0{~CollisionMask::player0 & 0x7FFF},
     myPlayer1{~CollisionMask::player1 & 0x7FFF},
-    myBall{~CollisionMask::ball & 0x7FFF}
+    myBall{~CollisionMask::ball & 0x7FFF},
+    myPhosphorCallback{callback}
 {
   myBackground.setTIA(this);
   myPlayfield.setTIA(this);
@@ -186,6 +188,15 @@ void TIA::initialize()
   myFrontBuffer.fill(0);
   myFramebuffer.fill(0);
 
+  // Prepare variables for auto-phosphor
+  memset(&myPosP0, 0, sizeof(ObjectPos));
+  memset(&myPosP1, 0, sizeof(ObjectPos));
+  memset(&myPosM0, 0, sizeof(ObjectPos));
+  memset(&myPosM1, 0, sizeof(ObjectPos));
+  memset(&myPosBL, 0, sizeof(ObjectPos));
+  memset(&myPatPF, 0, sizeof(ObjectGfx));
+  myFrameEnd = 0;
+
   applyDeveloperSettings();
 
   // Must be done last, after all other items have reset
@@ -193,6 +204,12 @@ void TIA::initialize()
   setFixedColorPalette(mySettings.getString("tia.dbgcolors"));
   enableFixedColors(
     mySettings.getBool(devSettings ? "dev.debugcolors" : "plr.debugcolors"));
+  // Auto-phosphor settings:
+  const string mode = mySettings.getString(PhosphorHandler::SETTING_MODE);
+  myAutoPhosphorAutoOn = mode == PhosphorHandler::VALUE_AUTO_ON;
+  myAutoPhosphorEnabled = myAutoPhosphorAutoOn || mode == PhosphorHandler::VALUE_AUTO;
+  myAutoPhosphorActive = false;
+  myFlickerCount = 0;
 
 #ifdef DEBUGGER_SUPPORT
   createAccessArrays();
@@ -1396,6 +1413,85 @@ void TIA::onFrameComplete()
 
   myFrontBufferScanlines = scanlinesLastFrame();
 
+  if(myAutoPhosphorEnabled)
+  {
+    // Calculate difference to previous frames (with some margin).
+    // If difference to latest frame is larger than to older frames, and this happens for
+    // multiple frames, enabled phosphor mode.
+    static constexpr int MIN_FLICKER_DELTA = 6;
+    static constexpr int MAX_FLICKER_DELTA = TIAConstants::H_PIXEL - MIN_FLICKER_DELTA;
+    static constexpr int MIN_DIFF = 4;
+    static constexpr int PHOSPHOR_FRAMES = 8;
+
+    int diffCount[FLICKER_FRAMES - 1];
+
+    //cerr << missingScanlines << ", " << myFrameEnd << " | ";
+    //cerr << myFlickerFrame << ": ";
+    for(int frame = 0; frame < FLICKER_FRAMES - 1; ++frame)
+    {
+      const int otherFrame = (myFlickerFrame + frame + 1) % FLICKER_FRAMES;
+      int count = 0;
+      for(uInt32 y = 0; y <= myFrameEnd; ++y)
+      {
+        int delta;
+        delta = std::abs(myPosP0[y][myFlickerFrame] - myPosP0[y][otherFrame]);
+        if(delta >= MIN_FLICKER_DELTA && delta <= MAX_FLICKER_DELTA)
+          ++count;
+        delta = std::abs(myPosP1[y][myFlickerFrame] - myPosP1[y][otherFrame]);
+        if(delta >= MIN_FLICKER_DELTA && delta <= MAX_FLICKER_DELTA)
+          ++count;
+        delta = std::abs(myPosM0[y][myFlickerFrame] - myPosM0[y][otherFrame]);
+        if(delta >= MIN_FLICKER_DELTA && delta <= MAX_FLICKER_DELTA)
+          ++count;
+        delta = std::abs(myPosM1[y][myFlickerFrame] - myPosM1[y][otherFrame]);
+        if(delta >= MIN_FLICKER_DELTA && delta <= MAX_FLICKER_DELTA)
+          ++count;
+        delta = std::abs(myPosBL[y][myFlickerFrame] - myPosBL[y][otherFrame]);
+        if(delta >= MIN_FLICKER_DELTA && delta <= MAX_FLICKER_DELTA)
+          ++count;
+        if(myPatPF[y][myFlickerFrame] != myPatPF[y][otherFrame])
+          ++count;
+      }
+      diffCount[frame] = count;
+    }
+    //cerr << ": ";
+    //for(int i = 0; i < FLICKER_FRAMES - 1; ++i)
+    //  cerr << diffCount[i] << ", ";
+    if(diffCount[0] > MIN_DIFF &&
+      (diffCount[0] > diffCount[1] * 1.1 ||
+       diffCount[0] > diffCount[2] * 1.2 ||
+       diffCount[0] > diffCount[3] * 1.3))
+    {
+      if(myFlickerCount < PHOSPHOR_FRAMES)
+      {
+        myFlickerCount += 2; // enabled phosphor twice as fast
+        if(myFlickerCount >= PHOSPHOR_FRAMES && !myAutoPhosphorActive)
+        {
+          myAutoPhosphorActive = true;
+          myPhosphorCallback(true);
+          // If auto-on, disable phosphor automatic (phosphor stays enabled)
+          if(myAutoPhosphorAutoOn)
+            myAutoPhosphorEnabled = false;
+        }
+      }
+    }
+    else if(myFlickerCount)
+    {
+      if(--myFlickerCount == 0 && myAutoPhosphorActive)
+      {
+        myAutoPhosphorActive = false;
+        myPhosphorCallback(false);
+      }
+    }
+    //cerr << "|" << myFlickerCount;
+    //if(myAutoPhosphorActive)
+    //  cerr << " *** ON ***\n";
+    //else
+    //  cerr << " off\n";
+
+    if(--myFlickerFrame < 0)
+      myFlickerFrame = FLICKER_FRAMES - 1;
+  }
   ++myFramesSinceLastRender;
 }
 
@@ -1533,8 +1629,10 @@ void TIA::applyRsync()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 FORCE_INLINE void TIA::nextLine()
 {
+  bool cloned = false;
   if (myLinesSinceChange >= 2) {
     cloneLastLine();
+    cloned = true;
   }
 
   myHctr = 0;
@@ -1552,8 +1650,47 @@ FORCE_INLINE void TIA::nextLine()
   myBall.nextLine();
   myPlayfield.nextLine();
 
-  if (myFrameManager->isRendering() && myFrameManager->getY() == 0) flushLineCache();
+  if(myFrameManager->isRendering())
+  {
+    if(myFrameManager->getY() == 0)
+      flushLineCache();
 
+    // Save positions of objects for auto-phosphor
+    if(myAutoPhosphorEnabled)
+    {
+      // Test ROMs:
+      // - missing phosphor:
+      //   - QB: flicker sprite for multi color (same position, different shape and color)
+      //   - Star Castle Arcade: vector font flicker (same position, different shape)
+      //   - Omega Race: no phosphor enabled (flickers every 2nd frame)
+      //   - Riddle of the Sphinx: shots (too small to be detected)
+      //   x Yars' Revenge: shield, neutral zone (PF flicker)
+      //
+      // - unneccassary phosphor:
+      //   - Gas Hog: before game starts (odd invisible sprite position changes)
+      //   x Turmoil: M1 rockets (gap between RESM1 and HMOVE?)
+      //   x Fathom: seaweed (many sprites moving vertically)
+      //   x FourPlay: game start (???)
+      //   x Freeway: always (too many sprites?)
+      const uInt32 y = myFrameManager->getY();
+
+      myPosP0[y][myFlickerFrame] = myPlayer0.getPosition();
+      myPosP1[y][myFlickerFrame] = myPlayer1.getPosition();
+      // Only use new position if missile/ball are enabled
+      if(myMissile0.isOn())
+        myPosM0[y][myFlickerFrame] = myMissile0.getPosition();
+      if(myMissile1.isOn())
+        myPosM1[y][myFlickerFrame] = myMissile1.getPosition();
+      if(myBall.isOn())
+        myPosBL[y][myFlickerFrame] = myBall.getPosition();
+      // Note: code checks only right side of playfield
+      myPatPF[y][myFlickerFrame] = (uInt32(registerValue(PF0))) << 16
+        | (uInt32(registerValue(PF1))) << 8 | uInt32(registerValue(PF2));
+      // Define end of frame for faster auto-phosphor calculation
+      if(!cloned)
+        myFrameEnd = y;
+    }
+  }
   mySystem->m6502().clearHaltRequest();
 }
 
@@ -1574,6 +1711,17 @@ void TIA::cloneLastLine()
 
     std::copy_n(myBackBuffer.begin() + (y - 1) * TIAConstants::H_PIXEL,
       TIAConstants::H_PIXEL, myBackBuffer.begin() + y * TIAConstants::H_PIXEL);
+
+    // Save positions of objects for auto-phosphor
+    if(myAutoPhosphorEnabled)
+    {
+      myPosP0[y][myFlickerFrame] = myPosP0[y - 1][myFlickerFrame];
+      myPosP1[y][myFlickerFrame] = myPosP1[y - 1][myFlickerFrame];
+      myPosM0[y][myFlickerFrame] = myPosM0[y - 1][myFlickerFrame];
+      myPosM1[y][myFlickerFrame] = myPosM1[y - 1][myFlickerFrame];
+      myPosBL[y][myFlickerFrame] = myPosBL[y - 1][myFlickerFrame];
+      myPatPF[y][myFlickerFrame] = myPatPF[y - 1][myFlickerFrame];
+    }
   }
 }
 
