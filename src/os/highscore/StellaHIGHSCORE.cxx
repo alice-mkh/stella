@@ -119,6 +119,7 @@ void StellaHIGHSCORE::destroy()
   system_ready = false;
 
   video_ready = false;
+  render_surface = nullptr;
   audio_samples = 0;
 
   myOSystem.reset();

@@ -149,10 +149,11 @@ stella_core_run_frame (HsCore *core)
     hs_software_context_set_area (self->context, &area);
   }
 
-  if(self->stella->getVideoReady ())
+  if(self->stella->getVideoReady ()) {
     memcpy (hs_software_context_get_framebuffer (self->context),
             self->stella->getVideoBuffer (),
             self->stella->getVideoPitch () * self->stella->getVideoHeight ());
+  }
 
   if (self->stella->getAudioReady ())
     hs_core_play_samples (core, self->stella->getAudioBuffer (), self->stella->getAudioSize () * 2);
@@ -174,6 +175,23 @@ stella_core_stop (HsCore *core)
   self->stella->destroy ();
   g_clear_object (&self->context);
   g_clear_pointer (&self->save_path, g_free);
+}
+
+static gboolean
+stella_core_reload_save (HsCore      *core,
+                         const char  *save_path,
+                         GError     **error)
+{
+  StellaCore *self = STELLA_CORE (core);
+
+  g_set_str (&self->save_path, save_path);
+
+  if (!self->stella->create (true)) {
+    g_set_error (error, HS_CORE_ERROR, HS_CORE_ERROR_INTERNAL, "Failed to reload Stella core");
+    return FALSE;
+  }
+
+  return TRUE;
 }
 
 static void
@@ -259,8 +277,6 @@ stella_core_finalize (GObject *object)
 
   delete self->stella;
 
-  g_free (self->save_path);
-
   core = NULL;
 
   G_OBJECT_CLASS (stella_core_parent_class)->finalize (object);
@@ -279,6 +295,8 @@ stella_core_class_init (StellaCoreClass *klass)
   core_class->run_frame = stella_core_run_frame;
   core_class->reset = stella_core_reset;
   core_class->stop = stella_core_stop;
+
+  core_class->reload_save = stella_core_reload_save;
 
   core_class->load_state = stella_core_load_state;
   core_class->save_state = stella_core_save_state;
