@@ -58,15 +58,18 @@ class StreamReader : public Serializable
 
     bool open(string_view path) {
       myFile = Serializer(path, Serializer::Mode::ReadOnly);
-      if(myFile)
-        myFileSize = myFile.size();
+      myFileSize = myFile ? myFile.size() : 0;
 
       return static_cast<bool>(myFile);
     }
 
+    bool isValid() const {
+      return myFileSize > 0;
+    }
+
     void blankPartialLines(bool index) {
       const int colorSize = myVisibleLines * 5;
-      if (index)
+      if(index)
       {
         // top line
         myColor[0] = 0;
@@ -115,7 +118,7 @@ class StreamReader : public Serializable
 
       const FrameFormat* ff = reinterpret_cast<FrameFormat*>(offset);
 
-      if (ff->format & 0x80)
+      if(ff->format & 0x80)
       {
         myVSyncLines = ff->vsync;
         myBlankLines = ff->vblank;
@@ -150,7 +153,7 @@ class StreamReader : public Serializable
         myColorBK  = myColor + static_cast<ptrdiff_t>(5 * myVisibleLines);
       }
 
-      if (!odd)
+      if(!odd)
           myColorBK++;
     }
 
@@ -980,7 +983,7 @@ void MovieCart::updateTransport()
     {
       const uInt8 temp = ~(myA10_Count & 0x1e) & 0x1e;
 
-      if (temp == myDirectionValue)
+      if(temp == myDirectionValue)
         myInputs.updateDirection(temp);
 
       myDirectionValue = temp;
@@ -1020,7 +1023,7 @@ void MovieCart::updateTransport()
   }
   else if(myInputs.down && !myLastInputs.down)
   {
-    if (myMode == Mode::Last)
+    if(myMode == Mode::Last)
       myMode = 0;
     else
       myMode++;
@@ -1046,7 +1049,7 @@ void MovieCart::updateTransport()
       {
         myDrawTimeCode = OSD_FRAMES;
         mySpeed += 4;
-        if (mySpeed < 0)
+        if(mySpeed < 0)
           mySpeed -= 4;
       }
       else if(myMode == Mode::Volume)
@@ -1054,7 +1057,7 @@ void MovieCart::updateTransport()
         myDrawLevelBars = OSD_FRAMES;
         if(myInputs.left)
         {
-          if (myVolume)
+          if(myVolume)
             myVolume--;
         }
         else
@@ -1115,7 +1118,7 @@ void MovieCart::updateTransport()
   else
     myDrawLevelBars = 0;
 
-  if (myMute)
+  if(myMute)
     myMute--;
 
   if(myPlaying && !myMute)
@@ -1148,7 +1151,7 @@ void MovieCart::updateTransport()
     {
       if(myInputs.right)
         step = mySpeed;
-      else if (myInputs.left)
+      else if(myInputs.left)
         step = -mySpeed;
     }
     else
@@ -1195,7 +1198,7 @@ void MovieCart::fill_addr_right_line()
   writeColor(addr_set_gcol9 + 1, v);
 
   // alternate between background color and playfield color
-  if (myForceColor)
+  if(myForceColor)
   {
     v = 0;
     writeROM(addr_set_colubk_r + 1, v);
@@ -1235,7 +1238,7 @@ void MovieCart::fill_addr_left_line(bool again)
 
 
   // alternate between background color and playfield color
-  if (myForceColor)
+  if(myForceColor)
   {
     v = 0;
     writeROM(addr_set_colupf_l + 1, v);
@@ -1418,7 +1421,7 @@ void MovieCart::runStateMachine()
          {
             if(myDrawTimeCode)
             {
-               if (myLines == (TIMECODE_HEIGHT - 0))
+               if(myLines == (TIMECODE_HEIGHT - 0))
                   myStream.blankPartialLines(true);
             }
             if(myDrawLevelBars)
@@ -1495,7 +1498,8 @@ bool MovieCart::process(uInt16 address)
   switch(myTitleState)
   {
     case TitleState::Display:
-      myTitleCycles++;
+      if(myStream.isValid())
+        myTitleCycles++;
       if(myTitleCycles == TITLE_CYCLES)
       {
         stopTitleScreen();
