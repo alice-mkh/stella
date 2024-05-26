@@ -130,7 +130,7 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
 #ifdef DEBUG_BUILD
     ostringstream msg;
     msg << "Phosphor effect automatically " << (enable ? "enabled" : "disabled");
-    frameBuffer.showTextMessage(msg.str());
+    frameBuffer.showTextMessage(msg.view());
 #endif
   };
   myTIA  = make_unique<TIA>(*this, [this]() { return timing(); }, myOSystem.settings(), callback);
@@ -576,7 +576,7 @@ void Console::toggleInter(bool toggle)
     ostringstream ss;
 
     ss << "Interpolation " << (enabled ? "enabled" : "disabled");
-    myOSystem.frameBuffer().showTextMessage(ss.str());
+    myOSystem.frameBuffer().showTextMessage(ss.view());
   }
   else
     myOSystem.frameBuffer().showTextMessage(
@@ -598,7 +598,7 @@ void Console::toggleTurbo()
 
   ostringstream ss;
   ss << "Turbo mode " << (!enabled ? "enabled" : "disabled");
-  myOSystem.frameBuffer().showTextMessage(ss.str());
+  myOSystem.frameBuffer().showTextMessage(ss.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -623,7 +623,7 @@ void Console::changeSpeed(int direction)
   ostringstream val;
 
   val << formatSpeed(speed) << "%";
-  myOSystem.frameBuffer().showGaugeMessage("Emulation speed", val.str(), speed, MIN_SPEED, MAX_SPEED);
+  myOSystem.frameBuffer().showGaugeMessage("Emulation speed", val.view(), speed, MIN_SPEED, MAX_SPEED);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -646,7 +646,7 @@ void Console::togglePhosphor(bool toggle)
 
   ostringstream msg;
   msg << "Phosphor effect " << (enable ? "enabled" : "disabled");
-  myOSystem.frameBuffer().showTextMessage(msg.str());
+  myOSystem.frameBuffer().showTextMessage(msg.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -689,7 +689,7 @@ void Console::cyclePhosphorMode(int direction)
   }
   ostringstream msg;
   msg << "Phosphor mode " << MESSAGES[mode];
-  myOSystem.frameBuffer().showTextMessage(msg.str());
+  myOSystem.frameBuffer().showTextMessage(msg.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -705,7 +705,7 @@ void Console::changePhosphor(int direction)
 
   ostringstream val;
   val << blend;
-  myProperties.set(PropType::Display_PPBlend, val.str());
+  myProperties.set(PropType::Display_PPBlend, val.view());
   if(blend)
     val << "%";
   else
@@ -713,7 +713,7 @@ void Console::changePhosphor(int direction)
     val.str("");
     val << "Off";
   }
-  myOSystem.frameBuffer().showGaugeMessage("Phosphor blend", val.str(), blend);
+  myOSystem.frameBuffer().showGaugeMessage("Phosphor blend", val.view(), blend);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -802,11 +802,11 @@ void Console::changeVerticalCenter(int direction)
   ostringstream ss, val;
   ss << vcenter;
 
-  myProperties.set(PropType::Display_VCenter, ss.str());
+  myProperties.set(PropType::Display_VCenter, ss.view());
   if (vcenter != myTIA->vcenter()) myTIA->setVcenter(vcenter);
 
   val << (vcenter ? vcenter > 0 ? "+" : "" : " ") << vcenter << "px";
-  myOSystem.frameBuffer().showGaugeMessage("V-Center", val.str(), vcenter,
+  myOSystem.frameBuffer().showGaugeMessage("V-Center", val.view(), vcenter,
                                       myTIA->minVcenter(), myTIA->maxVcenter());
 }
 
@@ -836,7 +836,7 @@ void Console::changeVSizeAdjust(int direction)
 
   val << (newAdjustVSize ? newAdjustVSize > 0 ? "+" : "" : " ")
       << newAdjustVSize << "%";
-  myOSystem.frameBuffer().showGaugeMessage("V-Size", val.str(), newAdjustVSize, -5, 5);
+  myOSystem.frameBuffer().showGaugeMessage("V-Size", val.view(), newAdjustVSize, -5, 5);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -979,7 +979,7 @@ void Console::changeLeftController(int direction)
 
   ostringstream msg;
   msg << "Left controller " << Controller::getName(Controller::Type{type});
-  myOSystem.frameBuffer().showTextMessage(msg.str());
+  myOSystem.frameBuffer().showTextMessage(msg.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -996,7 +996,7 @@ void Console::changeRightController(int direction)
 
   ostringstream msg;
   msg << "Right controller " << Controller::getName(Controller::Type{type});
-  myOSystem.frameBuffer().showTextMessage(msg.str());
+  myOSystem.frameBuffer().showTextMessage(msg.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1005,8 +1005,11 @@ unique_ptr<Controller> Console::getControllerPort(
 {
   unique_ptr<Controller> controller;
 
-  myOSystem.eventHandler().defineKeyControllerMappings(type, port, myProperties);
-  myOSystem.eventHandler().defineJoyControllerMappings(type, port, myProperties);
+  if(type != Controller::Type::QuadTari)
+  {
+    myOSystem.eventHandler().defineKeyControllerMappings(type, port, myProperties);
+    myOSystem.eventHandler().defineJoyControllerMappings(type, port, myProperties);
+  }
 
   switch(type)
   {
@@ -1061,11 +1064,11 @@ unique_ptr<Controller> Console::getControllerPort(
       nvramfile /= "atarivox_eeprom.dat";
       const Controller::onMessageCallback callback = [&os = myOSystem]
       (string_view msg)
-      {
-        const bool devSettings = os.settings().getBool("dev.settings");
-        if(os.settings().getBool(devSettings ? "dev.extaccess" : "plr.extaccess"))
-          os.frameBuffer().showTextMessage(msg);
-      };
+        {
+          const bool devSettings = os.settings().getBool("dev.settings");
+          if(os.settings().getBool(devSettings ? "dev.extaccess" : "plr.extaccess"))
+            os.frameBuffer().showTextMessage(msg);
+        };
       controller = make_unique<AtariVox>(port, myEvent, *mySystem,
           myOSystem.settings().getString("avoxport"), nvramfile, callback);
       break;
@@ -1076,11 +1079,11 @@ unique_ptr<Controller> Console::getControllerPort(
       nvramfile /= "savekey_eeprom.dat";
       const Controller::onMessageCallback callback = [&os = myOSystem]
       (string_view msg)
-      {
-        const bool devSettings = os.settings().getBool("dev.settings");
-        if(os.settings().getBool(devSettings ? "dev.extaccess" : "plr.extaccess"))
-          os.frameBuffer().showTextMessage(msg);
-      };
+        {
+          const bool devSettings = os.settings().getBool("dev.settings");
+          if(os.settings().getBool(devSettings ? "dev.extaccess" : "plr.extaccess"))
+            os.frameBuffer().showTextMessage(msg);
+        };
       controller = make_unique<SaveKey>(port, myEvent, *mySystem, nvramfile, callback);
       break;
     }
@@ -1095,7 +1098,7 @@ unique_ptr<Controller> Console::getControllerPort(
         const bool devSettings = os.settings().getBool("dev.settings");
         if(force || os.settings().getBool(devSettings ? "dev.extaccess" : "plr.extaccess"))
           os.frameBuffer().showTextMessage(msg);
-      };
+        };
       controller = make_unique<KidVid>
         (port, myEvent, myOSystem, *mySystem, romMd5, callback);
       break;
@@ -1111,9 +1114,16 @@ unique_ptr<Controller> Console::getControllerPort(
       break;
 
     case Controller::Type::QuadTari:
-      controller = make_unique<QuadTari>(port, myOSystem, *mySystem, myProperties);
-      break;
+    {
+      unique_ptr<QuadTari> quadTari = make_unique<QuadTari>(port, myOSystem, *mySystem, myProperties, *myCart);
 
+      myOSystem.eventHandler().defineKeyControllerMappings(type, port, myProperties,
+        quadTari->firstController().type(), quadTari->secondController().type());
+      myOSystem.eventHandler().defineJoyControllerMappings(type, port, myProperties,
+        quadTari->firstController().type(), quadTari->secondController().type());
+      controller = std::move(quadTari);
+      break;
+    }
     case Controller::Type::Joy2BPlus:
       controller = make_unique<Joy2BPlus>(port, myEvent, *mySystem);
       break;
@@ -1142,7 +1152,7 @@ void Console::toggleSwapPorts(bool toggle)
 
   ostringstream msg;
   msg << "Swap ports " << (swapped ? "enabled" : "disabled");
-  myOSystem.frameBuffer().showTextMessage(msg.str());
+  myOSystem.frameBuffer().showTextMessage(msg.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1160,7 +1170,7 @@ void Console::toggleSwapPaddles(bool toggle)
 
   ostringstream msg;
   msg << "Swap paddles " << (swapped ? "enabled" : "disabled");
-  myOSystem.frameBuffer().showTextMessage(msg.str());
+  myOSystem.frameBuffer().showTextMessage(msg.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1174,7 +1184,7 @@ void Console::changePaddleCenterX(int direction)
 
   ostringstream val;
   val << (center ? center > 0 ? "+" : "" : " ") << center * 5 << "px";
-  myOSystem.frameBuffer().showGaugeMessage("Paddles x-center ", val.str(), center,
+  myOSystem.frameBuffer().showGaugeMessage("Paddles x-center ", val.view(), center,
                                            Paddles::MIN_ANALOG_CENTER, Paddles::MAX_ANALOG_CENTER);
 }
 
@@ -1189,7 +1199,7 @@ void Console::changePaddleCenterY(int direction)
 
   ostringstream val;
   val << (center ? center > 0 ? "+" : "" : " ") << center * 5 << "px";
-  myOSystem.frameBuffer().showGaugeMessage("Paddles y-center ", val.str(), center,
+  myOSystem.frameBuffer().showGaugeMessage("Paddles y-center ", val.view(), center,
                                            Paddles::MIN_ANALOG_CENTER, Paddles::MAX_ANALOG_CENTER);
 }
 
@@ -1211,13 +1221,13 @@ void Console::changePaddleAxesRange(int direction)
   control << mode;
   if(range != 100)
     control << " " << std::to_string(range);
-  myProperties.set(PropType::Controller_MouseAxis, control.str());
+  myProperties.set(PropType::Controller_MouseAxis, control.view());
 
   Paddles::setDigitalPaddleRange(range);
 
   ostringstream val;
   val << range << "%";
-  myOSystem.frameBuffer().showGaugeMessage("Mouse axes range", val.str(), range);
+  myOSystem.frameBuffer().showGaugeMessage("Mouse axes range", val.view(), range);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1234,7 +1244,7 @@ void Console::toggleAutoFire(bool toggle)
 
   ostringstream ss;
   ss << "Autofire " << (enabled ? "enabled" : "disabled");
-  myOSystem.frameBuffer().showTextMessage(ss.str());
+  myOSystem.frameBuffer().showTextMessage(ss.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1261,7 +1271,7 @@ void Console::changeAutoFireRate(int direction)
   else
     val << "Off";
 
-  myOSystem.frameBuffer().showGaugeMessage("Autofire rate", val.str(), rate, 0, isNTSC ? 30 : 25);
+  myOSystem.frameBuffer().showGaugeMessage("Autofire rate", val.view(), rate, 0, isNTSC ? 30 : 25);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1382,7 +1392,7 @@ void Console::changeJitterSense(int direction) const
     myTIA->setJitterSensitivity(sensitivity);
     myOSystem.settings().setValue(prefix + "tv.jitter_sense", sensitivity);
     val << sensitivity;
-    myOSystem.frameBuffer().showGaugeMessage("TV jitter sensitivity", val.str(), sensitivity,
+    myOSystem.frameBuffer().showGaugeMessage("TV jitter sensitivity", val.view(), sensitivity,
       0, JitterEmulation::MAX_SENSITIVITY);
   }
   else
@@ -1415,8 +1425,8 @@ void Console::changeJitterRecovery(int direction) const
     myTIA->setJitterRecoveryFactor(recovery);
     myOSystem.settings().setValue(prefix + "tv.jitter_recovery", recovery);
     val << recovery;
-    myOSystem.frameBuffer().showGaugeMessage("TV jitter roll", val.str(), recovery,
-      0, JitterEmulation::MAX_RECOVERY);
+    myOSystem.frameBuffer().showGaugeMessage("TV jitter roll", val.view(),
+      recovery, 0, JitterEmulation::MAX_RECOVERY);
   }
   else
   {

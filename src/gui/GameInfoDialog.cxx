@@ -473,7 +473,7 @@ void GameInfoDialog::addCartridgeTab()
   wid.push_back(myNote);
 
   ypos += lineHeight + VGAP;
-  int bw = buttonWidth(">");
+  const int bw = buttonWidth(">");
   new StaticTextWidget(myTab, _font, xpos, ypos + 1, lwidth, fontHeight, "Link");
   myUrl = new EditTextWidget(myTab, _font, xpos + lwidth, ypos - 1,
                              fwidth - bw - HGAP, lineHeight, "");
@@ -947,12 +947,12 @@ void GameInfoDialog::loadHighScoresProperties(const Properties& props)
   ss.str("");
   ss << hex << right // << setw(HSM::MAX_ADDR_CHARS) << setfill(' ')
     << uppercase << info.varsAddr;
-  myVarAddress->setText(ss.str());
+  myVarAddress->setText(ss.view());
 
   ss.str("");
   ss << hex << right // << setw(HSM::MAX_ADDR_CHARS) << setfill(' ')
     << uppercase << info.specialAddr;
-  mySpecialAddress->setText(ss.str());
+  mySpecialAddress->setText(ss.view());
 
 
   for (uInt32 a = 0; a < HSM::MAX_SCORE_ADDR; ++a)
@@ -963,7 +963,7 @@ void GameInfoDialog::loadHighScoresProperties(const Properties& props)
       ss << hex << right // << setw(HSM::MAX_ADDR_CHARS) << setfill(' ')
         << uppercase << info.scoreAddr[a];
     }
-    myScoreAddress[a]->setText(ss.str());
+    myScoreAddress[a]->setText(ss.view());
   }
   updateHighScoresWidgets();
 }
@@ -1489,7 +1489,7 @@ void GameInfoDialog::setAddressVal(const EditTextWidget* addressWidget, EditText
     //  ss << hex;
     ss << right // << setw(2) << setfill(' ')
       << uppercase << static_cast<uInt16>(val);
-    valWidget->setText(ss.str());
+    valWidget->setText(ss.view());
   }
   else
     valWidget->setText("");
@@ -1559,7 +1559,7 @@ void GameInfoDialog::handleCommand(CommandSender* sender, int cmd,
 
       if(!myQuadTariDialog)
         myQuadTariDialog = make_unique<QuadTariDialog>
-          (this, _font, _font.getMaxCharWidth() * 37, _font.getFontHeight() * 8,
+          (this, _font, _font.getMaxCharWidth() * 42, _font.getFontHeight() * 10,
            myGameProperties);
       myQuadTariDialog->show(enableLeft, enableRight);
       break;

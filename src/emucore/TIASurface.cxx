@@ -164,7 +164,7 @@ void TIASurface::setNTSC(NTSCFilter::Preset preset, bool show)
   }
   myOSystem.settings().setValue("tv.filter", static_cast<int>(preset));
 
-  if(show) myFB.showTextMessage(buf.str());
+  if(show) myFB.showTextMessage(buf.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -247,7 +247,7 @@ void TIASurface::changeScanlineIntensity(int direction)
     buf << intensity << "%";
   else
     buf << "Off";
-  myFB.showGaugeMessage("Scanline intensity", buf.str(), intensity);
+  myFB.showGaugeMessage("Scanline intensity", buf.view(), intensity);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -299,7 +299,7 @@ void TIASurface::cycleScanlineMask(int direction)
   ostringstream msg;
 
   msg << "Scanline data '" << Names[i] << "'";
-  myOSystem.frameBuffer().showTextMessage(msg.str());
+  myOSystem.frameBuffer().showTextMessage(msg.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -482,6 +482,8 @@ string TIASurface::effectsInfo() const
     case Filter::BlarggPhosphor:
       buf << myNTSCFilter.getPreset() << ", phosphor=" << myPBlend;
       break;
+    default:
+      break;  // Not supposed to get here
   }
   if(attr.blendalpha)
     buf << ", scanlines=" << attr.blendalpha
@@ -585,6 +587,9 @@ void TIASurface::render(bool shade)
       myNTSCFilter.render(myTIA->frameBuffer(), width, height, out, outPitch << 2, myRGBFramebuffer.data());
       break;
     }
+
+    default:
+      break;  // Not supposed to get here
   }
 
   // Draw TIA image
@@ -624,7 +629,7 @@ void TIASurface::renderForSnapshot()
   myTiaSurface->basePtr(outPtr, outPitch);
 
   mySaveSnapFlag = false;
-  switch (myFilter)
+  switch(myFilter)
   {
     // For non-phosphor modes, render the frame again
     case Filter::Normal:
@@ -650,11 +655,16 @@ void TIASurface::renderForSnapshot()
     }
 
     case Filter::BlarggPhosphor:
+    {
       uInt32 bufofs = 0;
       for(uInt32 y = height; y; --y)
         for(uInt32 x = outPitch; x; --x)
           outPtr[pos++] = averageBuffers(bufofs++);
       break;
+    }
+
+    default:
+      break;  // Not supposed to get here
   }
 
   if(myPhosphorHandler.phosphorEnabled())

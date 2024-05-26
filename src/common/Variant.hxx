@@ -48,38 +48,29 @@ class Variant
     Variant(string_view s) : data{s} { }
     Variant(const char* s) : data{s} { }
 
-    Variant(Int32 i)  { buf().str(""); buf() << i; data = buf().str(); }
-    Variant(uInt32 i) { buf().str(""); buf() << i; data = buf().str(); }
-    Variant(float f)  { buf().str(""); buf() << f; data = buf().str(); }
-    Variant(double d) { buf().str(""); buf() << d; data = buf().str(); }
-    Variant(bool b)   { buf().str(""); buf() << b; data = buf().str(); }
-    Variant(const Common::Size& s) { buf().str(""); buf() << s; data = buf().str(); }
-    Variant(const Common::Point& s) { buf().str(""); buf() << s; data = buf().str(); }
+    Variant(Int32 i)  { buf().str(""); buf() << i; data = buf().view(); }
+    Variant(uInt32 i) { buf().str(""); buf() << i; data = buf().view(); }
+    Variant(float f)  { buf().str(""); buf() << f; data = buf().view(); }
+    Variant(double d) { buf().str(""); buf() << d; data = buf().view(); }
+    Variant(bool b)   { buf().str(""); buf() << b; data = buf().view(); }
+    Variant(const Common::Size& s) { buf().str(""); buf() << s; data = buf().view(); }
+    Variant(const Common::Point& s) { buf().str(""); buf() << s; data = buf().view(); }
 
     // Conversion methods
     const string& toString() const { return data; }
     const char* toCString() const { return data.c_str(); }
     Int32 toInt() const {
-      istringstream ss(data);
-      Int32 parsed;
-      ss >> parsed;
-
-      return parsed;
+      try { return std::stoi(data); } catch(...) { return 0; }
     }
     float toFloat() const {
-      istringstream ss(data);
-      float parsed;
-      ss >> parsed;
-
-      return parsed;
+      try { return std::stof(data); } catch(...) { return 0.F; }
     }
-    bool toBool() const         { return data == "1" || data == "true"; }
+    bool toBool() const { return data == "1" || data == "true"; }
     Common::Size toSize() const { return Common::Size(data); }
     Common::Point toPoint() const { return Common::Point(data); }
 
     // Comparison
-    bool operator==(const Variant& v) const { return data == v.data; }
-    bool operator!=(const Variant& v) const { return data != v.data; }
+    std::strong_ordering operator<=>(const Variant& v) const = default;
 
     friend ostream& operator<<(ostream& os, const Variant& v) {
       return os << v.data;

@@ -46,7 +46,7 @@ TARGET_NAME = stella
 
 
 ifeq (,$(findstring msvc,$(platform)))
-   CXXFLAGS += -std=c++17 -fno-rtti
+   CXXFLAGS += -std=c++20 -fno-rtti
    LIBS := -lm
 else
    LIBS :=
@@ -60,6 +60,13 @@ endif
 GET_STATIC_ARG=$(if $(filter $(shell $(CXX) -print-file-name=$1.a),$1.a),,-static-$1)
 # Unix
 ifneq (,$(findstring unix,$(platform)))
+   GPP_MAJOR := $(shell $(CXX) -dumpversion | cut -d '.' -f 1)
+   ifeq ($(GPP_MAJOR),)
+      $(error Unable to determine $(CXX) version)
+   endif
+   ifeq "$(shell [ $(GPP_MAJOR) -lt 10 ]; echo $$?)" "0"
+      CXXFLAGS := $(subst -std=c++20,-std=c++2a,$(CXXFLAGS))
+   endif
    CXXFLAGS += $(LTO)
    LDFLAGS += $(LTO) $(PTHREAD_FLAGS) $(call GET_STATIC_ARG,libgcc) $(call GET_STATIC_ARG,libstdc++)
    TARGET := $(TARGET_NAME)_libretro.so
@@ -81,6 +88,13 @@ ifneq (,$(findstring unix,$(platform)))
 
 # OS X
 else ifeq ($(platform), osx)
+   XCODE_MAJOR := $(shell xcodebuild -version | grep -oE 'Xcode ([0-9]+)' | cut -d ' ' -f 2)
+   ifeq ($(XCODE_MAJOR),)
+      $(error Unable to determine Xcode version)
+   endif
+   ifeq "$(shell [ $(XCODE_MAJOR) -lt 14 ]; echo $$?)" "0"
+      CXXFLAGS := $(subst -std=c++20,-std=c++2a,$(CXXFLAGS))
+   endif
    CXXFLAGS += $(LTO) -stdlib=libc++
    LDFLAGS += $(LTO) $(PTHREAD_FLAGS) -stdlib=libc++
    TARGET := $(TARGET_NAME)_libretro.dylib
@@ -116,6 +130,13 @@ else ifeq ($(platform), osx)
 
 # iOS
 else ifneq (,$(findstring ios,$(platform)))
+   XCODE_MAJOR := $(shell xcodebuild -version | grep -oE 'Xcode ([0-9]+)' | cut -d ' ' -f 2)
+   ifeq ($(XCODE_MAJOR),)
+      $(error Unable to determine Xcode version)
+   endif
+   ifeq "$(shell [ $(XCODE_MAJOR) -lt 14 ]; echo $$?)" "0"
+      CXXFLAGS := $(subst -std=c++20,-std=c++2a,$(CXXFLAGS))
+   endif
    CXXFLAGS += $(LTO) -stdlib=libc++
    LDFLAGS += $(LTO) $(PTHREAD_FLAGS) -stdlib=libc++
    TARGET := $(TARGET_NAME)_libretro_ios.dylib
@@ -142,6 +163,13 @@ else ifneq (,$(findstring ios,$(platform)))
 
 # tvOS
 else ifeq ($(platform), tvos-arm64)
+   XCODE_MAJOR := $(shell xcodebuild -version | grep -oE 'Xcode ([0-9]+)' | cut -d ' ' -f 2)
+   ifeq ($(XCODE_MAJOR),)
+      $(error Unable to determine Xcode version)
+   endif
+   ifeq "$(shell [ $(XCODE_MAJOR) -lt 14 ]; echo $$?)" "0"
+      CXXFLAGS := $(subst -std=c++20,-std=c++2a,$(CXXFLAGS))
+   endif
    CXXFLAGS += $(LTO) $(PTHREAD_FLAGS) -stdlib=libc++
    LDFLAGS += $(LTO) $(PTHREAD_FLAGS) -stdlib=libc++
    TARGET := $(TARGET_NAME)_libretro_tvos.dylib
@@ -305,8 +333,8 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
 else ifeq ($(platform), emscripten)
    TARGET := $(TARGET_NAME)_libretro_$(platform).bc
    STATIC_LINKING = 1
-   CXXFLAGS += $(PTHREAD_FLAGS) -std=c++17
-   LDFLAGS += $(PTHREAD_FLAGS) -std=c++17
+   CXXFLAGS += $(PTHREAD_FLAGS) -std=c++20
+   LDFLAGS += $(PTHREAD_FLAGS) -std=c++20
 
 # Genode
 else ifeq ($(platform), genode)
@@ -370,7 +398,7 @@ else ifneq (,$(findstring windows_msvc2017,$(platform)))
    endif
 
    # Specific to this core
-   MSVC2017CompileFlags += -D__WIN32__ /std:c++17
+   MSVC2017CompileFlags += -D__WIN32__ /std:c++20
 
    CXX = cl.exe
    CXXFLAGS += $(MSVC2017CompileFlags)

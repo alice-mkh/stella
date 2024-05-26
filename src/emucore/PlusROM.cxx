@@ -91,7 +91,7 @@ class PlusROMRequest {
 
       httplib::Client client(myDestination.host);
       const httplib::Headers headers = {
-        {"PlusROM-Info", content.str()}
+        {"PlusROM-Info", content.str()}  // httplib can't accept string_view
       };
 
       client.set_connection_timeout(milliseconds(CONNECTION_TIMEOUT_MSEC));
@@ -115,7 +115,7 @@ class PlusROMRequest {
           << myDestination.path
           << ": failed";
 
-        Logger::error(ss.str());
+        Logger::error(ss.view());
 
         myState = State::failed;
 
@@ -132,7 +132,7 @@ class PlusROMRequest {
           << ": failed with HTTP status "
           << response->status;
 
-        Logger::error(ss.str());
+        Logger::error(ss.view());
 
         myState = State::failed;
 
@@ -143,7 +143,7 @@ class PlusROMRequest {
         ostringstream ss;
         ss << "PlusCart: request to " << myDestination.host << "/" << myDestination.path << ": invalid response";
 
-        Logger::error(ss.str());
+        Logger::error(ss.view());
 
         myState = State::failed;
 
@@ -433,7 +433,7 @@ void PlusROM::send()
     // as the thread is running. Thus, the request can only be destructed once
     // the thread has finished, and we can safely evict it from the deque at
     // any time.
-    std::thread thread([=]() // NOLINT (cppcoreguidelines-misleading-capture-default-by-value)
+    std::thread thread([=, this]()
     {
       request->execute();
       switch(request->getState())

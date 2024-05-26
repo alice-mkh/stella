@@ -235,20 +235,21 @@ void PhysicalKeyboardHandler::setDefaultMapping(Event::Type event, EventMode mod
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void PhysicalKeyboardHandler::defineControllerMappings(
-    const Controller::Type type, Controller::Jack port, const Properties& properties)
+    const Controller::Type type, Controller::Jack port, const Properties& properties,
+    Controller::Type qtType1, Controller::Type qtType2)
 {
   // Determine controller events to use
   if(type == Controller::Type::QuadTari)
   {
     if(port == Controller::Jack::Left)
     {
-      myLeftMode = getMode(properties, PropType::Controller_Left1);
-      myLeft2ndMode = getMode(properties, PropType::Controller_Left2);
+      myLeftMode = getMode(qtType1);
+      myLeft2ndMode = getMode(qtType2);
     }
     else
     {
-      myRightMode = getMode(properties, PropType::Controller_Right1);
-      myRight2ndMode = getMode(properties, PropType::Controller_Right2);
+      myRightMode = getMode(qtType1);
+      myRight2ndMode = getMode(qtType2);
     }
   }
   else
@@ -279,19 +280,20 @@ EventMode PhysicalKeyboardHandler::getMode(const Controller::Type type)
 {
   switch(type)
   {
-    case Controller::Type::Keyboard:
-    case Controller::Type::KidVid:
+    using enum Controller::Type;
+    case Keyboard:
+    case KidVid:
       return EventMode::kKeyboardMode;
 
-    case Controller::Type::Paddles:
-    case Controller::Type::PaddlesIAxDr:
-    case Controller::Type::PaddlesIAxis:
+    case Paddles:
+    case PaddlesIAxDr:
+    case PaddlesIAxis:
       return EventMode::kPaddlesMode;
 
-    case Controller::Type::CompuMate:
+    case CompuMate:
       return EventMode::kCompuMateMode;
 
-    case Controller::Type::Driving:
+    case Driving:
       return EventMode::kDrivingMode;
 
     default:
@@ -613,7 +615,7 @@ void PhysicalKeyboardHandler::toggleModKeys(bool toggle)
   ostringstream ss;
   ss << "Modifier key combos ";
   ss << (modCombo ? "enabled" : "disabled");
-  myOSystem.frameBuffer().showTextMessage(ss.str());
+  myOSystem.frameBuffer().showTextMessage(ss.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

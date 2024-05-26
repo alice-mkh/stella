@@ -117,7 +117,7 @@ int PhysicalJoystickHandler::add(const PhysicalJoystickPtr& stick)
     {
       ostringstream name;
       name << stick->name << " #" << count+1;
-      stick->name = name.str();
+      stick->name = name.view();
     }
     stick->type = PhysicalJoystick::Type::REGULAR;
   }
@@ -175,7 +175,7 @@ void PhysicalJoystickHandler::addToDatabase(const PhysicalJoystickPtr& stick)
   ostringstream buf;
   buf << "Added joystick " << stick->ID << ":\n"
     << "  " << stick->about() << '\n';
-  Logger::info(buf.str());
+  Logger::info(buf.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -196,7 +196,7 @@ bool PhysicalJoystickHandler::remove(int id)
       ostringstream buf;
       buf << "Removed joystick " << mySticks[id]->ID << ":\n"
           << "  " << mySticks[id]->about() << '\n';
-      Logger::info(buf.str());
+      Logger::info(buf.view());
 
       // Remove joystick, but remember mapping
       it->second.mapping = stick->getMap();
@@ -264,7 +264,7 @@ bool PhysicalJoystickHandler::mapStelladaptors(string_view saport, int ID)
       ostringstream buf;
       buf << "Erased joystick " << _stick->ID << ":\n"
         << "  " << _stick->about() << '\n';
-      Logger::info(buf.str());
+      Logger::info(buf.view());
 
       _stick->name.erase(pos);
       erased = true;
@@ -500,21 +500,22 @@ void PhysicalJoystickHandler::setDefaultMapping(Event::Type event, EventMode mod
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void PhysicalJoystickHandler::defineControllerMappings(const Controller::Type type, Controller::Jack port,
-                                                       const Properties& properties)
+void PhysicalJoystickHandler::defineControllerMappings(
+  const Controller::Type type, Controller::Jack port, const Properties& properties,
+  Controller::Type qtType1, Controller::Type qtType2)
 {
   // Determine controller events to use
   if(type == Controller::Type::QuadTari)
   {
     if(port == Controller::Jack::Left)
     {
-      myLeftMode = getMode(properties, PropType::Controller_Left1);
-      myLeft2ndMode = getMode(properties, PropType::Controller_Left2);
+      myLeftMode = getMode(qtType1);
+      myLeft2ndMode = getMode(qtType2);
     }
     else
     {
-      myRightMode = getMode(properties, PropType::Controller_Right1);
-      myRight2ndMode = getMode(properties, PropType::Controller_Right2);
+      myRightMode = getMode(qtType1);
+      myRight2ndMode = getMode(qtType2);
     }
   }
   else
@@ -545,19 +546,20 @@ EventMode PhysicalJoystickHandler::getMode(const Controller::Type type)
 {
   switch(type)
   {
-    case Controller::Type::Keyboard:
-    case Controller::Type::KidVid:
+    using enum Controller::Type;
+    case Keyboard:
+    case KidVid:
       return EventMode::kKeyboardMode;
 
-    case Controller::Type::Paddles:
-    case Controller::Type::PaddlesIAxDr:
-    case Controller::Type::PaddlesIAxis:
+    case Paddles:
+    case PaddlesIAxDr:
+    case PaddlesIAxis:
       return EventMode::kPaddlesMode;
 
-    case Controller::Type::CompuMate:
+    case CompuMate:
       return EventMode::kCompuMateMode;
 
-    case Controller::Type::Driving:
+    case Driving:
       return EventMode::kDrivingMode;
 
     default:
@@ -610,7 +612,7 @@ void PhysicalJoystickHandler::enableEmulationMappings()
   }
 
   // enable right mode first, so that in case of mapping clashes the left controller has preference
-  switch (myRightMode)
+  switch(myRightMode)
   {
     case EventMode::kPaddlesMode:
       enableMappings(RightPaddlesEvents, EventMode::kPaddlesMode);
@@ -629,7 +631,7 @@ void PhysicalJoystickHandler::enableEmulationMappings()
       break;
   }
 
-  switch (myLeftMode)
+  switch(myLeftMode)
   {
     case EventMode::kPaddlesMode:
       enableMappings(LeftPaddlesEvents, EventMode::kPaddlesMode);
@@ -808,7 +810,7 @@ string PhysicalJoystickHandler::getMappingDesc(Event::Type event, EventMode mode
       //Joystick mapping / labeling
       if(!_joyptr->joyMap.getEventMapping(event, evMode).empty())
       {
-        if(!buf.str().empty())
+        if(!buf.view().empty())
           buf << ", ";
         buf << _joyptr->joyMap.getEventMappingDesc(_id, event, evMode);
       }
@@ -905,13 +907,14 @@ void PhysicalJoystickHandler::handleAxisEvent(int stick, int axis, int value)
 
     switch(j->type)
     {
+      using enum PhysicalJoystick::Type;
       // Since the various controller classes deal with Stelladaptor
       // devices differently, we send the raw X and Y axis data directly,
       // and let the controller handle it
       // These events don't have to pass through handleEvent, since
       // they can never be remapped
-      case PhysicalJoystick::Type::LEFT_STELLADAPTOR:
-      case PhysicalJoystick::Type::LEFT_2600DAPTOR:
+      case LEFT_STELLADAPTOR:
+      case LEFT_2600DAPTOR:
         if(myOSystem.hasConsole()
            && myOSystem.console().leftController().type() == Controller::Type::Driving)
         {
@@ -922,8 +925,8 @@ void PhysicalJoystickHandler::handleAxisEvent(int stick, int axis, int value)
           handleRegularAxisEvent(j, stick, axis, value);
         break;  // axis on left controller (0)
 
-      case PhysicalJoystick::Type::RIGHT_STELLADAPTOR:
-      case PhysicalJoystick::Type::RIGHT_2600DAPTOR:
+      case RIGHT_STELLADAPTOR:
+      case RIGHT_2600DAPTOR:
         if(myOSystem.hasConsole()
            && myOSystem.console().rightController().type() == Controller::Type::Driving)
         {
@@ -1133,7 +1136,7 @@ void PhysicalJoystickHandler::changeDigitalDeadZone(int direction)
   ss << std::round(Controller::digitalDeadZoneValue(deadZone) * 100.F / 32768) << "%";
 
   myOSystem.frameBuffer().showGaugeMessage(
-    "Digital controller dead zone", ss. str(), deadZone,
+    "Digital controller dead zone", ss.view(), deadZone,
     Controller::MIN_DIGITAL_DEADZONE, Controller::MAX_DIGITAL_DEADZONE);
 }
 
@@ -1151,7 +1154,7 @@ void PhysicalJoystickHandler::changeAnalogPaddleDeadZone(int direction)
   ss << std::round(Controller::analogDeadZoneValue(deadZone) * 100.F / 32768) << "%";
 
   myOSystem.frameBuffer().showGaugeMessage(
-    "Analog controller dead zone", ss.str(), deadZone,
+    "Analog controller dead zone", ss.view(), deadZone,
     Controller::MIN_ANALOG_DEADZONE, Controller::MAX_ANALOG_DEADZONE);
 }
 
@@ -1169,7 +1172,7 @@ void PhysicalJoystickHandler::changeAnalogPaddleSensitivity(int direction)
   ss << std::round(Paddles::analogSensitivityValue(sense) * 100.F) << "%";
 
   myOSystem.frameBuffer().showGaugeMessage(
-    "Analog paddle sensitivity", ss.str(), sense,
+    "Analog paddle sensitivity", ss.view(), sense,
     Paddles::MIN_ANALOG_SENSE, Paddles::MAX_ANALOG_SENSE);
 }
 
@@ -1190,7 +1193,7 @@ void PhysicalJoystickHandler::changeAnalogPaddleLinearity(int direction)
     ss << "Off";
 
   myOSystem.frameBuffer().showGaugeMessage(
-    "Analog paddle linearity", ss.str(), linear,
+    "Analog paddle linearity", ss.view(), linear,
     Paddles::MIN_ANALOG_LINEARITY, Paddles::MAX_ANALOG_LINEARITY);
 }
 
@@ -1211,7 +1214,7 @@ void PhysicalJoystickHandler::changePaddleDejitterAveraging(int direction)
     ss << "Off";
 
   myOSystem.frameBuffer().showGaugeMessage(
-    "Analog paddle dejitter averaging", ss.str(), dejitter,
+    "Analog paddle dejitter averaging", ss.view(), dejitter,
     Paddles::MIN_DEJITTER, Paddles::MAX_DEJITTER);
 }
 
@@ -1232,7 +1235,7 @@ void PhysicalJoystickHandler::changePaddleDejitterReaction(int direction)
     ss << "Off";
 
   myOSystem.frameBuffer().showGaugeMessage(
-    "Analog paddle dejitter reaction", ss.str(), dejitter,
+    "Analog paddle dejitter reaction", ss.view(), dejitter,
     Paddles::MIN_DEJITTER, Paddles::MAX_DEJITTER);
 }
 
@@ -1253,7 +1256,7 @@ void PhysicalJoystickHandler::changeDigitalPaddleSensitivity(int direction)
     ss << "Off";
 
   myOSystem.frameBuffer().showGaugeMessage(
-    "Digital sensitivity", ss.str(), sense,
+    "Digital sensitivity", ss.view(), sense,
     Paddles::MIN_DIGITAL_SENSE, Paddles::MAX_DIGITAL_SENSE);
 }
 
@@ -1271,7 +1274,7 @@ void PhysicalJoystickHandler::changeMousePaddleSensitivity(int direction)
   ss << sense * 10 << "%";
 
   myOSystem.frameBuffer().showGaugeMessage(
-    "Mouse paddle sensitivity", ss.str(), sense,
+    "Mouse paddle sensitivity", ss.view(), sense,
     Controller::MIN_MOUSE_SENSE, Controller::MAX_MOUSE_SENSE);
 }
 
@@ -1289,7 +1292,7 @@ void PhysicalJoystickHandler::changeMouseTrackballSensitivity(int direction)
   ss << sense * 10 << "%";
 
   myOSystem.frameBuffer().showGaugeMessage(
-    "Mouse trackball sensitivity", ss.str(), sense,
+    "Mouse trackball sensitivity", ss.view(), sense,
     PointingDevice::MIN_SENSE, PointingDevice::MAX_SENSE);
 }
 
@@ -1307,7 +1310,7 @@ void PhysicalJoystickHandler::changeDrivingSensitivity(int direction)
   ss << sense * 10 << "%";
 
   myOSystem.frameBuffer().showGaugeMessage(
-    "Driving controller sensitivity", ss.str(), sense,
+    "Driving controller sensitivity", ss.view(), sense,
     Driving::MIN_SENSE, Driving::MAX_SENSE);
 }
 

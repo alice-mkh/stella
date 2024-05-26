@@ -53,49 +53,52 @@ MouseControl::MouseControl(Console& console, string_view mode)
                                              Controller::Type& type, int& id) {
       switch(axis)
       {
-        case MouseControl::Type::NoControl:
+        using enum MouseControl::Type;
+        case NoControl:
           msg << "not used";
           break;
-        case MouseControl::Type::LeftPaddleA:
+        case LeftPaddleA:
           type = Controller::Type::Paddles;
           id = 0;
           msg << "Left Paddle A";
           break;
-        case MouseControl::Type::LeftPaddleB:
+        case LeftPaddleB:
           type = Controller::Type::Paddles;
           id = 1;
           msg << "Left Paddle B";
           break;
-        case MouseControl::Type::RightPaddleA:
+        case RightPaddleA:
           type = Controller::Type::Paddles;
           id = 2;
           msg << "Right Paddle A";
           break;
-        case MouseControl::Type::RightPaddleB:
+        case RightPaddleB:
           type = Controller::Type::Paddles;
           id = 3;
           msg << "Right Paddle B";
           break;
-        case MouseControl::Type::LeftDriving:
+        case LeftDriving:
           type = Controller::Type::Driving;
           id = 0;
           msg << "Left Driving";
           break;
-        case MouseControl::Type::RightDriving:
+        case RightDriving:
           type = Controller::Type::Driving;
           id = 1;
           msg << "Right Driving";
           break;
-        case MouseControl::Type::LeftMindLink:
+        case LeftMindLink:
           type = Controller::Type::MindLink;
           id = 0;
           msg << "Left MindLink";
           break;
-        case MouseControl::Type::RightMindLink:
+        case RightMindLink:
           type = Controller::Type::MindLink;
           id = 1;
           msg << "Right MindLink";
           break;
+        default:
+          break;  // Not supposed to get here
       }
     };
 
@@ -104,7 +107,7 @@ MouseControl::MouseControl(Console& console, string_view mode)
     msg << ", Y-axis is ";
     MControlToController(yaxis, ytype, yid);
 
-    myModeList.emplace_back(xtype, xid, ytype, yid, msg.str());
+    myModeList.emplace_back(xtype, xid, ytype, yid, msg.view());
   }
 
   // Now consider the possible modes for the mouse based on the left
@@ -171,7 +174,7 @@ void MouseControl::addLeftControllerModes(bool noswap)
       msg << "Mouse is left " << myLeftController.name() << " controller";
       const Controller::Type type = myLeftController.type();
       const int id = noswap ? 0 : 1;
-      myModeList.emplace_back(type, id, type, id, msg.str());
+      myModeList.emplace_back(type, id, type, id, msg.view());
     }
   }
 }
@@ -192,7 +195,7 @@ void MouseControl::addRightControllerModes(bool noswap)
       msg << "Mouse is right " << myRightController.name() << " controller";
       const Controller::Type type = myRightController.type();
       const int id = noswap ? 1 : 0;
-      myModeList.emplace_back(type, id, type, id, msg.str());
+      myModeList.emplace_back(type, id, type, id, msg.view());
     }
   }
 }
@@ -203,11 +206,11 @@ void MouseControl::addPaddleModes(int lport, int rport, int lname, int rname)
   const Controller::Type type = Controller::Type::Paddles;
   ostringstream msg;
   msg << "Mouse is Paddle " << lname << " controller";
-  const MouseMode mode0(type, lport, type, lport, msg.str());
+  const MouseMode mode0(type, lport, type, lport, msg.view());
 
   msg.str("");
   msg << "Mouse is Paddle " << rname << " controller";
-  const MouseMode mode1(type, rport, type, rport, msg.str());
+  const MouseMode mode1(type, rport, type, rport, msg.view());
 
   if(BSPF::equalsIgnoreCase(myProps.get(PropType::Controller_SwapPaddles), "NO"))
   {

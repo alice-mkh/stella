@@ -41,7 +41,7 @@ namespace {
 
           if (!KeyValueRepositoryJsonFile::save(out, values)) return false;
 
-          return myKvr.save(myKey, out.str());
+          return myKvr.save(myKey, out.view());
         }
 
       private:
@@ -73,5 +73,5 @@ bool CompositeKVRJsonAdapter::has(string_view key)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void CompositeKVRJsonAdapter::remove(string_view key)
 {
-  return myKvr.remove(key);
+  myKvr.remove(key);
 }

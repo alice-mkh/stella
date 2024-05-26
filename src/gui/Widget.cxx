@@ -968,6 +968,8 @@ void CheckboxWidget::setFill(FillType type)
       _img = checked_img_circle.data();
       _drawBox = false;
       break;
+    default:
+      break;  // Not supposed to get here
   }
   setDirty();
 }
@@ -1114,8 +1116,8 @@ void SliderWidget::handleMouseMoved(int x, int y)
   // TODO: when the mouse is dragged outside the widget, the slider should
   // snap back to the old value.
   if(isEnabled() && _isDragging &&
-     x >= static_cast<int>(_labelWidth - 4) &&
-     x <= static_cast<int>(_w - _valueLabelGap - _valueLabelWidth + 4))
+     x >= (_labelWidth - 4) &&
+     x <= (_w - _valueLabelGap - _valueLabelWidth + 4))
     setValue(posToValue(x - _labelWidth));
 }
 

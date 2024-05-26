@@ -323,7 +323,7 @@ bool RomImageWidget::loadPng(const string& fileName)
         break;
       }
       if(data.first == "Software"
-          && data.second.toString().find("Stella") == 0)
+          && data.second.toString().starts_with("Stella"))
         myLabel = "Snapshot"; // default for Stella snapshots with missing "Title" meta data
     }
     return true;
@@ -574,13 +574,13 @@ void RomImageWidget::drawWidget(bool hilite)
   ostringstream buf;
   buf << myImageIdx + 1 << "/" << myImageList.size();
   const int yText = _y + _h - _font.getFontHeight() * 10 / 8;
-  const int wText = _font.getStringWidth(buf.str()) + 8;
+  const int wText = _font.getStringWidth(buf.view()) + 8;
 
   s.fillRect(_x, yText, _w, _font.getFontHeight(), _bgcolor);
-  if(myLabel.length())
+  if(!myLabel.empty())
     s.drawString(_font, myLabel, _x + 8, yText, _w - wText - 16 - _font.getMaxCharWidth() * 2, _textcolor);
   if(!myImageList.empty())
-    s.drawString(_font, buf.str(), _x + _w - wText, yText, wText, _textcolor);
+    s.drawString(_font, buf.view(), _x + _w - wText, yText, wText, _textcolor);
 
   // Draw the navigation icons
   myNavSurface->invalidate();

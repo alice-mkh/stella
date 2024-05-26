@@ -96,7 +96,7 @@ OSystem::OSystem()
   ostringstream info;
   info << "Build " << STELLA_BUILD << ", using " << MediaFactory::backendName()
        << " [" << BSPF::ARCH << "]";
-  myBuildInfo = info.str();
+  myBuildInfo = info.view();
 
   mySettings = MediaFactory::createSettings();
 
@@ -138,7 +138,7 @@ bool OSystem::initialize(const Settings::Options& options)
       << myCheatFile.getShortPath() << "'\n"
       << "Palette file:       '"
       << myPaletteFile.getShortPath() << "'\n";
-  Logger::info(buf.str());
+  Logger::info(buf.view());
 
   // NOTE: The framebuffer MUST be created before any other object!!!
   // Get relevant information about the video hardware
@@ -470,7 +470,7 @@ string OSystem::createConsole(const FSNode& rom, string_view md5sum, bool newrom
   catch(const runtime_error& e)
   {
     buf << "ERROR: " << e.what();
-    Logger::error(buf.str());
+    Logger::error(buf.view());
     return buf.str();
   }
 
@@ -517,7 +517,7 @@ string OSystem::createConsole(const FSNode& rom, string_view md5sum, bool newrom
     if(propsFile.exists())
       buf << "  PRO file: " << propsFile.getShortPath() << '\n';
     buf << '\n' << getROMInfo(*myConsole);
-    Logger::info(buf.str());
+    Logger::info(buf.view());
 
     myFrameBuffer->setCursorState();
 
@@ -539,14 +539,14 @@ string OSystem::createConsole(const FSNode& rom, string_view md5sum, bool newrom
           << " - " << myConsole->cartridge().detectedType()
           << (myConsole->cartridge().isPlusROM() ? " PlusROM " : "")
           << " - " << myConsole->getFormatString();
-        myFrameBuffer->showTextMessage(msg.str());
+        myFrameBuffer->showTextMessage(msg.view());
       }
       else if(!myLauncherUsed)
       {
         ostringstream msg;
 
         msg << "Stella " << STELLA_VERSION;
-        myFrameBuffer->showTextMessage(msg.str());
+        myFrameBuffer->showTextMessage(msg.view());
       }
     }
 
@@ -914,10 +914,11 @@ double OSystem::dispatchEmulation(EmulationWorker& emulationWorker)
 
   // Handle the dispatch result
   switch (dispatchResult.getStatus()) {
-    case DispatchResult::Status::ok:
+    using enum DispatchResult::Status;
+    case ok:
       break;
 
-    case DispatchResult::Status::debugger:
+    case debugger:
       #ifdef DEBUGGER_SUPPORT
        myDebugger->start(
           dispatchResult.getMessage(),
@@ -929,7 +930,7 @@ double OSystem::dispatchEmulation(EmulationWorker& emulationWorker)
 
       break;
 
-    case DispatchResult::Status::fatal:
+    case fatal:
       #ifdef DEBUGGER_SUPPORT
         myDebugger->startWithFatalError(dispatchResult.getMessage());
       #else

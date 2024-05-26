@@ -383,6 +383,8 @@ bool DebuggerParser::getArgs(string_view command, string& verb)
           curArg += c;
         }
         break;
+      default:
+        break;  // Not supposed to get here
     }  // switch(state)
   }
   while(i < length);
@@ -505,6 +507,9 @@ bool DebuggerParser::validateArgs(int cmd)
 
       case Parameters::ARG_END_ARGS:
         break;
+
+      default:
+        break;  // Not supposed to get here
     }
     ++curCount;
     ++p;
@@ -592,7 +597,7 @@ void DebuggerParser::printTimer(uInt32 idx, bool showHeader)
 
   if(!debugger.cartDebug().getLabel(buf, timer.from.addr, true))
     buf << "    $" << setw(4) << Base::HEX4 << timer.from.addr;
-  string labelFrom = buf.str();
+  string labelFrom{buf.view()};
   labelFrom = labelFrom.substr(0, (banked ? 12 : 15) - (timer.mirrors ? 1 : 0));
   labelFrom += (timer.mirrors ? "+" : "");
   labelFrom = (labelFrom + "              ").substr(0, banked ? 12 : 15);
@@ -600,7 +605,7 @@ void DebuggerParser::printTimer(uInt32 idx, bool showHeader)
   buf.str("");
   if(!debugger.cartDebug().getLabel(buf, timer.to.addr, true))
     buf << "    $" << setw(4) << Base::HEX4 << timer.to.addr;
-  string labelTo = buf.str();
+  string labelTo{buf.view()};
   labelTo   = labelTo.substr(0, (banked ? 12 : 15) - (timer.mirrors ? 1 : 0));
   labelTo += (timer.mirrors ? "+" : "");
   labelTo   = (labelTo   + "              ").substr(0, banked ? 12 : 15);
@@ -773,7 +778,7 @@ string DebuggerParser::saveScriptFile(string file)
 
   const FSNode node(file);
 
-  if(node.exists() || out.str().length())
+  if(node.exists() || !out.view().empty())
   {
     try
     {
@@ -1364,18 +1369,18 @@ void DebuggerParser::executeDump()
       //        So we pass a copy of its contents, then re-create the
       //        stream inside the lambda
       //        Maybe this will change in a future version
-      const string outStr = out.str();
-      const string resultStr = commandResult.str();
+      const string outStr{out.view()};
+      const string resultStr{commandResult.view()};
 
       DebuggerDialog* dlg = debugger.myDialog;
-      BrowserDialog::show(dlg, "Save Dump as", path.str(),
+      BrowserDialog::show(dlg, "Save Dump as", path.view(),
                           BrowserDialog::Mode::FileSave,
                           [dlg, outStr, resultStr]
                           (bool OK, const FSNode& node)
       {
         if(OK)
         {
-          const stringstream  localOut(outStr);
+          const stringstream localOut(outStr);
           ostringstream localResult(resultStr, std::ios_base::app);
 
           saveDump(node, localOut, localResult);
@@ -1387,7 +1392,7 @@ void DebuggerParser::executeDump()
       commandResult.str("_NO_PROMPT");
     }
     else
-      saveDump(FSNode(path.str()), out, commandResult);
+      saveDump(FSNode(path.view()), out, commandResult);
   }
 }
 
@@ -1410,7 +1415,7 @@ void DebuggerParser::executeExec()
     ostringstream prefix;
     prefix << std::hex << std::setw(8) << std::setfill('0')
            << static_cast<uInt32>(TimerManager::getTicks()/1000);
-    execPrefix = prefix.str();
+    execPrefix = prefix.view();
   }
 
   // make sure the commands are added to prompt history
@@ -1660,7 +1665,7 @@ void DebuggerParser::executeListBreaks()
     }
   }
   if(count)
-    commandResult << "breaks:\n" << buf.str();
+    commandResult << "breaks:\n" << buf.view();
 
   StringList conds = debugger.m6502().getCondBreakNames();
 
@@ -1676,7 +1681,7 @@ void DebuggerParser::executeListBreaks()
     }
   }
 
-  if(commandResult.str().empty())
+  if(commandResult.view().empty())
     commandResult << "no breakpoints set";
 }
 
@@ -1718,7 +1723,7 @@ void DebuggerParser::executeListSaveStateIfs()
     }
   }
 
-  if(commandResult.str().empty())
+  if(commandResult.view().empty())
     commandResult << "no savestateifs defined";
 }
 
@@ -1831,7 +1836,7 @@ void DebuggerParser::executePc()
 
   debugger.cpuDebug().setPC(args[0]);
   msg << "Set PC @ " << Base::HEX4 << args[0];
-  debugger.addState(msg.str());
+  debugger.addState(msg.view());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1968,7 +1973,7 @@ void DebuggerParser::executeRunTo()
 
   buf << "runTo searching through " << max_iterations << " disassembled instructions"
     << progress.ELLIPSIS;
-  progress.setMessage(buf.str());
+  progress.setMessage(buf.view());
   progress.setRange(0, static_cast<int>(max_iterations), 5);
   progress.open();
 
@@ -2016,7 +2021,7 @@ void DebuggerParser::executeRunToPc()
   ProgressDialog progress(debugger.baseDialog(), debugger.lfont());
 
   buf << "        runTo PC running" << progress.ELLIPSIS << "        ";
-  progress.setMessage(buf.str());
+  progress.setMessage(buf.view());
   progress.setRange(0, 100000, 5);
   progress.open();
 
@@ -2039,7 +2044,7 @@ void DebuggerParser::executeRunToPc()
       << "Set PC to $" << Base::HEX4 << args[0] << " in "
       << dec << count << " instructions";
     msg << "RunTo PC @ " << Base::HEX4 << args[0];
-    debugger.addState(msg.str());
+    debugger.addState(msg.view());
   }
   else
     commandResult
@@ -2193,9 +2198,9 @@ void DebuggerParser::executeSaveSes()
     if(argCount)
       path << argStrings[0];
     else
-      path << debugger.myOSystem.userDir() << filename.str();
+      path << debugger.myOSystem.userDir() << filename.view();
 
-    commandResult << debugger.prompt().saveBuffer(FSNode(path.str()));
+    commandResult << debugger.prompt().saveBuffer(FSNode(path.view()));
   }
 }
 
@@ -2285,7 +2290,7 @@ void DebuggerParser::executeStepWhile()
 
   buf << "stepWhile running through disassembled instructions"
     << progress.ELLIPSIS;
-  progress.setMessage(buf.str());
+  progress.setMessage(buf.view());
   progress.setRange(0, 100000, 5);
   progress.open();
 
@@ -2536,7 +2541,7 @@ void DebuggerParser::executeTraps(bool read, bool write, string_view command,
   if(hasCond)
     conditionBuf << ")";
 
-  const string condition = conditionBuf.str();
+  const string condition{conditionBuf.view()};
 
   const int res = YaccParser::parse(condition);
   if(res == 0)
@@ -2645,6 +2650,8 @@ void DebuggerParser::executeTrapRW(uInt32 addr, bool read, bool write, bool add)
       }
       break;
     }
+    default:
+      break;  // Not supposed to get here
   }
 }
 

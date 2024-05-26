@@ -48,7 +48,7 @@ SoundSDL2::SoundSDL2(OSystem& osystem, AudioSettings& audioSettings)
 
     buf << "WARNING: Failed to initialize SDL audio system! \n"
         << "         " << SDL_GetError() << '\n';
-    Logger::error(buf.str());
+    Logger::error(buf.view());
     return;
   }
 
@@ -83,7 +83,7 @@ void SoundSDL2::queryHardware(VariantList& devices)
   // log the available audio devices
   ostringstream s;
   s << "Supported audio devices (" << numDevices << "):";
-  Logger::debug(s.str());
+  Logger::debug(s.view());
 
   VarList::push_back(devices, "Default", 0);
   for(int i = 0; i < numDevices; ++i)
@@ -91,7 +91,7 @@ void SoundSDL2::queryHardware(VariantList& devices)
     ostringstream ss;
 
     ss << "  " << i + 1 << ": " << SDL_GetAudioDeviceName(i, 0);
-    Logger::debug(ss.str());
+    Logger::debug(ss.view());
 
     VarList::push_back(devices, SDL_GetAudioDeviceName(i, 0), i + 1);
   }
@@ -128,7 +128,7 @@ bool SoundSDL2::openDevice()
 
     buf << "WARNING: Couldn't open SDL audio device! \n"
         << "         " << SDL_GetError() << '\n';
-    Logger::error(buf.str());
+    Logger::error(buf.view());
 
     return myIsInitializedFlag = false;
   }
@@ -253,7 +253,7 @@ void SoundSDL2::adjustVolume(int direction)
   // Now show an onscreen message
   ostringstream strval;
   (percent) ? strval << percent << "%" : strval << "Off";
-  myOSystem.frameBuffer().showGaugeMessage("Volume", strval.str(), percent);
+  myOSystem.frameBuffer().showGaugeMessage("Volume", strval.view(), percent);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -268,21 +268,24 @@ string SoundSDL2::about() const
       << "  Preset:   ";
   switch(myAudioSettings.preset())
   {
-    case AudioSettings::Preset::custom:
+    using enum AudioSettings::Preset;
+    case custom:
       buf << "Custom\n";
       break;
-    case AudioSettings::Preset::lowQualityMediumLag:
+    case lowQualityMediumLag:
       buf << "Low quality, medium lag\n";
       break;
-    case AudioSettings::Preset::highQualityMediumLag:
+    case highQualityMediumLag:
       buf << "High quality, medium lag\n";
       break;
-    case AudioSettings::Preset::highQualityLowLag:
+    case highQualityLowLag:
       buf << "High quality, low lag\n";
       break;
-    case AudioSettings::Preset::ultraQualityMinimalLag:
+    case ultraQualityMinimalLag:
       buf << "Ultra quality, minimal lag\n";
       break;
+    default:
+      break;  // Not supposed to get here
   }
   buf << "    Fragment size: " << static_cast<uInt32>(myHardwareSpec.samples)
       << " bytes\n"
@@ -291,15 +294,18 @@ string SoundSDL2::about() const
   buf << "    Resampling:    ";
   switch(myAudioSettings.resamplingQuality())
   {
-    case AudioSettings::ResamplingQuality::nearestNeightbour:
+    using enum AudioSettings::ResamplingQuality;
+    case nearestNeighbour:
       buf << "Quality 1, nearest neighbor\n";
       break;
-    case AudioSettings::ResamplingQuality::lanczos_2:
+    case lanczos_2:
       buf << "Quality 2, Lanczos (a = 2)\n";
       break;
-    case AudioSettings::ResamplingQuality::lanczos_3:
+    case lanczos_3:
       buf << "Quality 3, Lanczos (a = 3)\n";
       break;
+    default:
+      break;  // Not supposed to get here
   }
   buf << "    Headroom:      " << std::fixed << std::setprecision(1)
       << (0.5 * myAudioSettings.headroom()) << " frames\n"
@@ -337,17 +343,18 @@ void SoundSDL2::initResampler()
 
   switch(myAudioSettings.resamplingQuality())
   {
-    case AudioSettings::ResamplingQuality::nearestNeightbour:
+    using enum AudioSettings::ResamplingQuality;
+    case nearestNeighbour:
       myResampler = make_unique<SimpleResampler>(formatFrom, formatTo,
                                                  nextFragmentCallback);
       break;
 
-    case AudioSettings::ResamplingQuality::lanczos_2:
+    case lanczos_2:
       myResampler = make_unique<LanczosResampler>(formatFrom, formatTo,
                                                   nextFragmentCallback, 2);
       break;
 
-    case AudioSettings::ResamplingQuality::lanczos_3:
+    case lanczos_3:
       myResampler = make_unique<LanczosResampler>(formatFrom, formatTo,
                                                   nextFragmentCallback, 3);
       break;
@@ -475,7 +482,7 @@ void SoundSDL2::WavHandlerSDL2::processWav(uInt8* stream, uInt32 len)
       const int newFreq =
         std::round(static_cast<double>(mySpec.freq) * origLen / len);
 
-      if(static_cast<uInt32>(len) > myRemaining)
+      if(len > myRemaining)
         len = myRemaining;
 
       SDL_AudioCVT cvt;
@@ -501,7 +508,7 @@ void SoundSDL2::WavHandlerSDL2::processWav(uInt8* stream, uInt32 len)
     }
     else
     {
-      if(static_cast<uInt32>(len) > myRemaining)
+      if(len > myRemaining)
         len = myRemaining;
 
       // Mix volume adjusted WAV data into silent buffer
