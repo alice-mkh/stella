@@ -118,6 +118,7 @@ stella_source = [
   '../../emucore/CartTVBoy.cxx',
   '../../emucore/CartUA.cxx',
   '../../emucore/CartWD.cxx',
+  '../../emucore/CartWF8.cxx',
   '../../emucore/CartX07.cxx',
   '../../emucore/CompuMate.cxx',
   '../../emucore/Console.cxx',
