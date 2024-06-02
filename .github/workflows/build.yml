@@ -36,6 +36,8 @@ jobs:
           ../configure && make -j3 && sudo make install
       - name: Build Stella
         run: |
+          gcc --version
+          clang++ --version
           ./configure && make -j3 all
 
   windows:
