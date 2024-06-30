@@ -328,6 +328,8 @@ bool CartDebug::disassemble(int bank, uInt16 PC, Disassembly& disassembly,
     // For example, if the list contains any $fxxx and the address space is now
     // $bxxx, it must be changed
     const uInt16 offset = (PC & 0x1000) ? myConsole.cartridge().bankOrigin(bank, PC) : 0;
+    if (offset && info.offset == 0)
+      info.offset = offset;
     AddressList& addresses = info.addressList;
     for(auto& i: addresses)
       i = (i & 0xFFF) + offset;
@@ -1329,7 +1331,7 @@ string CartDebug::saveDisassembly(string path)
       const bool stackUsed = (mySystem.getAccessFlags(addr|0x100) & (Device::DATA | Device::WRITE));
 
       if (myReserved.ZPRAM[addr - 0x80] &&
-          myUserLabels.find(addr) == myUserLabels.end()) {
+          !myUserLabels.contains(addr)) {
         if (addLine)
           out << "\n";
         out << ALIGN(16) << ourZPMnemonic[addr - 0x80] << "= $"

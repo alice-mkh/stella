@@ -181,12 +181,14 @@ void FrameLayoutDetector::onNextLine()
       if (myCurrentFrameTotalLines > frameLines - 3 || myTotalFrames == 0)
         ++myLinesWaitingForVsyncToStart;
 
-      if (myLinesWaitingForVsyncToStart > Metrics::waitForVsync) setState(State::waitForVsyncEnd);
+      if (myLinesWaitingForVsyncToStart > Metrics::waitForVsync) 
+        setState(State::waitForVsyncEnd);
 
       break;
 
     case State::waitForVsyncEnd:
-      if (++myLinesWaitingForVsyncToStart > Metrics::waitForVsync) setState(State::waitForVsyncStart);
+      if (++myLinesWaitingForVsyncToStart > Metrics::waitForVsync) 
+        setState(State::waitForVsyncStart);
 
       break;
 
@@ -232,15 +234,19 @@ void FrameLayoutDetector::finalizeFrame()
 {
   notifyFrameComplete();
 
-  if (myTotalFrames <= Metrics::initialGarbageFrames) return;
+  if (myTotalFrames <= Metrics::initialGarbageFrames) 
+    return;
+  if (myCurrentFrameFinalLines > Metrics::frameLinesPAL + Metrics::waitForVsync) 
+    return;
 
   // Calculate how close a frame is to PAL and NTSC based on scanlines. An odd scanline count
   // results into a penalty of 0.5 for PAL. The result is between 0.0 (<=262 scanlines) and
   // 1.0 (>=312) and added to PAL and (inverted) NTSC sums.
   constexpr double ODD_PENALTY = 0.5; // guessed value :)
   const double palFrame = BSPF::clamp(((myCurrentFrameFinalLines % 2) ? ODD_PENALTY : 1.0)
-    * static_cast<double>(myCurrentFrameFinalLines - frameLinesNTSC)
+    * (static_cast<double>(myCurrentFrameFinalLines) - static_cast<double>(frameLinesNTSC))
     / static_cast<double>(frameLinesPAL - frameLinesNTSC), 0.0, 1.0);
+
   myPalFrameSum += palFrame;
   myNtscFrameSum += 1.0 - palFrame;
   //cerr << myCurrentFrameFinalLines << ", " << palFrame << ", " << myPalFrameSum << ", " << myNtscFrameSum << '\n';
