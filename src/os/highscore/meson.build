@@ -112,6 +112,7 @@ stella_source = [
   '../../emucore/CartFC.cxx',
   '../../emucore/CartFE.cxx',
   '../../emucore/CartGL.cxx',
+  '../../emucore/CartJANE.cxx',
   '../../emucore/CartMDM.cxx',
   '../../emucore/CartMVC.cxx',
   '../../emucore/CartSB.cxx',
