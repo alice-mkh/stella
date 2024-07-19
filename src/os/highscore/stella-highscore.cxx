@@ -23,7 +23,8 @@ G_DEFINE_FINAL_TYPE_WITH_CODE (StellaCore, stella_core, HS_TYPE_CORE,
 
 static gboolean
 stella_core_load_rom (HsCore      *core,
-                      const char  *rom_path,
+                      const char **rom_paths,
+                      int          n_rom_paths,
                       const char  *save_path,
                       GError     **error)
 {
@@ -31,12 +32,14 @@ stella_core_load_rom (HsCore      *core,
   g_autofree char *data = NULL;
   gsize length;
 
+  g_assert (n_rom_paths == 1);
+
   g_set_str (&self->save_path, save_path);
 
-  if (!g_file_get_contents (rom_path, &data, &length, error))
+  if (!g_file_get_contents (rom_paths[0], &data, &length, error))
     return FALSE;
 
-  self->stella->setROM (rom_path, data, length);
+  self->stella->setROM (rom_paths[0], data, length);
 
   if (!self->stella->create (true)) {
     g_set_error (error, HS_CORE_ERROR, HS_CORE_ERROR_INTERNAL, "Failed to create Stella core");
