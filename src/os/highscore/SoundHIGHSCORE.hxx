@@ -63,11 +63,9 @@ class SoundHIGHSCORE : public Sound
       calls are made to derived methods.
     */
     void open(shared_ptr<AudioQueue> audioQueue,
-              EmulationTiming* emulationTiming) override
+              shared_ptr<const EmulationTiming>) override
     {
-      myEmulationTiming = emulationTiming;
-
-      Logger::debug("SoundHIGHSCORE::open started ...");
+      Logger::debug("SoundLIBRETRO::open started ...");
 
       audioQueue->ignoreOverflows(!myAudioSettings.enabled());
 
@@ -75,7 +73,7 @@ class SoundHIGHSCORE : public Sound
       myUnderrun = true;
       myCurrentFragment = nullptr;
 
-      Logger::debug("SoundHIGHSCORE::open finished");
+      Logger::debug("SoundLIBRETRO::open finished");
 
       myIsInitializedFlag = true;
     }
@@ -141,8 +139,6 @@ class SoundHIGHSCORE : public Sound
     bool myIsInitializedFlag{false};
 
     shared_ptr<AudioQueue> myAudioQueue;
-
-    EmulationTiming* myEmulationTiming{nullptr};
 
     Int16* myCurrentFragment{nullptr};
     bool myUnderrun{false};
