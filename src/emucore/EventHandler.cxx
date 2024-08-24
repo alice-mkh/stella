@@ -1518,11 +1518,16 @@ void EventHandler::handleEvent(Event::Type event, Int32 value, bool repeated)
       return;
 
     case Event::ReloadConsole:
-      if(pressed && !repeated) myOSystem.reloadConsole(true);
-      return;
-
     case Event::PreviousMultiCartRom:
-      if(pressed && !repeated) myOSystem.reloadConsole(false);
+      if(pressed && !repeated) {
+        const auto reloadError = myOSystem.reloadConsole(event == Event::ReloadConsole);
+
+        if (reloadError) {
+          exitEmulation(true);
+          myOSystem.frameBuffer().showTextMessage(reloadError.value(), MessagePosition::MiddleCenter, true);
+        }
+      }
+
       return;
 
     case Event::ToggleTimeMachine:
@@ -2413,7 +2418,7 @@ int EventHandler::getActionListIndex(int idx, Event::Group group)
   switch(group)
   {
     using enum Event::Group;
-    case Menu:        return idx;
+    case Menu:
     case Emulation:   return idx;
     case Misc:        return getEmulActionListIndex(idx, MiscEvents);
     case AudioVideo:  return getEmulActionListIndex(idx, AudioVideoEvents);

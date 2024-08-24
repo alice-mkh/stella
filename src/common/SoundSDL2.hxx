@@ -44,10 +44,6 @@ class SoundSDL2 : public Sound
       using the object.
     */
     SoundSDL2(OSystem& osystem, AudioSettings& audioSettings);
-
-    /**
-      Destructor
-    */
     ~SoundSDL2() override;
 
   public:
@@ -63,7 +59,7 @@ class SoundSDL2 : public Sound
       calls are made to derived methods.
     */
     void open(shared_ptr<AudioQueue> audioQueue,
-              EmulationTiming* emulationTiming) override;
+              shared_ptr<const EmulationTiming> emulationTiming) override;
 
     /**
       Sets the sound mute state; sound processing continues.  When enabled,
@@ -121,8 +117,8 @@ class SoundSDL2 : public Sound
 
       @return  True if the WAV file can be played, else false
     */
-    bool playWav(const string& fileName, const uInt32 position = 0,
-                 const uInt32 length = 0) override;
+    bool playWav(const string& fileName, uInt32 position = 0,
+                 uInt32 length = 0) override;
 
     /**
       Stop any currently playing WAV file.
@@ -160,7 +156,7 @@ class SoundSDL2 : public Sound
     bool myIsInitializedFlag{false};
 
     // Audio specification structure
-    SDL_AudioSpec myHardwareSpec;
+    SDL_AudioSpec myHardwareSpec{};
 
     SDL_AudioDeviceID myDevice{0};
     uInt32 myDeviceId{0};
@@ -168,7 +164,7 @@ class SoundSDL2 : public Sound
     shared_ptr<AudioQueue> myAudioQueue;
     unique_ptr<Resampler> myResampler;
 
-    EmulationTiming* myEmulationTiming{nullptr};
+    shared_ptr<const EmulationTiming> myEmulationTiming;
 
     Int16* myCurrentFragment{nullptr};
     bool myUnderrun{false};
@@ -185,7 +181,7 @@ class SoundSDL2 : public Sound
         ~WavHandlerSDL2();
 
         bool play(const string& fileName, const char* device,
-                  const uInt32 position, const uInt32 length);
+                  uInt32 position, uInt32 length);
         void stop();
         uInt32 size() const { return myBuffer ? myRemaining : 0; }
 
@@ -200,9 +196,9 @@ class SoundSDL2 : public Sound
         double mySpeed{1.0};
         unique_ptr<uInt8[]> myCvtBuffer;
         uInt32 myCvtBufferSize{0};
-        SDL_AudioSpec mySpec;  // audio output format
-        uInt8* myPos{nullptr}; // pointer to the audio buffer to be played
-        uInt32 myRemaining{0}; // remaining length of the sample we have to play
+        SDL_AudioSpec mySpec{}; // audio output format
+        uInt8* myPos{nullptr};  // pointer to the audio buffer to be played
+        uInt32 myRemaining{0};  // remaining length of the sample we have to play
 
       private:
         // Callback function invoked by the SDL Audio library when it needs data

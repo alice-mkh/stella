@@ -36,8 +36,7 @@ class ScrollBarWidget : public Widget, public CommandSender
 
     static void setWheelLines(int lines) { _WHEEL_LINES = lines; }
     static int  getWheelLines()          { return _WHEEL_LINES;  }
-    static int scrollBarWidth(const GUI::Font& font)
-    {
+    static int scrollBarWidth(const GUI::Font& font) {
       return font.getFontHeight() < 24 ? 15 : 23;
     }
 
@@ -59,7 +58,7 @@ class ScrollBarWidget : public Widget, public CommandSender
     int _wheel_lines{0};
 
   private:
-    enum class Part { None, UpArrow, DownArrow, Slider, PageUp, PageDown };
+    enum class Part: uInt8 { None, UpArrow, DownArrow, Slider, PageUp, PageDown };
 
     Part _part{Part::None};
     Part _draggingPart{Part::None};

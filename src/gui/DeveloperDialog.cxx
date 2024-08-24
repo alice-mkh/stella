@@ -35,6 +35,7 @@
 #include "StateManager.hxx"
 #include "RewindManager.hxx"
 #include "M6502.hxx"
+#include "CartELF.hxx"
 #ifdef DEBUGGER_SUPPORT
   #include "Debugger.hxx"
   #include "DebuggerDialog.hxx"
@@ -55,8 +56,8 @@ DeveloperDialog::DeveloperDialog(OSystem& osystem, DialogContainer& parent,
             VGAP         = Dialog::vGap();
 
   // Set real dimensions
-  setSize(53 * fontWidth + HBORDER * 2,
-          _th + VGAP * 3 + lineHeight + 14 * (lineHeight + VGAP) + buttonHeight + VBORDER * 3,
+  setSize(61 * fontWidth + HBORDER * 2,
+          _th + VGAP * 3 + lineHeight + 15 * (lineHeight + VGAP) + buttonHeight + VBORDER * 3,
           max_w, max_h);
 
   // The tab widget
@@ -88,11 +89,13 @@ void DeveloperDialog::addEmulationTab(const GUI::Font& font)
 {
   const int lineHeight = Dialog::lineHeight(),
             fontWidth  = Dialog::fontWidth(),
+            fontHeight = Dialog::fontHeight(),
             VBORDER    = Dialog::vBorder(),
             HBORDER    = Dialog::hBorder(),
             VGAP       = Dialog::vGap(),
             INDENT     = Dialog::indent();
   int ypos = VBORDER;
+  const GUI::Font& infofont = instance().frameBuffer().infoFont();
   WidgetArray wid;
   VariantList items;
   const int tabID = myTab->addTab(" Emulation ", TabWidget::AUTO_WIDTH);
@@ -136,7 +139,7 @@ void DeveloperDialog::addEmulationTab(const GUI::Font& font)
   items.clear();
   VarList::push_back(items, "Atari 2600", "2600");
   VarList::push_back(items, "Atari 7800", "7800");
-  const int lwidth = font.getStringWidth("Console ");
+  int lwidth = font.getStringWidth("Console ");
   const int pwidth = font.getStringWidth("Atari 2600");
 
   myConsoleWidget = new PopUpWidget(myTab, font, HBORDER + INDENT * 1, ypos, pwidth, lineHeight, items,
@@ -198,27 +201,45 @@ void DeveloperDialog::addEmulationTab(const GUI::Font& font)
   ypos += lineHeight + VGAP;
 
 #ifdef DEBUGGER_SUPPORT
-  myRWPortBreakWidget = new CheckboxWidget(myTab, font, HBORDER + INDENT * 1, ypos + 1,
-                                           "Break on reads from write ports");
+  myPortBreakLabel = new StaticTextWidget(myTab, font, HBORDER + INDENT * 1, ypos + 1, "Break on:");
+  myRWPortBreakWidget = new CheckboxWidget(myTab, font, myPortBreakLabel->getRight() + fontWidth * 1, ypos + 1,
+                                           "Reads from write ports");
   myRWPortBreakWidget->setToolTip("Cause reads from write ports to interrupt\n"
                                   "emulation and enter debugger.");
   wid.push_back(myRWPortBreakWidget);
-  ypos += lineHeight + VGAP;
+  //ypos += lineHeight + VGAP;
 
-  myWRPortBreakWidget = new CheckboxWidget(myTab, font, HBORDER + INDENT * 1, ypos + 1,
-                                           "Break on writes to read ports");
+  myWRPortBreakWidget = new CheckboxWidget(myTab, font, myRWPortBreakWidget->getRight() + fontWidth * 2, ypos + 1,
+                                           "Writes to read ports");
   myWRPortBreakWidget->setToolTip("Cause writes to read ports to interrupt\n"
                                   "emulation and enter debugger.");
   wid.push_back(myWRPortBreakWidget);
   ypos += lineHeight + VGAP;
-#endif
 
-  // Thumb ARM emulation exception
+#endif
+  // Thumb ARM/ELF emulation exception
   myThumbExceptionWidget = new CheckboxWidget(myTab, font, HBORDER + INDENT * 1, ypos + 1,
-                                              "Fatal ARM emulation error throws exception");
-  myThumbExceptionWidget->setToolTip("Cause Thumb ARM emulation to throw exceptions\n"
-                                     "on fatal errors and enter the debugger.");
+                                              "Strict ARM emulation (*)");
+  myThumbExceptionWidget->setToolTip("Strict checking for exceptions and suspicious program\n"
+                                     "behaviour in ARM emulation.\n"
+                                     "Interrupts emulation and enters debugger in such cases.");
   wid.push_back(myThumbExceptionWidget);
+  ypos += lineHeight + VGAP;
+
+  myArmSpeedWidget = new SliderWidget(myTab, font, HBORDER + INDENT * 1, ypos - 1,
+                                      fontWidth * 10, lineHeight, "Limit ARM speed (*) ",
+                                      0, kArmSpeedChanged, fontWidth * 9, " MIPS");
+  myArmSpeedWidget->setMinValue(CartridgeELF::MIPS_MIN); 
+  myArmSpeedWidget->setMaxValue(CartridgeELF::MIPS_MAX); 
+  myArmSpeedWidget->setTickmarkIntervals((CartridgeELF::MIPS_MAX - CartridgeELF::MIPS_MIN) / 50);
+  myArmSpeedWidget->setStepValue(2);
+  myArmSpeedWidget->setToolTip("Limit emulation speed to simulate ARM CPU used for ELF.");
+  wid.push_back(myArmSpeedWidget);
+
+  ypos = myTab->getHeight() - fontHeight - infofont.getFontHeight() - VGAP - VBORDER;
+  lwidth = infofont.getStringWidth("(*) Change requires a reload for ELF ROMs");
+  new StaticTextWidget(myTab, infofont, HBORDER, ypos, lwidth, infofont.getFontHeight(), 
+                       "(*) Change requires a reload for ELF ROMs");
 
   // Add items for tab 0
   addToFocusList(wid, myTab, tabID);
@@ -385,7 +406,7 @@ void DeveloperDialog::addVideoTab(const GUI::Font& font)
 
   myTVJitterSenseWidget = new SliderWidget(myTab, font,
                                            myTVJitterWidget->getLeft() + CheckboxWidget::prefixSize(font), ypos - 1,
-                                           fontWidth * 9, lineHeight,
+                                           fontWidth * 10, lineHeight,
                                            "Sensitivity ", 0, 0, fontWidth * 2);
   myTVJitterSenseWidget->setMinValue(JitterEmulation::MIN_SENSITIVITY);
   myTVJitterSenseWidget->setMaxValue(JitterEmulation::MAX_SENSITIVITY);
@@ -396,7 +417,7 @@ void DeveloperDialog::addVideoTab(const GUI::Font& font)
 
   myTVJitterRecWidget = new SliderWidget(myTab, font,
                                          myTVJitterSenseWidget->getRight() + fontWidth * 2, ypos - 1,
-                                         fontWidth * 9, lineHeight,
+                                         fontWidth * 10, lineHeight,
                                          "Recovery ", 0, 0, fontWidth * 2);
   myTVJitterRecWidget->setMinValue(JitterEmulation::MIN_RECOVERY);
   myTVJitterRecWidget->setMaxValue(JitterEmulation::MAX_RECOVERY);
@@ -705,6 +726,8 @@ void DeveloperDialog::getWidgetStates(SettingsSet set)
 {
   myFrameStats[set] = myFrameStatsWidget->getState();
   myDetectedInfo[set] = myDetectedInfoWidget->getState();
+  // AtariVox/SaveKey/PlusROM access
+  myExternAccess[set] = myExternAccessWidget->getState();
   myConsole[set] = myConsoleWidget->getSelected() == 1;
   // Randomization
   myRandomBank[set] = myRandomBankWidget->getState();
@@ -728,8 +751,7 @@ void DeveloperDialog::getWidgetStates(SettingsSet set)
 #endif
   // Thumb ARM emulation exception
   myThumbException[set] = myThumbExceptionWidget->getState();
-  // AtariVox/SaveKey/PlusROM access
-  myExternAccess[set] = myExternAccessWidget->getState();
+  myArmSpeed[set] = myArmSpeedWidget->getValue();
 
   // TIA tab
   myTIAType[set] = myTIATypeWidget->getSelectedTag().toString();
@@ -765,6 +787,8 @@ void DeveloperDialog::setWidgetStates(SettingsSet set)
 {
   myFrameStatsWidget->setState(myFrameStats[set]);
   myDetectedInfoWidget->setState(myDetectedInfo[set]);
+  // AtariVox/SaveKey/PlusROM access
+  myExternAccessWidget->setState(myExternAccess[set]);
   myConsoleWidget->setSelectedIndex(myConsole[set]);
   // Randomization
   myRandomBankWidget->setState(myRandomBank[set]);
@@ -787,8 +811,7 @@ void DeveloperDialog::setWidgetStates(SettingsSet set)
 #endif
   // Thumb ARM emulation exception
   myThumbExceptionWidget->setState(myThumbException[set]);
-  // AtariVox/SaveKey/PlusROM access
-  myExternAccessWidget->setState(myExternAccess[set]);
+  myArmSpeedWidget->setValue(myArmSpeed[set]);
   handleConsole();
 
   // TIA tab
@@ -936,6 +959,7 @@ void DeveloperDialog::setDefaults()
     #endif
       // Thumb ARM emulation exception
       myThumbException[set] = devSettings;
+      myArmSpeed[set] = devSettings ? CartridgeELF::MIPS_DEF : CartridgeELF::MIPS_MAX;
 
       setWidgetStates(set);
       break;
@@ -1106,10 +1130,12 @@ void DeveloperDialog::handleSettings(bool devSettings)
   myRandomHotspotsWidget->setEnabled(devSettings);
   myUndrivenPinsWidget->setEnabled(devSettings);
 #ifdef DEBUGGER_SUPPORT
+  myPortBreakLabel->setEnabled(devSettings);
   myRWPortBreakWidget->setEnabled(devSettings);
   myWRPortBreakWidget->setEnabled(devSettings);
 #endif
   myThumbExceptionWidget->setEnabled(devSettings);
+  myArmSpeedWidget->setEnabled(devSettings);
 
   if (mySettings != devSettings)
   {
@@ -1231,8 +1257,8 @@ void DeveloperDialog::handleSize()
   {
     for(i = horizon; i < NUM_HORIZONS; ++i)
     {
-      if(static_cast<uInt64>(size) * instance().state().rewindManager().INTERVAL_CYCLES[interval]
-         <= instance().state().rewindManager().HORIZON_CYCLES[i])
+      if(static_cast<uInt64>(size) * RewindManager::INTERVAL_CYCLES[interval]
+         <= RewindManager::HORIZON_CYCLES[i])
       {
         found = true;
         break;
@@ -1281,8 +1307,8 @@ void DeveloperDialog::handleInterval()
   {
     for(i = horizon; i < NUM_HORIZONS; ++i)
     {
-      if(static_cast<uInt64>(size) * instance().state().rewindManager().INTERVAL_CYCLES[interval]
-         <= instance().state().rewindManager().HORIZON_CYCLES[i])
+      if(static_cast<uInt64>(size) * RewindManager::INTERVAL_CYCLES[interval]
+         <= RewindManager::HORIZON_CYCLES[i])
       {
         found = true;
         break;
@@ -1319,8 +1345,8 @@ void DeveloperDialog::handleHorizon()
   {
     for(i = interval; i >= 0; --i)
     {
-      if(static_cast<uInt64>(size) * instance().state().rewindManager().INTERVAL_CYCLES[i]
-         <= instance().state().rewindManager().HORIZON_CYCLES[horizon])
+      if(static_cast<uInt64>(size) * RewindManager::INTERVAL_CYCLES[i]
+         <= RewindManager::HORIZON_CYCLES[horizon])
       {
         found = true;
         break;

@@ -18,7 +18,7 @@
 #ifndef STATE_MANAGER_HXX
 #define STATE_MANAGER_HXX
 
-#define STATE_HEADER "06070002state"
+#define STATE_HEADER "06070030state"
 
 class OSystem;
 class RewindManager;
@@ -35,7 +35,7 @@ class RewindManager;
 class StateManager
 {
   public:
-    enum class Mode {
+    enum class Mode: uInt8 {
       Off,
       TimeMachine,
       MovieRecord,

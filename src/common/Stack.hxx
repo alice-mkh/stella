@@ -31,13 +31,14 @@ template <typename T, size_t CAPACITY = 50>
 class FixedStack
 {
   private:
-    std::array<T, CAPACITY> _stack;
+    std::array<T, CAPACITY> _stack{};
     size_t _size{0};
 
   public:
     using StackFunction = std::function<void(T&)>;
 
     FixedStack() = default;
+    ~FixedStack() = default;
 
     bool empty() const { return _size == 0; }
     bool full() const  { return _size >= CAPACITY; }

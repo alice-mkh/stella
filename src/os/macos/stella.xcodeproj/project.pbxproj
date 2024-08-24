@@ -207,6 +207,9 @@
 		CFE3F6161E84A9CE00A8204E /* CartCDF.hxx in Headers */ = {isa = PBXBuildFile; fileRef = CFE3F6121E84A9CE00A8204E /* CartCDF.hxx */; };
 		DC047FEE1A4A6F3600348F0F /* JoystickDialog.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC047FEC1A4A6F3600348F0F /* JoystickDialog.cxx */; };
 		DC047FEF1A4A6F3600348F0F /* JoystickDialog.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC047FED1A4A6F3600348F0F /* JoystickDialog.hxx */; };
+		DC0932172C50017A00527D3C /* ElfEnvironment.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC0932142C50017A00527D3C /* ElfEnvironment.cxx */; };
+		DC0932182C50017A00527D3C /* ElfEnvironment.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC0932152C50017A00527D3C /* ElfEnvironment.hxx */; };
+		DC0932192C50017A00527D3C /* ElfFile.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC0932162C50017A00527D3C /* ElfFile.hxx */; };
 		DC0984850D3985160073C852 /* CartSB.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC0984830D3985160073C852 /* CartSB.cxx */; };
 		DC0984860D3985160073C852 /* CartSB.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC0984840D3985160073C852 /* CartSB.hxx */; };
 		DC0DF8690F0DAAF500B0F1F3 /* GlobalPropsDialog.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC0DF8670F0DAAF500B0F1F3 /* GlobalPropsDialog.cxx */; };
@@ -215,6 +218,11 @@
 		DC0E98E12801CC8900097C68 /* Cart0FA0Widget.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC0E98DF2801CC8900097C68 /* Cart0FA0Widget.hxx */; };
 		DC0E98E42801CD1600097C68 /* Cart0FA0.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC0E98E22801CD1500097C68 /* Cart0FA0.cxx */; };
 		DC0E98E52801CD1600097C68 /* Cart0FA0.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC0E98E32801CD1500097C68 /* Cart0FA0.hxx */; };
+		DC0EF94C2C59578C0007F3B5 /* BusTransactionQueue.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC0EF9482C59578C0007F3B5 /* BusTransactionQueue.hxx */; };
+		DC0EF94D2C59578C0007F3B5 /* VcsLib.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC0EF9492C59578C0007F3B5 /* VcsLib.hxx */; };
+		DC0EF94E2C59578C0007F3B5 /* BusTransactionQueue.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC0EF94A2C59578C0007F3B5 /* BusTransactionQueue.cxx */; };
+		DC0EF94F2C59578C0007F3B5 /* VcsLib.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC0EF94B2C59578C0007F3B5 /* VcsLib.cxx */; };
+		DC0EF9512C5D4B900007F3B5 /* json.hpp in Headers */ = {isa = PBXBuildFile; fileRef = DC0EF9502C5D4B900007F3B5 /* json.hpp */; };
 		DC11F78D0DB36933003B505E /* MT24LC256.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC11F78B0DB36933003B505E /* MT24LC256.cxx */; };
 		DC11F78E0DB36933003B505E /* MT24LC256.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC11F78C0DB36933003B505E /* MT24LC256.hxx */; };
 		DC13B53F176FF2F500B8B4BB /* RomListSettings.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC13B53D176FF2F500B8B4BB /* RomListSettings.cxx */; };
@@ -228,6 +236,14 @@
 		DC1BC6672066B4390076F74A /* PKeyboardHandler.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC1BC6652066B4390076F74A /* PKeyboardHandler.hxx */; };
 		DC1E474E24D34F3B0047E61A /* WhatsNewDialog.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC1E474C24D34F3A0047E61A /* WhatsNewDialog.cxx */; };
 		DC1E474F24D34F3B0047E61A /* WhatsNewDialog.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC1E474D24D34F3A0047E61A /* WhatsNewDialog.hxx */; };
+		DC1E88F92C4032C30033E15F /* CartELF.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC1E88F72C4032C30033E15F /* CartELF.cxx */; };
+		DC1E88FA2C4032C30033E15F /* CartELF.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC1E88F82C4032C30033E15F /* CartELF.hxx */; };
+		DC1E89042C4033280033E15F /* ElfLinker.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC1E88FB2C4033280033E15F /* ElfLinker.cxx */; };
+		DC1E89052C4033280033E15F /* ElfLinker.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC1E88FC2C4033280033E15F /* ElfLinker.hxx */; };
+		DC1E89062C4033280033E15F /* ElfParser.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC1E88FD2C4033280033E15F /* ElfParser.cxx */; };
+		DC1E89072C4033280033E15F /* ElfParser.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC1E88FE2C4033280033E15F /* ElfParser.hxx */; };
+		DC1E89082C4033280033E15F /* ElfUtil.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC1E88FF2C4033280033E15F /* ElfUtil.cxx */; };
+		DC1E89092C4033280033E15F /* ElfUtil.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC1E89002C4033280033E15F /* ElfUtil.hxx */; };
 		DC21E5BF21CA903E007D0E1A /* OSystemMACOS.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC21E5B921CA903E007D0E1A /* OSystemMACOS.cxx */; };
 		DC21E5C021CA903E007D0E1A /* OSystemMACOS.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC21E5BA21CA903E007D0E1A /* OSystemMACOS.hxx */; };
 		DC21E5C121CA903E007D0E1A /* SerialPortMACOS.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC21E5BB21CA903E007D0E1A /* SerialPortMACOS.cxx */; };
@@ -265,6 +281,8 @@
 		DC2C5EDB1F8F2403007D2A09 /* smartmod.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC2C5EDA1F8F2403007D2A09 /* smartmod.hxx */; };
 		DC30924C212F74930020DAD0 /* TimerManager.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC30924A212F74930020DAD0 /* TimerManager.cxx */; };
 		DC30924D212F74930020DAD0 /* TimerManager.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC30924B212F74930020DAD0 /* TimerManager.hxx */; };
+		DC3131ED2C540CE2008A1E43 /* CortexM0.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC3131EB2C540CE2008A1E43 /* CortexM0.cxx */; };
+		DC3131EE2C540CE2008A1E43 /* CortexM0.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC3131EC2C540CE2008A1E43 /* CortexM0.hxx */; };
 		DC368F5818A2FB710084199C /* SoundSDL2.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC368F5218A2FB710084199C /* SoundSDL2.cxx */; };
 		DC368F5918A2FB710084199C /* SoundSDL2.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC368F5318A2FB710084199C /* SoundSDL2.hxx */; };
 		DC36D2C814CAFAB0007DC821 /* CartFA2.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC36D2C614CAFAB0007DC821 /* CartFA2.cxx */; };
@@ -448,7 +466,6 @@
 		DC8078DB0B4BD5F3005E9305 /* DebuggerExpressions.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC8078DA0B4BD5F3005E9305 /* DebuggerExpressions.hxx */; };
 		DC8078EA0B4BD697005E9305 /* UIDialog.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC8078E60B4BD697005E9305 /* UIDialog.cxx */; };
 		DC8078EB0B4BD697005E9305 /* UIDialog.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC8078E70B4BD697005E9305 /* UIDialog.hxx */; };
-		DC816CF62572F92A00FBCCDA /* json.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC816CF42572F92A00FBCCDA /* json.hxx */; };
 		DC816CF72572F92A00FBCCDA /* json_lib.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC816CF52572F92A00FBCCDA /* json_lib.hxx */; };
 		DC816CFC25757D9A00FBCCDA /* HighScoresManager.hxx in Headers */ = {isa = PBXBuildFile; fileRef = DC816CF925757D9A00FBCCDA /* HighScoresManager.hxx */; };
 		DC816CFD25757D9A00FBCCDA /* HighScoresManager.cxx in Sources */ = {isa = PBXBuildFile; fileRef = DC816CFA25757D9A00FBCCDA /* HighScoresManager.cxx */; };
@@ -1068,6 +1085,9 @@
 		CFE3F6121E84A9CE00A8204E /* CartCDF.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CartCDF.hxx; sourceTree = "<group>"; };
 		DC047FEC1A4A6F3600348F0F /* JoystickDialog.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JoystickDialog.cxx; sourceTree = "<group>"; };
 		DC047FED1A4A6F3600348F0F /* JoystickDialog.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = JoystickDialog.hxx; sourceTree = "<group>"; };
+		DC0932142C50017A00527D3C /* ElfEnvironment.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElfEnvironment.cxx; sourceTree = "<group>"; };
+		DC0932152C50017A00527D3C /* ElfEnvironment.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ElfEnvironment.hxx; sourceTree = "<group>"; };
+		DC0932162C50017A00527D3C /* ElfFile.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ElfFile.hxx; sourceTree = "<group>"; };
 		DC0984830D3985160073C852 /* CartSB.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CartSB.cxx; sourceTree = "<group>"; };
 		DC0984840D3985160073C852 /* CartSB.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CartSB.hxx; sourceTree = "<group>"; };
 		DC0DF8670F0DAAF500B0F1F3 /* GlobalPropsDialog.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GlobalPropsDialog.cxx; sourceTree = "<group>"; };
@@ -1076,6 +1096,11 @@
 		DC0E98DF2801CC8900097C68 /* Cart0FA0Widget.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Cart0FA0Widget.hxx; sourceTree = "<group>"; };
 		DC0E98E22801CD1500097C68 /* Cart0FA0.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cart0FA0.cxx; sourceTree = "<group>"; };
 		DC0E98E32801CD1500097C68 /* Cart0FA0.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Cart0FA0.hxx; sourceTree = "<group>"; };
+		DC0EF9482C59578C0007F3B5 /* BusTransactionQueue.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BusTransactionQueue.hxx; sourceTree = "<group>"; };
+		DC0EF9492C59578C0007F3B5 /* VcsLib.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = VcsLib.hxx; sourceTree = "<group>"; };
+		DC0EF94A2C59578C0007F3B5 /* BusTransactionQueue.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BusTransactionQueue.cxx; sourceTree = "<group>"; };
+		DC0EF94B2C59578C0007F3B5 /* VcsLib.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VcsLib.cxx; sourceTree = "<group>"; };
+		DC0EF9502C5D4B900007F3B5 /* json.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
 		DC11F78B0DB36933003B505E /* MT24LC256.cxx */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MT24LC256.cxx; sourceTree = "<group>"; };
 		DC11F78C0DB36933003B505E /* MT24LC256.hxx */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; path = MT24LC256.hxx; sourceTree = "<group>"; };
 		DC13B53D176FF2F500B8B4BB /* RomListSettings.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RomListSettings.cxx; sourceTree = "<group>"; };
@@ -1089,6 +1114,14 @@
 		DC1BC6652066B4390076F74A /* PKeyboardHandler.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PKeyboardHandler.hxx; sourceTree = "<group>"; };
 		DC1E474C24D34F3A0047E61A /* WhatsNewDialog.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WhatsNewDialog.cxx; sourceTree = "<group>"; };
 		DC1E474D24D34F3A0047E61A /* WhatsNewDialog.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = WhatsNewDialog.hxx; sourceTree = "<group>"; };
+		DC1E88F72C4032C30033E15F /* CartELF.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CartELF.cxx; sourceTree = "<group>"; };
+		DC1E88F82C4032C30033E15F /* CartELF.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CartELF.hxx; sourceTree = "<group>"; };
+		DC1E88FB2C4033280033E15F /* ElfLinker.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElfLinker.cxx; sourceTree = "<group>"; };
+		DC1E88FC2C4033280033E15F /* ElfLinker.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ElfLinker.hxx; sourceTree = "<group>"; };
+		DC1E88FD2C4033280033E15F /* ElfParser.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElfParser.cxx; sourceTree = "<group>"; };
+		DC1E88FE2C4033280033E15F /* ElfParser.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ElfParser.hxx; sourceTree = "<group>"; };
+		DC1E88FF2C4033280033E15F /* ElfUtil.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElfUtil.cxx; sourceTree = "<group>"; };
+		DC1E89002C4033280033E15F /* ElfUtil.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ElfUtil.hxx; sourceTree = "<group>"; };
 		DC21E5B921CA903E007D0E1A /* OSystemMACOS.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OSystemMACOS.cxx; sourceTree = SOURCE_ROOT; };
 		DC21E5BA21CA903E007D0E1A /* OSystemMACOS.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = OSystemMACOS.hxx; sourceTree = SOURCE_ROOT; };
 		DC21E5BB21CA903E007D0E1A /* SerialPortMACOS.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SerialPortMACOS.cxx; sourceTree = SOURCE_ROOT; };
@@ -1126,6 +1159,8 @@
 		DC2C5EDA1F8F2403007D2A09 /* smartmod.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = smartmod.hxx; sourceTree = "<group>"; };
 		DC30924A212F74930020DAD0 /* TimerManager.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TimerManager.cxx; sourceTree = "<group>"; };
 		DC30924B212F74930020DAD0 /* TimerManager.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TimerManager.hxx; sourceTree = "<group>"; };
+		DC3131EB2C540CE2008A1E43 /* CortexM0.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CortexM0.cxx; sourceTree = "<group>"; };
+		DC3131EC2C540CE2008A1E43 /* CortexM0.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CortexM0.hxx; sourceTree = "<group>"; };
 		DC368F5218A2FB710084199C /* SoundSDL2.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundSDL2.cxx; sourceTree = "<group>"; };
 		DC368F5318A2FB710084199C /* SoundSDL2.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SoundSDL2.hxx; sourceTree = "<group>"; };
 		DC36D2C614CAFAB0007DC821 /* CartFA2.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CartFA2.cxx; sourceTree = "<group>"; };
@@ -1309,7 +1344,6 @@
 		DC8078DA0B4BD5F3005E9305 /* DebuggerExpressions.hxx */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; path = DebuggerExpressions.hxx; sourceTree = "<group>"; };
 		DC8078E60B4BD697005E9305 /* UIDialog.cxx */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = UIDialog.cxx; sourceTree = "<group>"; };
 		DC8078E70B4BD697005E9305 /* UIDialog.hxx */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; path = UIDialog.hxx; sourceTree = "<group>"; };
-		DC816CF42572F92A00FBCCDA /* json.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = json.hxx; sourceTree = "<group>"; };
 		DC816CF52572F92A00FBCCDA /* json_lib.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = json_lib.hxx; sourceTree = "<group>"; };
 		DC816CF925757D9A00FBCCDA /* HighScoresManager.hxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = HighScoresManager.hxx; sourceTree = "<group>"; };
 		DC816CFA25757D9A00FBCCDA /* HighScoresManager.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HighScoresManager.cxx; sourceTree = "<group>"; };
@@ -2144,6 +2178,8 @@
 				DCF467BF0F939A1400B25D7A /* CartEF.hxx */,
 				DCF467C00F939A1400B25D7A /* CartEFSC.cxx */,
 				DCF467C10F939A1400B25D7A /* CartEFSC.hxx */,
+				DC1E88F72C4032C30033E15F /* CartELF.cxx */,
+				DC1E88F82C4032C30033E15F /* CartELF.hxx */,
 				DC3C9BCF2469C9A200CF2D47 /* CartEnhanced.cxx */,
 				DC3C9BD12469C9A200CF2D47 /* CartEnhanced.hxx */,
 				DCF7B0D910A762FC007A2870 /* CartF0.cxx */,
@@ -2199,12 +2235,15 @@
 				DC71C398221623D9005DE92F /* ControllerDetector.cxx */,
 				DC71C397221623D8005DE92F /* ControllerDetector.hxx */,
 				DCCE03572251050C008C246F /* ControlLowLevel.hxx */,
+				DC3131EB2C540CE2008A1E43 /* CortexM0.cxx */,
+				DC3131EC2C540CE2008A1E43 /* CortexM0.hxx */,
 				DC932D3F0F278A5200FEFEFC /* DefProps.hxx */,
 				DCC527C910B9DA19005E1287 /* Device.hxx */,
 				DCDFF07F20B781B0001227C0 /* DispatchResult.cxx */,
 				DCDFF08020B781B0001227C0 /* DispatchResult.hxx */,
 				2DE2DF3E0627AE07006BEC99 /* Driving.cxx */,
 				2DE2DF3F0627AE07006BEC99 /* Driving.hxx */,
+				DC1E89032C4033280033E15F /* elf */,
 				E034A5EC209FB25C00C89E9E /* EmulationTiming.cxx */,
 				E034A5ED209FB25C00C89E9E /* EmulationTiming.hxx */,
 				DCFCDE7020C9E66500915CBE /* EmulationWorker.cxx */,
@@ -2477,6 +2516,26 @@
 			path = yacc;
 			sourceTree = "<group>";
 		};
+		DC1E89032C4033280033E15F /* elf */ = {
+			isa = PBXGroup;
+			children = (
+				DC0EF94A2C59578C0007F3B5 /* BusTransactionQueue.cxx */,
+				DC0EF9482C59578C0007F3B5 /* BusTransactionQueue.hxx */,
+				DC0932142C50017A00527D3C /* ElfEnvironment.cxx */,
+				DC0932152C50017A00527D3C /* ElfEnvironment.hxx */,
+				DC0932162C50017A00527D3C /* ElfFile.hxx */,
+				DC1E88FB2C4033280033E15F /* ElfLinker.cxx */,
+				DC1E88FC2C4033280033E15F /* ElfLinker.hxx */,
+				DC1E88FD2C4033280033E15F /* ElfParser.cxx */,
+				DC1E88FE2C4033280033E15F /* ElfParser.hxx */,
+				DC1E88FF2C4033280033E15F /* ElfUtil.cxx */,
+				DC1E89002C4033280033E15F /* ElfUtil.hxx */,
+				DC0EF94B2C59578C0007F3B5 /* VcsLib.cxx */,
+				DC0EF9492C59578C0007F3B5 /* VcsLib.hxx */,
+			);
+			path = elf;
+			sourceTree = "<group>";
+		};
 		DC3EE83B1E2C0E4400905161 /* zlib */ = {
 			isa = PBXGroup;
 			children = (
@@ -2558,7 +2617,7 @@
 			isa = PBXGroup;
 			children = (
 				DC816CF52572F92A00FBCCDA /* json_lib.hxx */,
-				DC816CF42572F92A00FBCCDA /* json.hxx */,
+				DC0EF9502C5D4B900007F3B5 /* json.hpp */,
 			);
 			path = json;
 			sourceTree = "<group>";
@@ -2778,6 +2837,7 @@
 				2D9173CE09BA90380026E9FF /* Cart2K.hxx in Headers */,
 				2D9173CF09BA90380026E9FF /* Cart3F.hxx in Headers */,
 				DC3EE86D1E2C0E6D00905161 /* zlib.h in Headers */,
+				DC0EF94D2C59578C0007F3B5 /* VcsLib.hxx in Headers */,
 				E08FCD5523A037EB0051F59B /* Blitter.hxx in Headers */,
 				DC84397F247B297A00C6A4FC /* CartTVBoyWidget.hxx in Headers */,
 				E034A5EF209FB25D00C89E9E /* EmulationTiming.hxx in Headers */,
@@ -2805,6 +2865,7 @@
 				2D9173DB09BA90380026E9FF /* CartF8SC.hxx in Headers */,
 				2D9173DD09BA90380026E9FF /* CartFE.hxx in Headers */,
 				DC62E6481960E87B007AEF05 /* AtariVoxWidget.hxx in Headers */,
+				DC3131EE2C540CE2008A1E43 /* CortexM0.hxx in Headers */,
 				2D9173E009BA90380026E9FF /* Console.hxx in Headers */,
 				2D9173E109BA90380026E9FF /* Control.hxx in Headers */,
 				DC5AAC2D1FCB24DF00C420A6 /* RadioButtonWidget.hxx in Headers */,
@@ -2859,6 +2920,7 @@
 				2D91740C09BA90380026E9FF /* LauncherDialog.hxx in Headers */,
 				DCE801E3236DC25600D43EDD /* CartFC.hxx in Headers */,
 				DC2AADB5194F390F0026C7A4 /* CartRamWidget.hxx in Headers */,
+				DC1E89052C4033280033E15F /* ElfLinker.hxx in Headers */,
 				2D91740E09BA90380026E9FF /* ListWidget.hxx in Headers */,
 				DC22F1312507D22500AB43E9 /* QuadTariWidget.hxx in Headers */,
 				2D91741009BA90380026E9FF /* OptionsDialog.hxx in Headers */,
@@ -2894,6 +2956,7 @@
 				2D91742009BA90380026E9FF /* ConsoleFont.hxx in Headers */,
 				DC564F6628C114D200177588 /* sqlite3.h in Headers */,
 				2D91742109BA90380026E9FF /* Font.hxx in Headers */,
+				DC0932192C50017A00527D3C /* ElfFile.hxx in Headers */,
 				2D91742209BA90380026E9FF /* Debugger.hxx in Headers */,
 				2D91742309BA90380026E9FF /* DebuggerParser.hxx in Headers */,
 				2D91742409BA90380026E9FF /* EditableWidget.hxx in Headers */,
@@ -2924,6 +2987,7 @@
 				2D91745309BA90380026E9FF /* CommandMenu.hxx in Headers */,
 				E0306E111F93E916003DDD52 /* JitterEmulation.hxx in Headers */,
 				DC0E98E52801CD1600097C68 /* Cart0FA0.hxx in Headers */,
+				DC0932182C50017A00527D3C /* ElfEnvironment.hxx in Headers */,
 				DC1E474F24D34F3B0047E61A /* WhatsNewDialog.hxx in Headers */,
 				2D91745509BA90380026E9FF /* CpuWidget.hxx in Headers */,
 				2D91745609BA90380026E9FF /* DataGridOpsWidget.hxx in Headers */,
@@ -2947,6 +3011,7 @@
 				DCA078351F8C1B04008EFEE5 /* SDL_lib.hxx in Headers */,
 				DCDA03B11A2009BB00711920 /* CartWD.hxx in Headers */,
 				DCC2FDFA2566AD8800FA5E81 /* DataGridRamWidget.hxx in Headers */,
+				DC1E89072C4033280033E15F /* ElfParser.hxx in Headers */,
 				2D91745909BA90380026E9FF /* PromptWidget.hxx in Headers */,
 				DC3C9BC62469C8F700CF2D47 /* PaletteHandler.hxx in Headers */,
 				2D91745A09BA90380026E9FF /* RamWidget.hxx in Headers */,
@@ -2993,6 +3058,7 @@
 				DC6F394A21B897C700897AD8 /* FatalEmulationError.hxx in Headers */,
 				DCA23AEA0D75B22500F77B33 /* CartX07.hxx in Headers */,
 				DC4613680D92C03600D8DAB9 /* RomAuditDialog.hxx in Headers */,
+				DC0EF9512C5D4B900007F3B5 /* json.hpp in Headers */,
 				DC487FB70DA5350900E12499 /* AtariVox.hxx in Headers */,
 				DC11F78E0DB36933003B505E /* MT24LC256.hxx in Headers */,
 				DC70065C241EC97900A459AB /* Stella12x24tFont.hxx in Headers */,
@@ -3062,6 +3128,7 @@
 				DCFFE59E12100E1400DFA000 /* ComboDialog.hxx in Headers */,
 				DCD2839912E39F1200A808DC /* Thumbulator.hxx in Headers */,
 				DC69670B1361FD0A0036499D /* pngdebug.h in Headers */,
+				DC0EF94C2C59578C0007F3B5 /* BusTransactionQueue.hxx in Headers */,
 				DC69670C1361FD0A0036499D /* pnginfo.h in Headers */,
 				DC69670D1361FD0A0036499D /* pnglibconf.h in Headers */,
 				DC69670E1361FD0A0036499D /* pngstruct.h in Headers */,
@@ -3089,6 +3156,7 @@
 				DCCF4B0314BA27EB00814FAB /* DrivingWidget.hxx in Headers */,
 				DCCF4B0514BA27EB00814FAB /* KeyboardWidget.hxx in Headers */,
 				E050876F25A1337400E4B62A /* OSystemStandalone.hxx in Headers */,
+				DC1E88FA2C4032C30033E15F /* CartELF.hxx in Headers */,
 				DC5C768F14C26F7C0031EBC7 /* StellaKeys.hxx in Headers */,
 				E07DF4432C0A819D00E1FB07 /* CartWF8.hxx in Headers */,
 				DC36D2C914CAFAB0007DC821 /* CartFA2.hxx in Headers */,
@@ -3124,7 +3192,6 @@
 				DCE9681627553F1000E99839 /* FavoritesManager.hxx in Headers */,
 				DCAAE5E31715887B0080BB82 /* CartF0Widget.hxx in Headers */,
 				DCAAE5E51715887B0080BB82 /* CartF4SCWidget.hxx in Headers */,
-				DC816CF62572F92A00FBCCDA /* json.hxx in Headers */,
 				DCAAE5E71715887B0080BB82 /* CartF4Widget.hxx in Headers */,
 				DC5963142139FA14002736F2 /* Bankswitch.hxx in Headers */,
 				DCAAE5E91715887B0080BB82 /* CartF6SCWidget.hxx in Headers */,
@@ -3180,6 +3247,7 @@
 				DCA82C741FEB4E780059340F /* TimeMachineDialog.hxx in Headers */,
 				DC6A18FD19B3E67A00DEB242 /* CartMDM.hxx in Headers */,
 				DCDDEAC51F5DBF0400C67366 /* RewindManager.hxx in Headers */,
+				DC1E89092C4033280033E15F /* ElfUtil.hxx in Headers */,
 				DCAACB13188D636F00A4D282 /* CartBFWidget.hxx in Headers */,
 				DC2ABA7425A0C9B2007E57D3 /* KeyValueRepositoryJsonFile.hxx in Headers */,
 				DCAACB15188D636F00A4D282 /* CartDFSCWidget.hxx in Headers */,
@@ -3304,6 +3372,7 @@
 				DC3EE8671E2C0E6D00905161 /* inftrees.c in Sources */,
 				2D91747609BA90380026E9FF /* Cart.cxx in Sources */,
 				2D91747709BA90380026E9FF /* Cart2K.cxx in Sources */,
+				DC0932172C50017A00527D3C /* ElfEnvironment.cxx in Sources */,
 				E0D7E6F425A271A0006991C7 /* CompositeKeyValueRepository.cxx in Sources */,
 				E034A5EE209FB25D00C89E9E /* EmulationTiming.cxx in Sources */,
 				2D91747809BA90380026E9FF /* Cart3F.cxx in Sources */,
@@ -3325,6 +3394,7 @@
 				2D91747F09BA90380026E9FF /* CartF4.cxx in Sources */,
 				DCFCDE7220C9E66500915CBE /* EmulationWorker.cxx in Sources */,
 				DC30924C212F74930020DAD0 /* TimerManager.cxx in Sources */,
+				DC0EF94E2C59578C0007F3B5 /* BusTransactionQueue.cxx in Sources */,
 				2D91748009BA90380026E9FF /* CartF4SC.cxx in Sources */,
 				2D91748109BA90380026E9FF /* CartF6.cxx in Sources */,
 				2D91748209BA90380026E9FF /* CartF6SC.cxx in Sources */,
@@ -3424,6 +3494,7 @@
 				2D9174F509BA90380026E9FF /* CommandMenu.cxx in Sources */,
 				DCB1502B2A814E6C0036F9EC /* Cart03E0.cxx in Sources */,
 				2D9174F709BA90380026E9FF /* CpuWidget.cxx in Sources */,
+				DC0EF94F2C59578C0007F3B5 /* VcsLib.cxx in Sources */,
 				2D9174F809BA90380026E9FF /* DataGridOpsWidget.cxx in Sources */,
 				E08FCD5423A037EB0051F59B /* BlitterFactory.cxx in Sources */,
 				2D9174F909BA90380026E9FF /* DataGridWidget.cxx in Sources */,
@@ -3442,6 +3513,7 @@
 				DC22F1362507D24E00AB43E9 /* QuadTariDialog.cxx in Sources */,
 				DCF3A6F81DFC75E3008A8AF3 /* AnalogReadout.cxx in Sources */,
 				DC6DC5E4273C2A5E00F64413 /* PlusRomsMenu.cxx in Sources */,
+				DC1E88F92C4032C30033E15F /* CartELF.cxx in Sources */,
 				2D9174FE09BA90380026E9FF /* RomWidget.cxx in Sources */,
 				DCA82C731FEB4E780059340F /* TimeMachineDialog.cxx in Sources */,
 				2D9174FF09BA90380026E9FF /* TiaInfoWidget.cxx in Sources */,
@@ -3454,6 +3526,7 @@
 				2D91750309BA90380026E9FF /* TogglePixelWidget.cxx in Sources */,
 				2D91750409BA90380026E9FF /* ToggleWidget.cxx in Sources */,
 				2D91750609BA90380026E9FF /* TiaZoomWidget.cxx in Sources */,
+				DC1E89062C4033280033E15F /* ElfParser.cxx in Sources */,
 				CFE3F6131E84A9CE00A8204E /* CartBUS.cxx in Sources */,
 				DC73BD851915E5B1003FAFAD /* FBSurfaceSDL2.cxx in Sources */,
 				DCDDEAC41F5DBF0400C67366 /* RewindManager.cxx in Sources */,
@@ -3469,6 +3542,7 @@
 				DC47455C09C34BFA00EDDA3A /* CheetahCheat.cxx in Sources */,
 				DC62E6471960E87B007AEF05 /* AtariVoxWidget.cxx in Sources */,
 				DC47455E09C34BFA00EDDA3A /* RamCheat.cxx in Sources */,
+				DC3131ED2C540CE2008A1E43 /* CortexM0.cxx in Sources */,
 				E0FABEEC20E9948200EB8E28 /* AudioSettings.cxx in Sources */,
 				DCD56D380B247D920092F9F8 /* Cart4A50.cxx in Sources */,
 				DC96162E1F817830008A2206 /* AtariMouseWidget.cxx in Sources */,
@@ -3488,6 +3562,7 @@
 				E08FCD5623A037EB0051F59B /* BilinearBlitter.cxx in Sources */,
 				DC4613670D92C03600D8DAB9 /* RomAuditDialog.cxx in Sources */,
 				DC487FB60DA5350900E12499 /* AtariVox.cxx in Sources */,
+				DC1E89042C4033280033E15F /* ElfLinker.cxx in Sources */,
 				DC11F78D0DB36933003B505E /* MT24LC256.cxx in Sources */,
 				DCA00FF70DBABCAD00C3823D /* RiotDebug.cxx in Sources */,
 				DC2ABA61259BD56F007E57D3 /* CompositeKeyValueRepositorySqlite.cxx in Sources */,
@@ -3560,6 +3635,7 @@
 				DCD2839812E39F1200A808DC /* Thumbulator.cxx in Sources */,
 				DC1BC6662066B4390076F74A /* PKeyboardHandler.cxx in Sources */,
 				DC6C726213CDEA0A008A5975 /* LoggerDialog.cxx in Sources */,
+				DC1E89082C4033280033E15F /* ElfUtil.cxx in Sources */,
 				DC8C1BAD14B25DE7006440EE /* CartCM.cxx in Sources */,
 				DC0E98E42801CD1600097C68 /* Cart0FA0.cxx in Sources */,
 				DCDDEAC61F5DBF0400C67366 /* StateManager.cxx in Sources */,

@@ -30,7 +30,7 @@ class GlobalKeyHandler;
 
 namespace GUI {
   class Font;
-}
+}  // namespace GUI
 
 #include "Event.hxx"
 #include "EventHandlerConstants.hxx"
@@ -59,7 +59,7 @@ class EventHandler
     /**
       Create a new event handler object
     */
-    EventHandler(OSystem& osystem);
+    explicit EventHandler(OSystem& osystem);
     virtual ~EventHandler();
 
     /**
@@ -428,7 +428,7 @@ class EventHandler
     virtual void pollEvent() = 0;
 
     // Other events that can be received from the underlying event handler
-    enum class SystemEvent {
+    enum class SystemEvent: uInt8 {
       WINDOW_SHOWN,
       WINDOW_HIDDEN,
       WINDOW_EXPOSED,
@@ -549,7 +549,7 @@ class EventHandler
     ;
 
     // The event(s) assigned to each combination event
-    BSPF::array2D<Event::Type, COMBO_SIZE, EVENTS_PER_COMBO> myComboTable;
+    BSPF::array2D<Event::Type, COMBO_SIZE, EVENTS_PER_COMBO> myComboTable{};
 
     // Holds static strings for the remap menu (emulation and menu events)
     using EmulActionList = std::array<ActionList, EMUL_ACTIONLIST_SIZE>;

@@ -24,6 +24,7 @@
 #include "PaletteHandler.hxx"
 #include "Joystick.hxx"
 #include "Paddles.hxx"
+#include "CartELF.hxx"
 #ifdef GUI_SUPPORT
   #include "JitterEmulation.hxx"
 #endif
@@ -311,12 +312,15 @@ Settings::Settings()
   setPermanent("dev.extaccess", "true");
   // Thumb ARM emulation options
   setPermanent("dev.thumb.trapfatal", "true");
+  setPermanent("dev.arm.mips", CartridgeELF::MIPS_DEF);
 #ifdef DEBUGGER_SUPPORT
   setPermanent("dev.thumb.inccycles", "true");
   setPermanent("dev.thumb.cyclefactor", "1.05");
   setPermanent("dev.thumb.chiptype", "0"); // = LPC2103
   setPermanent("dev.thumb.mammode", "2");
 #endif
+
+  setTemporary("elf.dump", false);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -794,6 +798,7 @@ void Settings::usage()
 #endif
     << "  -dev.thumb.trapfatal   <1|0>     Determines whether errors in ARM emulation\n"
     << "                                    throw an exception\n"
+    << "  -dev.arm.mips         <number>   Limit emulation speed to simulate ARM CPU used.\n"
 #ifdef DEBUGGER_SUPPORT
     << "  -dev.thumb.inccycles   <1|0>     Determines whether ARM emulation cycles\n"
     << "                                    increase system cycles\n"
@@ -816,7 +821,8 @@ void Settings::usage()
     << "  -dev.tia.pfscoreglitch <1|0>      Enable PF score mode color glitch\n"
     << "  -dev.tia.delaybkcolor  <1|0>      Enable extra delay cycle for background color\n"
     << "  -dev.tia.delayplswap   <1|0>      Enable extra delay cycle for VDELP0/1 swap\n"
-    << "  -dev.tia.delayblswap   <1|0>      Enable extra delay cycle for VDELBL swap\n\n";
+    << "  -dev.tia.delayblswap   <1|0>      Enable extra delay cycle for VDELBL swap\n"
+    << "  -elf.dump              <1|0>      Dump ELF linkage information and write elf_executable_image.bin\n\n";
 
 #ifdef BSPF_WINDOWS
 //  int height = 25;
@@ -829,7 +835,7 @@ void Settings::usage()
 
 #if defined(BSPF_UNIX) || defined(BSPF_MACOS)
   int height = 25;
-  struct winsize ws;
+  struct winsize ws{};
 
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
 
@@ -900,7 +906,8 @@ void Settings::migrateOne()
   const int version = getInt(SETTINGS_VERSION_KEY);
   if (version >= SETTINGS_VERSION) return;
 
-  switch (version) {  // NOLINT  (could be written as IF/ELSE)
+  // NOLINTBEGIN: could be written as IF/ELSE, bugprone-branch-clone
+  switch (version) {
     case 0:
       #if defined BSPF_MACOS || defined DARWIN
         setPermanent("video", "");
@@ -909,6 +916,7 @@ void Settings::migrateOne()
     default:
       break;
   }
+  // NOLINTEND
 
   setPermanent(SETTINGS_VERSION_KEY, version + 1);
 }

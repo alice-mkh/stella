@@ -65,7 +65,7 @@ class CartDebug : public DebuggerSystem
     };
 
     // Determine 'type' of address (ie, what part of the system accessed)
-    enum class AddrType { TIA, IO, ZPRAM, ROM };
+    enum class AddrType: uInt8 { TIA, IO, ZPRAM, ROM };
     static AddrType addressType(uInt16 addr);
 
   public:
@@ -294,15 +294,15 @@ class CartDebug : public DebuggerSystem
     };
 
     // Address type information determined by Distella
-    AddrTypeArray myDisLabels, myDisDirectives;
+    AddrTypeArray myDisLabels{}, myDisDirectives{};
 
     // Information on equates used in the disassembly
     struct ReservedEquates {
-      std::array<bool, 16>  TIARead{false};
-      std::array<bool, 64>  TIAWrite{false};
-      std::array<bool, 32>  IOReadWrite{false};
-      std::array<bool, 128> ZPRAM{false};
-      AddrToLabel Label{};
+      std::array<bool, 16>  TIARead{};
+      std::array<bool, 64>  TIAWrite{};
+      std::array<bool, 32>  IOReadWrite{};
+      std::array<bool, 128> ZPRAM{};
+      AddrToLabel Label;
       bool breakFound{false};
     };
     ReservedEquates myReserved;

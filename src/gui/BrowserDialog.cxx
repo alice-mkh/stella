@@ -119,7 +119,14 @@ void BrowserDialog::show(GuiObject* parent, const GUI::Font& font,
 {
   uInt32 w = 0, h = 0;
 
-  static_cast<Dialog*>(parent)->getDynamicBounds(w, h);
+  const auto* parentDialog = static_cast<Dialog*>(parent);
+  if (parentDialog) {
+    parentDialog->getDynamicBounds(w, h);
+  } else {
+    w = FBMinimum::Width;
+    h = FBMinimum::Height;
+  }
+
   if(w > static_cast<uInt32>(font.getMaxCharWidth() * 80))
     w = font.getMaxCharWidth() * 80;
 

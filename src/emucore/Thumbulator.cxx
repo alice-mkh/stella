@@ -135,7 +135,7 @@ using Common::Base;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Thumbulator::Thumbulator(const uInt16* rom_ptr, uInt16* ram_ptr, uInt32 rom_size,
-                         const uInt32 c_base, const uInt32 c_start, const uInt32 c_stack,
+                         uInt32 c_base, uInt32 c_start, uInt32 c_stack,
                          bool traponfatal, double cyclefactor,
                          Thumbulator::ConfigureFor configurefor,
                          Cartridge* cartridge)
@@ -760,9 +760,9 @@ uInt32 Thumbulator::read32(uInt32 addr)
           data = systick_count;
           return data;
 #ifdef THUMB_CYCLE_COUNT
-        case 0xE01FC100: // APBDIV 
+        case 0xE01FC100: // APBDIV
           _countCycles = true; // enabe cycle counting
-          return 1; // random value 
+          return 1; // random value
 #endif
 
 #ifndef UNSAFE_OPTIMIZATIONS
@@ -2952,7 +2952,7 @@ int Thumbulator::reset()
 #endif
 #ifdef THUMB_STATS
   _stats.reads = _stats.writes
-    = _stats.nCylces = _stats.sCylces = _stats.iCylces
+    = _stats.nCycles = _stats.nCycles = _stats.iCycles
     = _stats.branches = _stats.taken
     = _stats.mamPrefetchHits = _stats.mamPrefetchMisses
     = _stats.mamBranchHits = _stats.mamBranchMisses
@@ -3191,7 +3191,7 @@ void Thumbulator::incCycles(AccessType accessType, uInt32 cycles)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Thumbulator::incSCycles(uInt32 addr, AccessType accessType)
 {
-  THUMB_STAT(_stats.sCylces)
+  THUMB_STAT(_stats.nCycles)
   uInt32 cycles = 0;
 
   if(addr & 0xC0000000) // RAM, peripherals
@@ -3251,7 +3251,7 @@ void Thumbulator::incSCycles(uInt32 addr, AccessType accessType)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Thumbulator::incNCycles(uInt32 addr, AccessType accessType)
 {
-  THUMB_STAT(_stats.nCylces)
+  THUMB_STAT(_stats.nCycles)
   uInt32 cycles = 0;
 
   if(addr & 0xC0000000) // RAM, peripherals
@@ -3278,7 +3278,7 @@ void Thumbulator::incNCycles(uInt32 addr, AccessType accessType)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Thumbulator::incICycles(uInt32 m)
 {
-  THUMB_STAT(_stats.iCylces)
+  THUMB_STAT(_stats.iCycles)
 
  #ifdef EMULATE_PIPELINE
   _fetchPipeline += m;

@@ -43,6 +43,7 @@ class AnalogReadout : public Serializable
   public:
 
     AnalogReadout();
+    ~AnalogReadout() override = default;
 
     void reset(uInt64 timestamp);
 
@@ -87,7 +88,7 @@ class AnalogReadout : public Serializable
     Connection myConnection{ConnectionType::disconnected, 0};
     uInt64 myTimestamp{0};
 
-    ConsoleTiming myConsoleTiming;
+    ConsoleTiming myConsoleTiming{ConsoleTiming::ntsc};
     double myClockFreq{0.0};
 
     bool myIsDumped{false};

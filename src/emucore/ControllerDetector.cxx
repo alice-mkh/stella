@@ -23,7 +23,7 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Controller::Type ControllerDetector::detectType(
     const ByteBuffer& image, size_t size,
-    const Controller::Type type, const Controller::Jack port,
+    Controller::Type type, Controller::Jack port,
     const Settings& settings, bool isQuadTari)
 {
   if(type == Controller::Type::Unknown || settings.getBool("rominfo"))
@@ -46,7 +46,7 @@ Controller::Type ControllerDetector::detectType(
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 string ControllerDetector::detectName(const ByteBuffer& image, size_t size,
-    const Controller::Type type, const Controller::Jack port,
+    Controller::Type type, Controller::Jack port,
     const Settings& settings, bool isQuadTari)
 {
   return Controller::getName(detectType(image, size, type, port, settings, isQuadTari));
@@ -90,7 +90,7 @@ Controller::Type ControllerDetector::autodetectPort(
       type = Controller::Type::Paddles;
     else if(isProbablyKidVid(image, size, port))
       type = Controller::Type::KidVid;
-    else if (isQuadTari) // currently most likely assumption
+    else if(isQuadTari) // currently most likely assumption
       type = Controller::Type::Paddles;
   }
   // TODO: BOOSTERGRIP, DRIVING, COMPUMATE, MINDLINK, ATARIVOX
@@ -102,7 +102,7 @@ Controller::Type ControllerDetector::autodetectPort(
 bool ControllerDetector::searchForBytes(const ByteBuffer& image, size_t imagesize,
                                         const uInt8* signature, uInt32 sigsize)
 {
-  if (imagesize >= sigsize)
+  if(imagesize >= sigsize)
     for(uInt32 i = 0; i < imagesize - sigsize; ++i)
     {
       uInt32 matches = 0;

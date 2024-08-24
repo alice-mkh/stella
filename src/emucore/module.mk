@@ -2,7 +2,7 @@ MODULE := src/emucore
 
 MODULE_OBJS := \
 	src/emucore/AtariVox.o \
-		src/emucore/Bankswitch.o \
+	src/emucore/Bankswitch.o \
 	src/emucore/Booster.o \
 	src/emucore/Cart.o \
 	src/emucore/CartARM.o \
@@ -55,12 +55,14 @@ MODULE_OBJS := \
 	src/emucore/CartTVBoy.o \
 	src/emucore/CartUA.o \
 	src/emucore/CartWD.o \
-    src/emucore/CartWF8.o \
+  src/emucore/CartWF8.o \
 	src/emucore/CartX07.o \
+	src/emucore/CartELF.o \
 	src/emucore/CompuMate.o \
 	src/emucore/Console.o \
 	src/emucore/Control.o \
 	src/emucore/ControllerDetector.o \
+	src/emucore/CortexM0.o \
 	src/emucore/DispatchResult.o \
 	src/emucore/Driving.o \
 	src/emucore/EventHandler.o \
@@ -97,6 +99,8 @@ MODULE_OBJS := \
 	src/emucore/System.o \
 	src/emucore/TIASurface.o \
 	src/emucore/Thumbulator.o
+
+MODULE_TEST_OBJS =
 
 MODULE_DIRS += \
 	src/emucore

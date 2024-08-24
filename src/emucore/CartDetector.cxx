@@ -18,6 +18,7 @@
 #include "bspf.hxx"
 #include "Logger.hxx"
 
+#include "ElfParser.hxx"
 #include "CartDetector.hxx"
 #include "CartMVC.hxx"
 
@@ -27,7 +28,10 @@ Bankswitch::Type CartDetector::autodetectType(const ByteBuffer& image, size_t si
   // Guess type based on size
   Bankswitch::Type type = Bankswitch::Type::_AUTO;
 
-  if((size % 8448) == 0 || size == 6_KB)
+  if (isProbablyELF(image, size)) {
+    type =Bankswitch::Type::_ELF;
+  }
+  else if ((size % 8448) == 0 || size == 6_KB)
   {
     if(size == 6_KB && isProbablyGL(image, size))
       type = Bankswitch::Type::_GL;
@@ -853,6 +857,27 @@ bool CartDetector::isProbablyX07(const ByteBuffer& image, size_t size)
       return true;
 
   return false;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CartDetector::isProbablyELF(const ByteBuffer& image, size_t size) {
+  // Min ELF header size
+  if (size < 52) return false;
+
+  // Must start with ELF magic
+  static constexpr uInt8 signature[] = { 0x7f, 'E', 'L', 'F' };
+  if (!searchForBytes(image, 2 * sizeof(signature), signature, sizeof(signature), 1)) return false;
+
+  // We require little endian
+  if (image[0x05] != ElfParser::ENDIAN_LITTLE_ENDIAN) return false;
+
+  // Type must be ET_REL (relocatable ELF)
+  if (image[0x10] != ElfParser::ET_REL) return false;
+
+  // Arch must be ARM
+  if (image[0x12] != ElfParser::ARCH_ARM32) return false;
+
+  return true;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -38,7 +38,7 @@ class Sound
       Create a new sound object.  The open method must be invoked before
       using the object.
     */
-    Sound(OSystem& osystem) : myOSystem{osystem} { }
+    explicit Sound(OSystem& osystem) : myOSystem{osystem} { }
     virtual ~Sound() = default;
 
   public:
@@ -53,7 +53,7 @@ class Sound
       Start the sound system, initializing it if necessary.  This must be
       called before any calls are made to derived methods.
     */
-    virtual void open(shared_ptr<AudioQueue>, EmulationTiming*) = 0;
+    virtual void open(shared_ptr<AudioQueue>, shared_ptr<const EmulationTiming>) = 0;
 
     /**
       Sets the sound mute state; sound processing continues.  When turned
@@ -118,8 +118,8 @@ class Sound
 
       @return  True, if the WAV file can be played
     */
-    virtual bool playWav(const string& fileName, const uInt32 position = 0,
-                         const uInt32 length = 0) { return false; }
+    virtual bool playWav(const string& fileName, uInt32 position = 0,
+                         uInt32 length = 0) { return false; }
 
     /**
       Stop any currently playing WAV file.

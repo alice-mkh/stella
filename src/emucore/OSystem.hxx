@@ -105,7 +105,7 @@ class OSystem
       @return The frame buffer
     */
     FrameBuffer& frameBuffer() const { return *myFrameBuffer; }
-    bool hasFrameBuffer() const { return myFrameBuffer.get() != nullptr; }
+    bool hasFrameBuffer() const { return myFrameBuffer != nullptr; }
 
     /**
       Get the sound object of the system.
@@ -377,7 +377,7 @@ class OSystem
 
       @return  True on successful creation, otherwise false
     */
-    bool reloadConsole(bool nextrom = true);
+    optional<string> reloadConsole(bool nextrom = true);
 
     /**
       Creates a new ROM launcher, to select a new ROM to emulate.

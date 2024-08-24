@@ -34,6 +34,7 @@ class DelayQueue : public Serializable
 
   public:
     DelayQueue();
+    ~DelayQueue() override = default;
 
   public:
 
@@ -52,7 +53,7 @@ class DelayQueue : public Serializable
   private:
     std::array<DelayQueueMember<capacity>, length> myMembers;
     uInt8 myIndex{0};
-    std::array<uInt8, 0xFF> myIndices;
+    std::array<uInt8, 0xFF> myIndices{};
 
   private:
     DelayQueue(const DelayQueue&) = delete;

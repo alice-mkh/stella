@@ -29,6 +29,7 @@
 
   @author  Stephen Anthony
 */
+// NOLINTBEGIN: c'tors cannot be explicit here
 class Variant
 {
   private:
@@ -42,7 +43,7 @@ class Variant
     }
 
   public:
-    Variant() = default;  // NOLINT
+    Variant() = default;
 
     Variant(const string& s) : data{s} { }
     Variant(string_view s) : data{s} { }
@@ -89,6 +90,7 @@ namespace VarList {
   {
     list.emplace_back(name.toString(), tag);
   }
-}
+}  // namespace VarList
 
+// NOLINTEND
 #endif

@@ -38,10 +38,10 @@ class OptionsDialog;
 
 namespace GUI {
   class MessageBox;
-}
+}  // namespace GUI
 namespace Common {
   struct Rect;
-}
+}  // namespace Common
 
 #include "Dialog.hxx"
 
@@ -50,7 +50,7 @@ class DebuggerDialog : public Dialog
   public:
     // Note: these sizes make sure that all major tabs are fully visible
     //       cart dependend information (e.g. DPC+) may require more space
-    enum {
+    enum: uInt16 {
       kSmallFontMinW  = 1090, kSmallFontMinH  = 720,
       kMediumFontMinW = 1160, kMediumFontMinH = 770,
       kLargeFontMinW  = 1160, kLargeFontMinH  = 870
@@ -67,7 +67,7 @@ class DebuggerDialog : public Dialog
     TiaOutputWidget& tiaOutput() const { return *myTiaOutput;    }
     TiaZoomWidget& tiaZoom() const     { return *myTiaZoom;      }
     RomWidget& rom() const             { return *myRom;          }
-    CartDebugWidget& cartDebug() const { return *myCartDebug;    }
+    CartDebugWidget* cartDebug() const { return myCartDebug;    }
     CartRamWidget& cartRam() const     { return *myCartRam;      }
     EditTextWidget& message() const    { return *myMessageBox;   }
     ButtonWidget& rewindButton() const { return *myRewindButton; }

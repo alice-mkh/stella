@@ -32,7 +32,7 @@ class Settings;
 #ifdef DEBUGGER_SUPPORT
   namespace GUI {
     class Font;
-  }
+  }  // namespace GUI
 #endif
 
 /**
@@ -65,6 +65,13 @@ class Cartridge : public Device
     */
     Cartridge(const Settings& settings, string_view md5);
     ~Cartridge() override = default;
+
+    /**
+     * @brief Set the game properties container
+     *
+     * @param props   game properties container
+     */
+    void setProperties(const Properties* props);
 
     /**
       Set/query some information about this cartridge.
@@ -167,8 +174,8 @@ class Cartridge : public Device
 
       @return  Address of illegal access if one occurred, else 0
     */
-    inline uInt16 getIllegalRAMReadAccess() const {
-      return myRamReadAccesses.size() > 0 ? myRamReadAccesses[0] : 0;
+    uInt16 getIllegalRAMReadAccess() const {
+      return !myRamReadAccesses.empty() ? myRamReadAccesses[0] : 0;
     }
 
     /**
@@ -178,7 +185,9 @@ class Cartridge : public Device
 
       @return  Address of illegal access if one occurred, else 0
     */
-    inline uInt16 getIllegalRAMWriteAccess() const { return myRamWriteAccess; }
+    uInt16 getIllegalRAMWriteAccess() const {
+      return myRamWriteAccess;
+    }
 
     /**
       Query the access counters
@@ -315,6 +324,12 @@ class Cartridge : public Device
     */
     virtual uInt32 thumbCallback(uInt8 function, uInt32 value1, uInt32 value2) { return 0; }
 
+    virtual uInt8 overdrivePeek(uInt16 address, uInt8 value) { return value; }
+
+    virtual uInt8 overdrivePoke(uInt16 address, uInt8 value) { return value; }
+
+    virtual bool doesBusStuffing() { return false; }
+
   #ifdef DEBUGGER_SUPPORT
     /**
       Get optional debugger widget responsible for displaying info about the cart.
@@ -437,10 +452,13 @@ class Cartridge : public Device
     messageCallback myMsgCallback{nullptr};
 
     // Semi-random values to use when a read from write port occurs
-    std::array<uInt8, 256> myRWPRandomValues;
+    std::array<uInt8, 256> myRWPRandomValues{};
 
     // If myRandomHotspots is true, peeks to hotspots return semi-random values.
     bool myRandomHotspots{false};
+
+    // Game properties. Set after construction when Console is created
+    const Properties* myProperties{nullptr};
 
   private:
     // The startup bank to use (where to look for the reset vector address)

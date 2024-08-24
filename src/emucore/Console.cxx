@@ -116,10 +116,14 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
                  const Properties& props, AudioSettings& audioSettings)
   : myOSystem{osystem},
     myEvent{osystem.eventHandler().event()},
+    myAudioSettings{audioSettings},
     myProperties{props},
     myCart{std::move(cart)},
-    myAudioSettings{audioSettings}
+    myDisplayFormat{myProperties.get(PropType::Display_Format)}
 {
+  myEmulationTiming = make_shared<EmulationTiming>();
+  myCart->setProperties(&myProperties);
+
   // Create subsystems for the console
   my6502 = make_unique<M6502>(myOSystem.settings());
   myRiot = make_unique<M6532>(*this, myOSystem.settings());
@@ -167,9 +171,6 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
   myDevSettingsHandler = make_unique<DevSettingsHandler>(myOSystem);
 
   // Auto-detect NTSC/PAL mode if it's requested
-  string autodetected;
-  myDisplayFormat = myProperties.get(PropType::Display_Format);
-
   if (myDisplayFormat == "AUTO")
     myDisplayFormat = formatFromFilename();
 
@@ -181,6 +182,7 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
   myOSystem.sound().pause(true);
   myOSystem.frameBuffer().clear();
 
+  string autodetected;
   if(myDisplayFormat == "AUTO" || myOSystem.settings().getBool("rominfo"))
   {
     autodetectFrameLayout();
@@ -750,7 +752,7 @@ FBInitStatus Console::initializeVideo(bool full)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Console::initializeAudio()
 {
-  myEmulationTiming
+  (*myEmulationTiming)
     .updatePlaybackRate(myAudioSettings.sampleRate())
     .updatePlaybackPeriod(myAudioSettings.fragmentSize())
     .updateAudioQueueExtraFragments(myAudioSettings.bufferSize())
@@ -763,7 +765,7 @@ void Console::initializeAudio()
   myTIA->setAudioQueue(myAudioQueue);
   myTIA->setAudioRewindMode(myOSystem.state().mode() != StateManager::Mode::Off);
 
-  myOSystem.sound().open(myAudioQueue, &myEmulationTiming);
+  myOSystem.sound().open(myAudioQueue, myEmulationTiming);
 }
 
 /* Original frying research and code by Fred Quimby.
@@ -789,7 +791,7 @@ void Console::initializeAudio()
 void Console::fry() const
 {
   for(int i = 0; i < 0x100; i += mySystem->randGenerator().next() % 4)
-    mySystem->poke(i, mySystem->peek(i) & mySystem->randGenerator().next());
+    mySystem->pokeOob(i, mySystem->peekOob(i) & mySystem->randGenerator().next());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -877,8 +879,8 @@ void Console::setTIAProperties()
   myTIA->setAdjustVSize(myOSystem.settings().getInt("tia.vsizeadjust"));
   myTIA->setVcenter(vcenter);
 
-  myEmulationTiming.updateFrameLayout(myTIA->frameLayout());
-  myEmulationTiming.updateConsoleTiming(myConsoleTiming);
+  myEmulationTiming->updateFrameLayout(myTIA->frameLayout());
+  myEmulationTiming->updateConsoleTiming(myConsoleTiming);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -888,8 +890,8 @@ void Console::createAudioQueue()
     || myProperties.get(PropType::Cart_Sound) == "STEREO";
 
   myAudioQueue = make_shared<AudioQueue>(
-    myEmulationTiming.audioFragmentSize(),
-    myEmulationTiming.audioQueueCapacity(),
+    myEmulationTiming->audioFragmentSize(),
+    myEmulationTiming->audioQueueCapacity(),
     useStereo
   );
 }
@@ -968,11 +970,12 @@ void Console::setControllers(string_view romMd5)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Console::changeLeftController(int direction)
 {
-  int type = static_cast<int>(Controller::getType(myProperties.get(PropType::Controller_Left)));
+  auto type =
+    static_cast<uInt8>(Controller::getType(myProperties.get(PropType::Controller_Left)));
   if(!type)
-    type = static_cast<int>(Controller::getType(leftController().name()));
+    type = static_cast<uInt8>(Controller::getType(leftController().name()));
   type = BSPF::clampw(type + direction,
-                      1, static_cast<int>(Controller::Type::LastType) - 1);
+                      1, static_cast<uInt8>(Controller::Type::LastType) - 1);
 
   myProperties.set(PropType::Controller_Left, Controller::getPropName(Controller::Type{type}));
   setControllers(myProperties.get(PropType::Cart_MD5));
@@ -985,11 +988,12 @@ void Console::changeLeftController(int direction)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Console::changeRightController(int direction)
 {
-  int type = static_cast<int>(Controller::getType(myProperties.get(PropType::Controller_Right)));
+  auto type =
+    static_cast<uInt8>(Controller::getType(myProperties.get(PropType::Controller_Right)));
   if(!type)
-    type = static_cast<int>(Controller::getType(rightController().name()));
+    type = static_cast<uInt8>(Controller::getType(rightController().name()));
   type = BSPF::clampw(type + direction,
-                      1, static_cast<int>(Controller::Type::LastType) - 1);
+                      1, static_cast<uInt8>(Controller::Type::LastType) - 1);
 
   myProperties.set(PropType::Controller_Right, Controller::getPropName(Controller::Type{type}));
   setControllers(myProperties.get(PropType::Cart_MD5));
@@ -1001,7 +1005,7 @@ void Console::changeRightController(int direction)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 unique_ptr<Controller> Console::getControllerPort(
-    const Controller::Type type, const Controller::Jack port, string_view romMd5)
+    Controller::Type type, Controller::Jack port, string_view romMd5)
 {
   unique_ptr<Controller> controller;
 
@@ -1277,9 +1281,13 @@ void Console::changeAutoFireRate(int direction)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 float Console::currentFrameRate() const
 {
+  const uInt32 scalinesLastFrame = myTIA->frameBufferScanlinesLastFrame();
+
   return
-    (myConsoleTiming == ConsoleTiming::ntsc ? 262.F * 60.F : 312.F * 50.F) /
-     myTIA->frameBufferScanlinesLastFrame();
+    scalinesLastFrame != 0 ?
+      (myConsoleTiming == ConsoleTiming::ntsc ? 262.F * 60.F : 312.F * 50.F)
+        / myTIA->frameBufferScanlinesLastFrame() :
+      0;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

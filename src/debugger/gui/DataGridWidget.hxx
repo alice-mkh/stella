@@ -43,7 +43,7 @@ class DataGridWidget : public EditableWidget
     DataGridWidget(GuiObject* boss, const GUI::Font& font,
                    int x, int y, int cols, int rows,
                    int colchars, int bits,
-                   Common::Base::Fmt base = Common::Base::Fmt::_DEFAULT,
+                   Common::Base::Fmt base = Common::Base::Fmt::DEFAULT,
                    bool useScrollbar = false);
     ~DataGridWidget() override = default;
 
@@ -78,7 +78,7 @@ class DataGridWidget : public EditableWidget
     // Account for the extra width of embedded scrollbar
     int getWidth() const override;
 
-    int colWidth() { return _colWidth; }
+    int colWidth() const { return _colWidth; }
 
     void setOpsWidget(DataGridOpsWidget* w) { _opsWidget = w; }
 

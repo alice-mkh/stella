@@ -33,11 +33,11 @@ namespace {
 CartridgeAR::CartridgeAR(const ByteBuffer& image, size_t size,
                          string_view md5, const Settings& settings)
   : Cartridge(settings, md5),
-    mySize{std::max(size, LOAD_SIZE)}
+    mySize{std::max(size, LOAD_SIZE)},
+    myNumberOfLoadImages{static_cast<uInt8>(mySize / LOAD_SIZE)}
 {
   // Create a load image buffer and copy the given image
   myLoadImages = make_unique<uInt8[]>(mySize);
-  myNumberOfLoadImages = static_cast<uInt8>(mySize / LOAD_SIZE);
   std::copy_n(image.get(), size, myLoadImages.get());
 
   // Add header if image doesn't include it
@@ -337,9 +337,9 @@ void CartridgeAR::loadIntoRAM(uInt8 load)
 
       // Copy the bank switching byte and starting address into the 2600's
       // RAM for the "dummy" SC BIOS to access it
-      mySystem->poke(0xfe, myHeader[0]);
-      mySystem->poke(0xff, myHeader[1]);
-      mySystem->poke(0x80, myHeader[2]);
+      mySystem->pokeOob(0xfe, myHeader[0]);
+      mySystem->pokeOob(0xff, myHeader[1]);
+      mySystem->pokeOob(0x80, myHeader[2]);
 
       myBankChanged = true;
       if(success)

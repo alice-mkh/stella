@@ -31,6 +31,7 @@
   #pragma clang diagnostic ignored "-Wimplicit-fallthrough"
   #pragma clang diagnostic ignored "-Wreserved-id-macro"
   #pragma clang diagnostic ignored "-Wold-style-cast"
+  #pragma clang diagnostic ignored "-Wreserved-identifier"
   #pragma clang diagnostic ignored "-Wswitch-default"
   #include <SDL.h>
   #pragma clang diagnostic pop
@@ -63,7 +64,7 @@ static inline string SDLVersion()
 
 static inline bool SDLSupportsURL()
 {
-  return static_cast<bool>(SDL_VERSION_ATLEAST(2,0,14));
+  return SDL_VERSION_ATLEAST(2,0,14);
 }
 
 static inline bool SDLOpenURL(const string& url)

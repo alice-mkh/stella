@@ -46,7 +46,7 @@ bool SerialPortUNIX::openPort(const string& device)
   tcflush(myHandle, TCIFLUSH);
   fcntl(myHandle, F_SETFL, FNDELAY);
 
-  struct termios termios;
+  struct termios termios{};
   memset(&termios, 0, sizeof(struct termios));
 
   termios.c_cflag = CREAD | CLOCAL;
@@ -91,7 +91,7 @@ bool SerialPortUNIX::isCTS()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 StringList SerialPortUNIX::portNames()
 {
-  StringList ports;
+  StringList ports;  // NOLINT: cannot be const, but clang-tidy suggests it
 
   // Check if port is valid; for now that means if it can be opened
   // Eventually we may extend this to do more intensive checks
@@ -106,7 +106,7 @@ StringList SerialPortUNIX::portNames()
     return BSPF::startsWithIgnoreCase(node.getPath(), "/dev/ttyACM") ||
            BSPF::startsWithIgnoreCase(node.getPath(), "/dev/ttyUSB");
   };
-  FSList portList;
+  FSList portList;  // NOLINT: cannot be const, but clang-tidy suggests it
   portList.reserve(5);
 
   const FSNode dev("/dev/");

@@ -68,14 +68,13 @@ LauncherDialog::LauncherDialog(OSystem& osystem, DialogContainer& parent,
                                int x, int y, int w, int h)
   : Dialog(osystem, parent, osystem.frameBuffer().launcherFont(), "",
            x, y, w, h),
-    CommandSender(this)
+    CommandSender(this),
+    myUseMinimalUI{instance().settings().getBool("minimal_ui")}
 {
   const bool bottomButtons = instance().settings().getBool("launcherbuttons");
   int ypos = Dialog::vBorder();
 
-  myUseMinimalUI = instance().settings().getBool("minimal_ui");
-
-  // if minimalUI, show title within dialog surface instead of showing the filtering control
+  // If minimalUI, show title within dialog surface instead of showing the filtering control
   if(myUseMinimalUI) {
     addTitleWidget(ypos);
     addPathWidgets(ypos);       //-- path widget line will have file count
@@ -1045,7 +1044,8 @@ void LauncherDialog::handleCommand(CommandSender* sender, int cmd,
       if(subDirs && cmd == EditableWidget::kChangedCmd)
       {
         // delay (potentially slow) subdirectories reloads until user stops typing
-        myReloadTime = TimerManager::getTicks() / 1000 + myList->getQuickSelectDelay();
+        myReloadTime = TimerManager::getTicks() / 1000 +
+          LauncherFileListWidget::getQuickSelectDelay();
         myPendingReload = true;
       }
       else
@@ -1173,11 +1173,11 @@ void LauncherDialog::openContextMenu(int x, int y)
   {
     if(!currentNode().isDirectory())
     {
-      if(myList->isUserDir(currentNode().getName()))
+      if(LauncherFileListWidget::isUserDir(currentNode().getName()))
         items.emplace_back("Remove all from favorites", "removefavorites");
-      if(myList->isPopularDir(currentNode().getName()))
+      if(LauncherFileListWidget::isPopularDir(currentNode().getName()))
         items.emplace_back("Remove all from most popular", "removepopular");
-      if(myList->isRecentDir(currentNode().getName()))
+      if(LauncherFileListWidget::isRecentDir(currentNode().getName()))
         items.emplace_back("Remove all from recently played", "removerecent");
       if(myList->inRecentDir())
         items.emplace_back("Remove from recently played", "Ctrl+X", "remove");

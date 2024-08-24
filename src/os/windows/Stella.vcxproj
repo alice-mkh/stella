@@ -164,7 +164,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;..\..\lib\httplib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\emucore\elf;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;..\..\lib\httplib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BSPF_WINDOWS;WIN32;NOMINMAX;DEBUG_BUILD;SDL_SUPPORT;GUI_SUPPORT;IMAGE_SUPPORT;ZIP_SUPPORT;JOYSTICK_SUPPORT;DEBUGGER_SUPPORT;WINDOWED_SUPPORT;SOUND_SUPPORT;CHEATCODE_SUPPORT;HTTP_LIB_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -201,7 +201,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\emucore\elf;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BSPF_WINDOWS;WIN32;NOMINMAX;DEBUG_BUILD;SDL_SUPPORT;GUI_SUPPORT;IMAGE_SUPPORT;ZIP_SUPPORT;JOYSTICK_SUPPORT;WINDOWED_SUPPORT;SOUND_SUPPORT;CHEATCODE_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -240,7 +240,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;..\..\lib\httplib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\emucore\elf;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;..\..\lib\httplib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BSPF_WINDOWS;WIN32;NOMINMAX;NDEBUG;SDL_SUPPORT;GUI_SUPPORT;IMAGE_SUPPORT;ZIP_SUPPORT;JOYSTICK_SUPPORT;DEBUGGER_SUPPORT;WINDOWED_SUPPORT;SOUND_SUPPORT;CHEATCODE_SUPPORT;HTTP_LIB_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -280,7 +280,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;..\..\lib\httplib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\emucore\elf;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;..\..\lib\httplib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BSPF_WINDOWS;WIN32;NOMINMAX;NDEBUG;SDL_SUPPORT;GUI_SUPPORT;IMAGE_SUPPORT;ZIP_SUPPORT;JOYSTICK_SUPPORT;DEBUGGER_SUPPORT;WINDOWED_SUPPORT;SOUND_SUPPORT;CHEATCODE_SUPPORT;HTTP_LIB_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -320,7 +320,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;..\..\lib\httplib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\emucore\elf;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;..\..\lib\httplib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BSPF_WINDOWS;WIN32;NOMINMAX;NDEBUG;SDL_SUPPORT;GUI_SUPPORT;IMAGE_SUPPORT;ZIP_SUPPORT;JOYSTICK_SUPPORT;DEBUGGER_SUPPORT;WINDOWED_SUPPORT;SOUND_SUPPORT;CHEATCODE_SUPPORT;HTTP_LIB_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -360,7 +360,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\debugger\yacc;..\..\emucore;..\..\emucore\tia;..\..\emucore\tia\frame-manager;..\..\emucore\elf;..\..\common;..\..\common\tv_filters;..\..\gui;..\..\debugger\gui;..\..\debugger;..\..\os\windows;..\..\cheat;..\..\lib\zlib;..\..\lib\libpng;..\..\lib\json;..\..\common\repository\sqlite;..\..\lib\sqlite;..\..\lib\nanojpeg;..\..\lib\tinyexif;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BSPF_WINDOWS;WIN32;NOMINMAX;NDEBUG;SDL_SUPPORT;GUI_SUPPORT;IMAGE_SUPPORT;ZIP_SUPPORT;JOYSTICK_SUPPORT;DEBUGGER_SUPPORT;WINDOWED_SUPPORT;SOUND_SUPPORT;CHEATCODE_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -547,6 +547,7 @@
     <ClCompile Include="..\..\debugger\gui\CartEFWidget.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\debugger\gui\CartELFWidget.cxx" />
     <ClCompile Include="..\..\debugger\gui\CartEnhancedWidget.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -690,7 +691,14 @@
     <ClCompile Include="..\..\emucore\CartWF8.cxx" />
     <ClCompile Include="..\..\emucore\CompuMate.cxx" />
     <ClCompile Include="..\..\emucore\ControllerDetector.cxx" />
+    <ClCompile Include="..\..\emucore\CortexM0.cxx" />
     <ClCompile Include="..\..\emucore\DispatchResult.cxx" />
+    <ClCompile Include="..\..\emucore\elf\ElfParser.cxx" />
+    <ClCompile Include="..\..\emucore\elf\ElfLinker.cxx" />
+    <ClCompile Include="..\..\emucore\elf\ElfUtil.cxx" />
+    <ClCompile Include="..\..\emucore\elf\ElfEnvironment.cxx" />
+    <ClCompile Include="..\..\emucore\elf\BusTransactionQueue.cxx" />
+    <ClCompile Include="..\..\emucore\elf\VcsLib.cxx" />
     <ClCompile Include="..\..\emucore\EmulationTiming.cxx" />
     <ClCompile Include="..\..\emucore\EmulationWorker.cxx" />
     <ClCompile Include="..\..\emucore\FBSurface.cxx" />
@@ -789,6 +797,7 @@
     <ClCompile Include="..\..\emucore\CartSB.cxx" />
     <ClCompile Include="..\..\emucore\CartUA.cxx" />
     <ClCompile Include="..\..\emucore\CartX07.cxx" />
+    <ClCompile Include="..\..\emucore\CartELF.cxx" />
     <ClCompile Include="..\..\emucore\Console.cxx" />
     <ClCompile Include="..\..\emucore\Control.cxx" />
     <ClCompile Include="..\..\emucore\Driving.cxx" />
@@ -1511,6 +1520,7 @@
     <ClInclude Include="..\..\debugger\gui\CartEFWidget.hxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\..\debugger\gui\CartELFWidget.hxx" />
     <ClInclude Include="..\..\debugger\gui\CartEnhancedWidget.hxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClInclude>
@@ -1660,6 +1670,14 @@
     <ClInclude Include="..\..\emucore\ControllerDetector.hxx" />
     <ClInclude Include="..\..\emucore\ControlLowLevel.hxx" />
     <ClInclude Include="..\..\emucore\DispatchResult.hxx" />
+    <ClInclude Include="..\..\emucore\elf\BusTransactionQueue.hxx" />
+    <ClInclude Include="..\..\emucore\elf\ElfFile.hxx" />
+    <ClInclude Include="..\..\emucore\elf\ElfParser.hxx" />
+    <ClInclude Include="..\..\emucore\elf\ElfLinker.hxx" />
+    <ClInclude Include="..\..\emucore\elf\ElfUtil.hxx" />
+    <ClInclude Include="..\..\emucore\elf\ElfEnvironment.hxx" />
+    <ClInclude Include="..\..\emucore\CortexM0.hxx" />
+    <ClInclude Include="..\..\emucore\elf\VcsLib.hxx" />
     <ClInclude Include="..\..\emucore\EmulationTiming.hxx" />
     <ClInclude Include="..\..\emucore\EmulationWorker.hxx" />
     <ClInclude Include="..\..\emucore\EventHandlerConstants.hxx" />
@@ -1739,7 +1757,7 @@
     <ClInclude Include="..\..\gui\WhatsNewDialog.hxx" />
     <ClInclude Include="..\..\lib\httplib\httplib.h" />
     <ClInclude Include="..\..\lib\httplib\http_lib.hxx" />
-    <ClInclude Include="..\..\lib\json\json.hxx" />
+    <ClInclude Include="..\..\lib\json\json.hpp" />
     <ClInclude Include="..\..\lib\json\json_lib.hxx" />
     <ClInclude Include="..\..\lib\libpng\pngdebug.h" />
     <ClInclude Include="..\..\lib\libpng\pnginfo.h" />
@@ -1786,6 +1804,7 @@
     <ClInclude Include="..\..\emucore\CartSB.hxx" />
     <ClInclude Include="..\..\emucore\CartUA.hxx" />
     <ClInclude Include="..\..\emucore\CartX07.hxx" />
+    <ClInclude Include="..\..\emucore\CartELF.hxx" />
     <ClInclude Include="..\..\emucore\Console.hxx" />
     <ClInclude Include="..\..\emucore\Control.hxx" />
     <ClInclude Include="..\..\emucore\DefProps.hxx" />

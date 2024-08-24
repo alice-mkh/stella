@@ -24,6 +24,7 @@
 #include "StateManager.hxx"
 #include "TIA.hxx"
 #include "Cart.hxx"
+#include "CartELF.hxx"
 
 #include "DevSettingsHandler.hxx"
 
@@ -42,6 +43,8 @@ void DevSettingsHandler::loadSettings(SettingsSet set)
 
   myFrameStats[set] = settings.getBool(prefix + "stats");
   myDetectedInfo[set] = settings.getBool(prefix + "detectedinfo");
+  // AtariVox/SaveKey/PlusROM access
+  myExternAccess[set] = settings.getBool(prefix + "extaccess");
   myConsole[set] = settings.getString(prefix + "console") == "7800" ? 1 : 0;
   // Randomization
   myRandomBank[set] = settings.getBool(prefix + "bankrandom");
@@ -60,8 +63,7 @@ void DevSettingsHandler::loadSettings(SettingsSet set)
 #endif
   // Thumb ARM emulation exception
   myThumbException[set] = devSettings ? settings.getBool("dev.thumb.trapfatal") : false;
-  // AtariVox/SaveKey/PlusROM access
-  myExternAccess[set] = settings.getBool(prefix + "extaccess");
+  myArmSpeed[set] = devSettings ? settings.getInt("dev.arm.mips") : CartridgeELF::MIPS_MAX;
 
   // TIA tab
   myTIAType[set] = devSettings ? settings.getString("dev.tia.type") : "standard";
@@ -124,6 +126,7 @@ void DevSettingsHandler::saveSettings(SettingsSet set)
   #endif
     // Thumb ARM emulation exception
     settings.setValue("dev.thumb.trapfatal", myThumbException[set]);
+    settings.setValue("dev.arm.mips", myArmSpeed[set]);
   }
 
   // AtariVox/SaveKey/PlusROM access
