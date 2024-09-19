@@ -715,7 +715,7 @@ CortexM0& CortexM0::mapRegionData(uInt32 pageBase, uInt32 pageCount,
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CortexM0& CortexM0::mapRegionCode(uInt32 pageBase, uInt32 pageCount,
-                                  bool readOnly, uInt8* backingStore)
+                                  bool readOnly, uInt8* backingStore)  // NOLINT
 {
   MemoryRegion& region =
     setupMapping(pageBase, pageCount, readOnly, MemoryRegionType::directCode);
@@ -773,10 +773,35 @@ CortexM0& CortexM0::setRegister(uInt8 regno, uInt32 value)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt32 CortexM0::getRegister(uInt32 regno)
+uInt32 CortexM0::getRegister(uInt32 regno) const
 {
   return read_register(regno);
 }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CortexM0::getN() const
+{
+  return znFlags & 0x80000000;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CortexM0::getZ() const
+{
+  return znFlags == 0;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CortexM0::getC() const
+{
+  return cFlag;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CortexM0::getV() const
+{
+  return vFlag;
+}
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 uInt8 CortexM0::decodeInstructionWord(uInt16 instructionWord)

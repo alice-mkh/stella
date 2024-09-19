@@ -28,6 +28,7 @@
 
 #ifdef DEBUGGER_SUPPORT
   #include "CartELFWidget.hxx"
+  #include "CartELFStateWidget.hxx"
 #endif
 
 #include "CartELF.hxx"
@@ -90,7 +91,7 @@ namespace {
 
       stream
         << sections[i].name
-        << " @ 0x"<< std::setw(8)
+        << " @ 0x" << std::setw(8)
         << (relocatedSections[i]->offset + linker.getSegmentBase(relocatedSections[i]->segment))
         << " size 0x" << std::setw(8) << sections[i].size << '\n';
     }
@@ -220,8 +221,10 @@ namespace {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CartridgeELF::CartridgeELF(const ByteBuffer& image, size_t size, string_view md5,
                            const Settings& settings)
-  : Cartridge(settings, md5), myImageSize(size), myTransactionQueue(TRANSACTION_QUEUE_CAPACITY),
-    myVcsLib(myTransactionQueue)
+  : Cartridge(settings, md5),
+    myImageSize{size},
+    myTransactionQueue{TRANSACTION_QUEUE_CAPACITY},
+    myVcsLib{myTransactionQueue}
 {
   myImage = make_unique<uInt8[]>(size);
   std::memcpy(myImage.get(), image.get(), size);
@@ -234,9 +237,6 @@ CartridgeELF::CartridgeELF(const ByteBuffer& image, size_t size, string_view md5
   parseAndLinkElf();
   allocationSections();
 }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-CartridgeELF::~CartridgeELF() = default;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void CartridgeELF::reset()
@@ -375,14 +375,21 @@ uInt8 CartridgeELF::overdrivePoke(uInt16 address, uInt8 value)
 }
 
 #ifdef DEBUGGER_SUPPORT
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CartDebugWidget* CartridgeELF::debugWidget(
+  GuiObject* boss, const GUI::Font& lfont, const GUI::Font& nfont, int x, int y, int w, int h
+) {
+  return new CartridgeELFStateWidget(boss, lfont, nfont, x, y, w, h, *this);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+CartDebugWidget* CartridgeELF::infoWidget(
   GuiObject* boss, const GUI::Font& lfont, const GUI::Font& nfont, int x, int y, int w, int h
 ) {
   return new CartridgeELFWidget(boss, lfont, nfont, x, y, w, h, *this);
 }
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 string CartridgeELF::getDebugLog() const
 {
   ostringstream s;
@@ -390,7 +397,10 @@ string CartridgeELF::getDebugLog() const
   s
     << "ARM entrypoint: 0x"
     << std::hex << std::setw(8) << std::setfill('0') << myArmEntrypoint
-    << std::dec << '\n';
+    << '\n'
+    << "vsclib stubs @ 0x" << std::setw(8) << ADDR_STUB_BASE
+    << " size 0x" << std::setw(8) << STUB_SIZE << "\n"
+    << std::dec;
 
   dumpLinkage(myElfParser, *myLinker, s);
 
@@ -413,14 +423,7 @@ std::pair<unique_ptr<uInt8[]>, size_t> CartridgeELF::getArmImage() const
 
   return {std::move(image), imageSize};
 }
-
 #endif
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-inline uInt64 CartridgeELF::getArmCycles() const
-{
-  return myCortexEmu.getCycles() + myArmCyclesOffset;
-}
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 inline uInt8 CartridgeELF::driveBus(uInt16 address, uInt8 value)

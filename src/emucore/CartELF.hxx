@@ -25,16 +25,19 @@
 #include "ElfParser.hxx"
 #include "BusTransactionQueue.hxx"
 #include "VcsLib.hxx"
+#include "System.hxx"
 
 class ElfLinker;
 
 #ifdef DEBUGGER_SUPPORT
   class CartridgeELFWidget;
+  class CartridgeELFStateWidget;
 #endif
 
 class CartridgeELF: public Cartridge {
 #ifdef DEBUGGER_SUPPORT
   friend CartridgeELFWidget;
+  friend CartridgeELFStateWidget;
 #endif
 
   public:
@@ -45,7 +48,7 @@ class CartridgeELF: public Cartridge {
   public:
     CartridgeELF(const ByteBuffer& image, size_t size, string_view md5,
                  const Settings& settings);
-    ~CartridgeELF() override;
+    ~CartridgeELF() override = default;
 
   // Methods from Device
   public:
@@ -82,6 +85,10 @@ class CartridgeELF: public Cartridge {
 
 #ifdef DEBUGGER_SUPPORT
     CartDebugWidget* debugWidget(
+      GuiObject* boss, const GUI::Font& lfont, const GUI::Font& nfont, int x, int y, int w, int h
+    ) override;
+
+    CartDebugWidget* infoWidget(
       GuiObject* boss, const GUI::Font& lfont, const GUI::Font& nfont, int x, int y, int w, int h
     ) override;
 #endif
@@ -121,7 +128,12 @@ class CartridgeELF: public Cartridge {
     void setupConfig();
     void resetWithConfig();
 
-    uInt64 getArmCycles() const;
+    uInt64 getArmCycles() const {
+      return myCortexEmu.getCycles() + myArmCyclesOffset;
+    }
+    uInt64 getVcsCyclesArm() const {
+      return mySystem->cycles() * myArmCyclesPer6502Cycle;
+    }
 
     uInt8 driveBus(uInt16 address, uInt8 value);
     void syncArmTime(uInt64 armCycles);
