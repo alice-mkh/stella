@@ -49,7 +49,7 @@ stella_core_load_rom (HsCore      *core,
   self->context = hs_core_create_software_context (core,
                                                    self->stella->getVideoWidthMax (),
                                                    self->stella->getVideoHeightMax (),
-                                                   HS_PIXEL_FORMAT_XRGB8888_REV);
+                                                   HS_PIXEL_FORMAT_B8G8R8X8);
 
   return TRUE;
 }
