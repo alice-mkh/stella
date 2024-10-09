@@ -232,7 +232,7 @@ float StellaHIGHSCORE::getVideoAspectPar() const
 
   if (getVideoNTSC())
   {
-    if (video_filter != NTSCFilter::Preset::OFF)
+    if (video_filter == NTSCFilter::Preset::OFF)
     {
       // non-interlace square pixel clock -- 1.0 pixel @ color burst -- double-width pixels
       par = (6.1363635f / 3.579545454f) / 2.0;
@@ -245,7 +245,7 @@ float StellaHIGHSCORE::getVideoAspectPar() const
   }
   else
   {
-    if (video_filter != NTSCFilter::Preset::OFF)
+    if (video_filter == NTSCFilter::Preset::OFF)
     {
       // non-interlace square pixel clock -- 0.8 pixel @ color burst -- double-width pixels
       par = (7.3750000f / (4.43361875f * 4.0f / 5.0f)) / 2.0f;
