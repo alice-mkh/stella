@@ -117,9 +117,6 @@ class StellaHIGHSCORE
 
     void   setConsoleFormat(uInt32 mode);
 
-    void   setVideoAspectNTSC(uInt32 value) { video_aspect_ntsc = value; };
-    void   setVideoAspectPAL(uInt32 value)  { video_aspect_pal = value; };
-
     void   setVideoFilter(NTSCFilter::Preset mode);
     void   setVideoPalette(const string& mode);
     void   setVideoPhosphor(uInt32 mode, uInt32 blend);
@@ -193,8 +190,6 @@ class StellaHIGHSCORE
     string video_phosphor{"byrom"};
     uInt32 video_phosphor_blend{60};
 
-    uInt32 video_aspect_ntsc{0};
-    uInt32 video_aspect_pal{0};
     NTSCFilter::Preset video_filter{NTSCFilter::Preset::OFF};
 
     string audio_mode{"byrom"};
