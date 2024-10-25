@@ -14,6 +14,8 @@ struct _StellaCore
   HsSoftwareContext *context;
 
   char *save_path;
+
+  double paddle_values[4];
 };
 
 static void stella_atari_2600_core_init (HsAtari2600CoreInterface *iface);
@@ -54,6 +56,21 @@ stella_core_load_rom (HsCore      *core,
   return TRUE;
 }
 
+static int
+get_paddle_position (StellaCore *self, HsInputState *input_state, int index)
+{
+  double axis = input_state->atari_2600.paddle_axis[index];
+  double speed = input_state->atari_2600.paddle_speed[index];
+  double fps = hs_core_get_frame_rate (HS_CORE (self));
+
+  if (!std::isnan (axis))
+    return (int) round (axis * 0.25 * Paddles::ANALOG_MAX_VALUE);
+
+  self->paddle_values[index] = CLAMP (self->paddle_values[index] + speed / fps, -1, 1);
+
+  return (int) round (self->paddle_values[index] * 0.25 * Paddles::ANALOG_MAX_VALUE);
+}
+
 static void
 stella_core_poll_input (HsCore *core, HsInputState *input_state)
 {
@@ -86,11 +103,11 @@ stella_core_poll_input (HsCore *core, HsInputState *input_state)
     break;
 
   case Controller::Type::Paddles:
-    self->stella->setInputEvent (Event::LeftPaddleAAnalog, (int) round (input_state->atari_2600.paddle_axis[0] * PADDLE_SENSITIVITY * 0x7fff));
-    self->stella->setInputEvent (Event::LeftPaddleAFire,                input_state->atari_2600.paddle_fire[0]);
+    self->stella->setInputEvent (Event::LeftPaddleAAnalog, get_paddle_position (self, input_state, 0));
+    self->stella->setInputEvent (Event::LeftPaddleAFire, input_state->atari_2600.paddle_fire[0]);
 
-    self->stella->setInputEvent (Event::LeftPaddleBAnalog, (int) round (input_state->atari_2600.paddle_axis[1] * PADDLE_SENSITIVITY * 0x7fff));
-    self->stella->setInputEvent (Event::LeftPaddleBFire,                input_state->atari_2600.paddle_fire[1]);
+    self->stella->setInputEvent (Event::LeftPaddleBAnalog, get_paddle_position (self, input_state, 1));
+    self->stella->setInputEvent (Event::LeftPaddleBFire, input_state->atari_2600.paddle_fire[1]);
     break;
 
   default:
@@ -118,11 +135,11 @@ stella_core_poll_input (HsCore *core, HsInputState *input_state)
     break;
 
   case Controller::Type::Paddles:
-    self->stella->setInputEvent (Event::RightPaddleAAnalog, (int) round (input_state->atari_2600.paddle_axis[2] * PADDLE_SENSITIVITY * 0x7fff));
-    self->stella->setInputEvent (Event::RightPaddleAFire,                input_state->atari_2600.paddle_fire[2]);
+    self->stella->setInputEvent (Event::RightPaddleAAnalog, get_paddle_position (self, input_state, 2));
+    self->stella->setInputEvent (Event::RightPaddleAFire, input_state->atari_2600.paddle_fire[2]);
 
-    self->stella->setInputEvent (Event::RightPaddleBAnalog, (int) round (input_state->atari_2600.paddle_axis[3] * PADDLE_SENSITIVITY * 0x7fff));
-    self->stella->setInputEvent (Event::RightPaddleBFire,                input_state->atari_2600.paddle_fire[3]);
+    self->stella->setInputEvent (Event::RightPaddleBAnalog, get_paddle_position (self, input_state, 3));
+    self->stella->setInputEvent (Event::RightPaddleBFire, input_state->atari_2600.paddle_fire[3]);
     break;
 
   default:
