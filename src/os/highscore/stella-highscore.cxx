@@ -153,7 +153,6 @@ stella_core_poll_input (HsCore *core, HsInputState *input_state)
   self->stella->setInputEvent (Event::ConsoleRightDiffA, input_state->atari_2600.difficulty[1] == HS_ATARI_2600_DIFFICULTY_ADVANCED);
   self->stella->setInputEvent (Event::ConsoleRightDiffB, input_state->atari_2600.difficulty[1] == HS_ATARI_2600_DIFFICULTY_BEGINNER);
   self->stella->setInputEvent (Event::ConsoleSelect,     input_state->atari_2600.select_switch);
-  self->stella->setInputEvent (Event::ConsoleReset,      input_state->atari_2600.reset_switch);
 }
 
 static void
@@ -162,6 +161,8 @@ stella_core_run_frame (HsCore *core)
   StellaCore *self = STELLA_CORE (core);
 
   self->stella->runFrame ();
+
+  self->stella->setInputEvent (Event::ConsoleReset, FALSE);
 
   if (self->stella->getVideoResize ()) {
     HsRectangle area = HS_RECTANGLE_INIT (0, 0, (int) self->stella->getVideoWidth(), (int) self->stella->getVideoHeight());
@@ -180,11 +181,14 @@ stella_core_run_frame (HsCore *core)
 }
 
 static void
-stella_core_reset (HsCore *core)
+stella_core_reset (HsCore *core, gboolean hard)
 {
   StellaCore *self = STELLA_CORE (core);
 
-  self->stella->reset ();
+  if (hard)
+    self->stella->reset ();
+  else
+    self->stella->setInputEvent (Event::ConsoleReset, TRUE);
 }
 
 static void
