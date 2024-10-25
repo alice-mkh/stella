@@ -290,6 +290,14 @@ stella_core_get_sample_rate (HsCore *core)
   return self->stella->getAudioRate ();
 }
 
+static HsRegion
+stella_core_get_region (HsCore *core)
+{
+  StellaCore *self = STELLA_CORE (core);
+
+  return self->stella->getVideoNTSC () ? HS_REGION_NTSC : HS_REGION_PAL;
+}
+
 static void
 stella_core_finalize (GObject *object)
 {
@@ -325,6 +333,8 @@ stella_core_class_init (StellaCoreClass *klass)
   core_class->get_aspect_ratio = stella_core_get_aspect_ratio;
 
   core_class->get_sample_rate = stella_core_get_sample_rate;
+
+  core_class->get_region = stella_core_get_region;
 }
 
 static void
