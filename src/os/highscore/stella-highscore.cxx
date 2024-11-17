@@ -116,13 +116,16 @@ stella_core_poll_input (HsCore *core, HsInputState *input_state)
 
   switch (right_type) {
   case Controller::Type::Joystick:
+  case Controller::Type::Genesis:
+  case Controller::Type::Joy2BPlus:
+  case Controller::Type::BoosterGrip:
     self->stella->setInputEvent (Event::RightJoystickUp,    input_state->atari_2600.joystick[1] & 1 << HS_ATARI_2600_JOYSTICK_BUTTON_UP);
     self->stella->setInputEvent (Event::RightJoystickDown,  input_state->atari_2600.joystick[1] & 1 << HS_ATARI_2600_JOYSTICK_BUTTON_DOWN);
     self->stella->setInputEvent (Event::RightJoystickLeft,  input_state->atari_2600.joystick[1] & 1 << HS_ATARI_2600_JOYSTICK_BUTTON_LEFT);
     self->stella->setInputEvent (Event::RightJoystickRight, input_state->atari_2600.joystick[1] & 1 << HS_ATARI_2600_JOYSTICK_BUTTON_RIGHT);
     self->stella->setInputEvent (Event::RightJoystickFire,  input_state->atari_2600.joystick[1] & 1 << HS_ATARI_2600_JOYSTICK_BUTTON_FIRE);
 
-    if (left_type != Controller::Type::Joystick) {
+    if (right_type != Controller::Type::Joystick) {
       self->stella->setInputEvent (Event::RightJoystickFire5, input_state->atari_2600.joystick[1] & 1 << HS_ATARI_2600_JOYSTICK_BUTTON_FIRE_5);
       if (right_type != Controller::Type::Genesis)
         self->stella->setInputEvent (Event::RightJoystickFire9, input_state->atari_2600.joystick[1] & 1 << HS_ATARI_2600_JOYSTICK_BUTTON_FIRE_9);
@@ -367,10 +370,14 @@ stella_atari_2600_core_get_controller (HsAtari2600Core *core, guint player)
 
   switch (type) {
   case Controller::Type::Joystick:
+    return HS_ATARI_2600_CONTROLLER_JOYSTICK;
+
   case Controller::Type::Genesis:
+    return HS_ATARI_2600_CONTROLLER_GENESIS;
+
   case Controller::Type::Joy2BPlus:
   case Controller::Type::BoosterGrip:
-    return HS_ATARI_2600_CONTROLLER_JOYSTICK;
+    return HS_ATARI_2600_CONTROLLER_THREE_BUTTON;
 
   case Controller::Type::Driving:
     return HS_ATARI_2600_CONTROLLER_DRIVING;
