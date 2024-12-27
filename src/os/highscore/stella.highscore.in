@@ -1,5 +1,6 @@
 [Highscore]
 Name=Stella
+Version=@version@
 Module=stella-highscore.so
 Authors=Bradford W. Mott; Stephen Anthony; The Stella Team;
 Copyright=Copyright (C) 1995-2023 by Bradford W. Mott, Stephen Anthony and the Stella Team;
