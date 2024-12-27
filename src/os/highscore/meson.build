@@ -3,7 +3,7 @@ project('stella-highscore', ['cpp', 'c'],
   default_options : [ 'cpp_std=c++20' ]
 )
 
-version = run_command('git', 'describe', '--always', '--tags').stdout().strip()
+version = run_command('git', 'describe', '--always', '--tags', '--dirty').stdout().strip()
 
 if version == ''
   version = meson.project_version()
