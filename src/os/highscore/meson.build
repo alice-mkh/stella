@@ -3,11 +3,8 @@ project('stella-highscore', ['cpp', 'c'],
   default_options : [ 'cpp_std=c++20' ]
 )
 
-version = run_command('git', 'describe', '--always', '--tags', '--dirty').stdout().strip()
-
-if version == ''
-  version = meson.project_version()
-endif
+version = meson.project_version()
+commit = run_command('git', 'describe', '--always', '--dirty').stdout().strip()
 
 cc = meson.get_compiler('c')
 
@@ -216,6 +213,7 @@ shared_library('stella-highscore',
 
 descriptor = configuration_data()
 descriptor.set('version', version)
+descriptor.set('commit', commit)
 configure_file(
   input: 'stella.highscore.in',
   output: 'stella.highscore',
