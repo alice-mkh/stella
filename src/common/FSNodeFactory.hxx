@@ -29,6 +29,8 @@ class AbstractFSNode;
   #include "FSNodeWINDOWS.hxx"
 #elif defined(__LIB_RETRO__)
   #include "FSNodeLIBRETRO.hxx"
+#elif defined(__HIGHSCORE__)
+  #include "FSNodeHIGHSCORE.hxx"
 #else
   #error Unsupported platform in FSNodeFactory!
 #endif
@@ -55,6 +57,8 @@ class FSNodeFactory
           return make_unique<FSNodeWINDOWS>(path);
         #elif defined(__LIB_RETRO__)
           return make_unique<FSNodeLIBRETRO>(path);
+        #elif defined(__HIGHSCORE__)
+          return make_unique<FSNodeHIGHSCORE>(path);
         #endif
           break;
         case Type::ZIP:
