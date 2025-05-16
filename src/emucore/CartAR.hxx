@@ -98,6 +98,14 @@ class CartridgeAR : public Cartridge
     uInt16 romBankCount() const override;
 
     /**
+      Get the size of a bank.
+
+      @param bank  The bank to get the size for
+      @return  The bank's size
+    */
+    uInt16 bankSize(uInt16 bank) const override { return static_cast<uInt16>(4_KB); };
+
+    /**
       Patch the cartridge ROM.
 
       @param address  The ROM address to patch
