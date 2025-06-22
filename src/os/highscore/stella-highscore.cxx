@@ -174,9 +174,11 @@ stella_core_run_frame (HsCore *core)
   }
 
   if(self->stella->getVideoReady ()) {
-    memcpy (hs_software_context_get_framebuffer (self->context),
+    memcpy (hs_software_context_acquire_framebuffer (self->context),
             self->stella->getVideoBuffer (),
             self->stella->getVideoPitch () * self->stella->getVideoHeight ());
+
+    hs_software_context_release_framebuffer (self->context);
   }
 
   if (self->stella->getAudioReady ())
