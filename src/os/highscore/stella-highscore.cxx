@@ -185,8 +185,8 @@ stella_core_run_frame (HsCore *core)
     hs_core_play_samples (core, self->stella->getAudioBuffer (), self->stella->getAudioSize () * 2);
 }
 
-static void
-stella_core_reset (HsCore *core, gboolean hard)
+static gboolean
+stella_core_reset (HsCore *core, gboolean hard, GError **error)
 {
   StellaCore *self = STELLA_CORE (core);
 
@@ -194,6 +194,8 @@ stella_core_reset (HsCore *core, gboolean hard)
     self->stella->reset ();
   else
     self->stella->setInputEvent (Event::ConsoleReset, TRUE);
+
+  return TRUE;
 }
 
 static void
