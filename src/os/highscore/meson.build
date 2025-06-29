@@ -8,8 +8,11 @@ commit = run_command('git', 'describe', '--always', '--dirty').stdout().strip()
 
 cc = meson.get_compiler('c')
 
-libdir = get_option('prefix') / get_option('libdir')
-core_dir = libdir / 'highscore' / 'cores' / 'stella'
+core_dir = get_option('core_install_dir')
+if core_dir == ''
+  libdir = get_option('prefix') / get_option('libdir')
+  core_dir = libdir / 'highscore' / 'cores' / 'stella'
+endif
 
 stella_deps = [
   dependency('highscore-1'),
