@@ -417,6 +417,12 @@ hs_read_rom (gpointer data)
   return core->stella->getROMSize ();
 }
 
+guint32
+hs_read_rom_size (void)
+{
+  return core->stella->getROMSize ();
+}
+
 const char *
 hs_get_save_path (void)
 {
