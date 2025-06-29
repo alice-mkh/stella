@@ -21,6 +21,10 @@
 extern void libretro_logger(int log_level, const char *string);
 #endif
 
+#ifdef __HIGHSCORE__
+extern void stella_hs_log(Logger::Level log_level, const char *string);
+#endif
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Logger& Logger::instance()
 {
@@ -59,6 +63,10 @@ void Logger::logMessage(string_view message, Level level)
   
 #ifdef __LIB_RETRO__
   libretro_logger(static_cast<int>(level), string{message}.c_str());
+#endif
+
+#ifdef __HIGHSCORE__
+  stella_hs_log(level, string{message}.c_str());
 #endif
 
   if(level == Logger::Level::ERR)

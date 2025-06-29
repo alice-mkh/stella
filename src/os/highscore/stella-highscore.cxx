@@ -2,6 +2,8 @@
 
 #include "StellaHIGHSCORE.hxx"
 
+#include "Logger.hxx"
+
 #define PADDLE_SENSITIVITY 0.25
 
 static StellaCore *core;
@@ -419,6 +421,31 @@ const char *
 hs_get_save_path (void)
 {
   return core->save_path;
+}
+
+void
+stella_hs_log (Logger::Level level, const char *message)
+{
+  HsLogLevel hs_level;
+
+  switch (level) {
+    case Logger::Level::ERR:
+      hs_level = HS_LOG_CRITICAL;
+      break;
+    case Logger::Level::INFO:
+      hs_level = HS_LOG_INFO;
+      break;
+    case Logger::Level::DEBUG:
+      hs_level = HS_LOG_DEBUG;
+      break;
+    case Logger::Level::ALWAYS:
+      hs_level = HS_LOG_MESSAGE;
+      break;
+    default:
+      g_assert_not_reached ();
+  }
+
+  hs_core_log_literal (HS_CORE (core), hs_level, message);
 }
 
 GType
