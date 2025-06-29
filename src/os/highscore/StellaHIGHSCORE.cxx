@@ -347,6 +347,8 @@ void StellaHIGHSCORE::setVideoFilter(NTSCFilter::Preset mode)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void StellaHIGHSCORE::setVideoPalette(const string& mode)
 {
+  video_palette = mode;
+
   if (system_ready)
   {
     myOSystem->settings().setValue("palette", video_palette);
