@@ -55,6 +55,8 @@ stella_core_load_rom (HsCore      *core,
                                                    self->stella->getVideoHeightMax (),
                                                    HS_PIXEL_FORMAT_B8G8R8X8);
 
+  self->stella->setVideoPhosphor(1, 0);
+
   return TRUE;
 }
 
