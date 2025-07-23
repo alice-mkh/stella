@@ -171,7 +171,7 @@ class StellaHIGHSCORE
 
   private:
     string video_palette{PaletteHandler::SETTING_STANDARD};
-    string video_phosphor{"never"};
+    string video_phosphor{"byrom"};
     uInt32 video_phosphor_blend{60};
 
     NTSCFilter::Preset video_filter{NTSCFilter::Preset::OFF};
