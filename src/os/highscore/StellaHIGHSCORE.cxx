@@ -85,7 +85,6 @@ bool StellaHIGHSCORE::create(bool logging)
   */
   settings.setValue(AudioSettings::SETTING_PRESET, static_cast<int>(AudioSettings::Preset::custom));
   settings.setValue(AudioSettings::SETTING_SAMPLE_RATE, getAudioRate());
-  settings.setValue(AudioSettings::SETTING_FRAGMENT_SIZE, 128);
   settings.setValue(AudioSettings::SETTING_BUFFER_SIZE, 8);
   settings.setValue(AudioSettings::SETTING_HEADROOM, 0);
   settings.setValue(AudioSettings::SETTING_RESAMPLING_QUALITY, static_cast<int>(AudioSettings::ResamplingQuality::nearestNeighbour));
@@ -326,6 +325,7 @@ void StellaHIGHSCORE::setConsoleFormat(uInt32 mode)
     case 4:  console_format = "NTSC50";  break;
     case 5:  console_format = "PAL60";   break;
     case 6:  console_format = "SECAM60"; break;
+    default:                             break;
   }
 
   if (system_ready)
@@ -364,6 +364,7 @@ void StellaHIGHSCORE::setVideoPhosphor(uInt32 mode, uInt32 blend)
     case 0:  video_phosphor = "byrom";  break;
     case 1:  video_phosphor = "never";  break;
     case 2:  video_phosphor = "always"; break;
+    default:                            break;
   }
 
   video_phosphor_blend = blend;
@@ -378,6 +379,7 @@ void StellaHIGHSCORE::setVideoPhosphor(uInt32 mode, uInt32 blend)
       case 0: myOSystem->frameBuffer().tiaSurface().enablePhosphor(phosphor_default, blend); break;
       case 1: myOSystem->frameBuffer().tiaSurface().enablePhosphor(false, blend); break;
       case 2: myOSystem->frameBuffer().tiaSurface().enablePhosphor(true, blend); break;
+      default:  break;
     }
   }
 }
@@ -390,6 +392,7 @@ void StellaHIGHSCORE::setAudioStereo(int mode)
     case 0:  audio_mode = "byrom";  break;
     case 1:  audio_mode = "mono";   break;
     case 2:  audio_mode = "stereo"; break;
+    default:                        break;
   }
 
   if (system_ready)

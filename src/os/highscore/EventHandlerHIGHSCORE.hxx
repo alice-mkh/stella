@@ -38,11 +38,6 @@ class EventHandlerHIGHSCORE : public EventHandler
 
   private:
     /**
-      Enable/disable text events (distinct from single-key events).
-    */
-    void enableTextEvents(bool enable) override { }
-
-    /**
       Collects and dispatches any pending SDL2 events.
     */
     void pollEvent() override { }
