@@ -4,7 +4,7 @@ project('stella-highscore', ['cpp', 'c'],
 )
 
 version = meson.project_version()
-commit = run_command('git', 'describe', '--always', '--dirty').stdout().strip()
+commit = run_command('git', 'describe', '--always', '--dirty', check: false).stdout().strip()
 
 cc = meson.get_compiler('c')
 
