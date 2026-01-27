@@ -57,7 +57,7 @@ class FavoritesManager
     void update(string_view path);
 
     // Recently played
-    bool removeRecent(string_view path);
+    void removeRecent(string_view path);
     void removeAllRecent();
     const RecentList& recentList() const;
 
