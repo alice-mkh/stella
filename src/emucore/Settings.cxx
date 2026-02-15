@@ -235,8 +235,10 @@ Settings::Settings()
   setPermanent("dbg.uhex", "false");
   setPermanent("dbg.ghostreadstrap", "true");
   setPermanent("dbg.logbreaks", "false");
+  setPermanent("dbg.logexec", "false");
   setPermanent("dbg.logtrace", "false");
   setPermanent("dbg.autosave", "false");
+  setPermanent("dbg.script", "");
   setPermanent("dis.resolve", "true");
   setPermanent("dis.gfxformat", "2");
   setPermanent("dis.showaddr", "true");
@@ -737,8 +739,10 @@ void Settings::usage()
     << "   -dbg.ghostreadstrap <1|0>     Debugger traps on 'ghost' reads\n"
     << "   -dbg.uhex      <0|1>          Lower-/uppercase HEX display\n"
     << "   -dbg.logbreaks <0|1>          Log breaks and traps and continue emulation\n"
+    << "   -dbg.logexec   <0|1>          Log script execution output to file\n"
     << "   -dbg.logtrace  <0|1>          Log emulation\n"
     << "   -dbg.autosave  <0|1>          Automatically save breaks, traps etc.\n"
+    << "   -dbg.script    <file>         Execute script file on debugger startup\n"
     << "   -break         <address>      Set a breakpoint at 'address'\n"
     << "   -debug                        Start in debugger mode\n\n"
     << "   -bs          <arg>          Sets the 'Cartridge.Type' (bankswitch) property\n"
