@@ -556,6 +556,7 @@
     <ClCompile Include="..\..\debugger\gui\CartE7Widget.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\debugger\gui\CartEFFWidget.cxx" />
     <ClCompile Include="..\..\debugger\gui\CartEFSCWidget.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -686,6 +687,7 @@
     <ClCompile Include="..\..\emucore\Cart0FA0.cxx" />
     <ClCompile Include="..\..\emucore\CartCreator.cxx" />
     <ClCompile Include="..\..\emucore\CartE7.cxx" />
+    <ClCompile Include="..\..\emucore\CartEFF.cxx" />
     <ClCompile Include="..\..\emucore\CartEnhanced.cxx" />
     <ClCompile Include="..\..\emucore\CartBF.cxx" />
     <ClCompile Include="..\..\emucore\CartBFSC.cxx" />
@@ -826,7 +828,6 @@
     <ClCompile Include="..\..\emucore\M6502.cxx" />
     <ClCompile Include="..\..\emucore\M6532.cxx" />
     <ClCompile Include="..\..\emucore\MD5.cxx" />
-    <ClCompile Include="..\..\emucore\MT24LC256.cxx" />
     <ClCompile Include="..\..\emucore\OSystem.cxx" />
     <ClCompile Include="..\..\emucore\Paddles.cxx" />
     <ClCompile Include="..\..\emucore\Props.cxx" />
@@ -1529,6 +1530,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\..\debugger\gui\CartE7Widget.hxx" />
+    <ClInclude Include="..\..\debugger\gui\CartEFFWidget.hxx" />
     <ClInclude Include="..\..\debugger\gui\CartEFSCWidget.hxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClInclude>
@@ -1661,6 +1663,7 @@
     <ClInclude Include="..\..\emucore\Cart0FA0.hxx" />
     <ClInclude Include="..\..\emucore\CartCreator.hxx" />
     <ClInclude Include="..\..\emucore\CartE7.hxx" />
+    <ClInclude Include="..\..\emucore\CartEFF.hxx" />
     <ClInclude Include="..\..\emucore\CartEnhanced.hxx" />
     <ClInclude Include="..\..\emucore\CartBF.hxx" />
     <ClInclude Include="..\..\emucore\CartBFSC.hxx" />
@@ -1705,7 +1708,9 @@
     <ClInclude Include="..\..\emucore\GlobalKeyHandler.hxx" />
     <ClInclude Include="..\..\emucore\Joy2BPlus.hxx" />
     <ClInclude Include="..\..\emucore\Lightgun.hxx" />
+    <ClInclude Include="..\..\emucore\MicroChip24LC.hxx" />
     <ClInclude Include="..\..\emucore\MindLink.hxx" />
+    <ClInclude Include="..\..\emucore\MT24LC16B.hxx" />
     <ClInclude Include="..\..\emucore\OSystemStandalone.hxx" />
     <ClInclude Include="..\..\emucore\PlusROM.hxx" />
     <ClInclude Include="..\..\emucore\PointingDevice.hxx" />

@@ -279,9 +279,6 @@
     <ClCompile Include="..\..\emucore\MD5.cxx">
       <Filter>Source Files\emucore</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\emucore\MT24LC256.cxx">
-      <Filter>Source Files\emucore</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\emucore\OSystem.cxx">
       <Filter>Source Files\emucore</Filter>
     </ClCompile>
@@ -1267,6 +1264,12 @@
       <Filter>Source Files\debugger\gui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\emucore\CortexM0.cxx">
+      <Filter>Source Files\emucore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\debugger\gui\CartEFFWidget.cxx">
+      <Filter>Source Files\debugger\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\emucore\CartEFF.cxx">
       <Filter>Source Files\emucore</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2569,6 +2572,18 @@
     </ClInclude>
     <ClInclude Include="..\..\emucore\elf\VcsLib.hxx">
       <Filter>Header Files\emucore\elf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\emucore\CartEFF.hxx">
+      <Filter>Header Files\emucore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\emucore\MicroChip24LC.hxx">
+      <Filter>Header Files\emucore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\emucore\MT24LC16B.hxx">
+      <Filter>Header Files\emucore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\debugger\gui\CartEFFWidget.hxx">
+      <Filter>Header Files\debugger\gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

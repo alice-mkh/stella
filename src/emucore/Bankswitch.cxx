@@ -108,6 +108,7 @@ Bankswitch::BSList = {{
   { "E0"      , "E0 (8K Parker Bros)"         },
   { "E7"      , "E7 (8-16K M Network)"        },
   { "EF"      , "EF (64K H. Runner)"          },
+  { "EFF"     , "EFF (64K+2Kee/Grizzards)"    },
   { "EFSC"    , "EFSC (64K H. Runner + RAM)"  },
   { "ELF"     , "ELF (ARM bus stuffing)"      },
   { "F0"      , "F0 (Dynacom Megaboy)"        },
@@ -175,6 +176,7 @@ Bankswitch::Sizes = {{
   {    8_KB,   8_KB }, // _E0
   {    8_KB,  16_KB }, // _E7
   {   64_KB,  64_KB }, // _EF
+  {   64_KB,  64_KB }, // _EFF
   {   64_KB,  64_KB }, // _EFSC
   {   Bankswitch::any_KB,  Bankswitch::any_KB }, // _ELF
   {   64_KB,  64_KB }, // _F0
@@ -266,6 +268,7 @@ Bankswitch::ExtensionMap Bankswitch::ourExtensions = {
   { "E78"   , Bankswitch::Type::_E7     },
   { "E78K"  , Bankswitch::Type::_E7     },
   { "EF"    , Bankswitch::Type::_EF     },
+  { "EFF"   , Bankswitch::Type::_EFF    },
   { "EFS"   , Bankswitch::Type::_EFSC   },
   { "EFSC"  , Bankswitch::Type::_EFSC   },
   { "ELF"   , Bankswitch::Type::_ELF    },
@@ -335,6 +338,7 @@ Bankswitch::NameToTypeMap Bankswitch::ourNameToTypes = {
   { "E0"      , Bankswitch::Type::_E0     },
   { "E7"      , Bankswitch::Type::_E7     },
   { "EF"      , Bankswitch::Type::_EF     },
+  { "EFF"     , Bankswitch::Type::_EFF    },
   { "EFSC"    , Bankswitch::Type::_EFSC   },
   { "ELF"     , Bankswitch::Type::_ELF    },
   { "F0"      , Bankswitch::Type::_F0     },

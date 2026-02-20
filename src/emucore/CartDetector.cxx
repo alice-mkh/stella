@@ -178,7 +178,9 @@ Bankswitch::Type CartDetector::autodetectType(const ByteBuffer& image, size_t si
   }
   else if(size == 64_KB)
   {
-    if (isProbablyCDF(image, size))
+    if(isProbablyEFF(image, size, type))
+      ; // type has been set directly in the function
+    else if (isProbablyCDF(image, size))
       type = Bankswitch::Type::_CDF;
     else if(isProbably3EX(image, size))
       type = Bankswitch::Type::_3EX;
@@ -677,6 +679,43 @@ bool CartDetector::isProbablyEF(const ByteBuffer& image, size_t size,
   }
 
   return false;
+}
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CartDetector::isProbablyEFF(const ByteBuffer& image, size_t size,
+                                Bankswitch::Type& type)
+{
+  static constexpr uInt8 effb[] = { 'E', 'F', 'F', 'B' };
+  if(searchForBytes(image.get()+size-8, 8, effb, 4))
+    {
+      type = Bankswitch::Type::_EFF;
+      return true;
+    }
+
+  // Otherwise,  EF  cart  bankswitching  switches  banks  by  accessing
+  // addresses 0xFE0 to 0xFEF, usually with  a NOP, as well as the 0xFF0
+  // to 0xFF3  for save-to-cart  and read from  0xFF4 (for  the EEPROM).
+  // Unlike EF, we require to find all three.
+  bool isEFF = true;
+  static constexpr uInt8 signature[4][3] = {
+    { 0x0C, 0xE0, 0xFF },  // NOP $FFE0
+    { 0x0C, 0xF0, 0x1F },  // NOP $1FF0
+    { 0xAD, 0xF4, 0x1F }   // LDA $1FF4
+  };
+  for(const auto* const sig: signature)
+    {
+      if(!searchForBytes(image, size, sig, 3))
+        {
+          isEFF = false;
+          break;
+        }
+    }
+
+  if (isEFF) {
+    type = Bankswitch::Type::_EFF;
+  }
+  return isEFF;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

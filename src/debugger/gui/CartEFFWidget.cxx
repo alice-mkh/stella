@@ -15,21 +15,25 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#ifndef MT24LC256_HXX
-#define MT24LC256_HXX
+#include "CartEFF.hxx"
+#include "CartEFFWidget.hxx"
 
-#include "MicroChip24LC.hxx"
-
-/**
-  Emulates a Microchip Technology Inc. 24LC256, a 32KB Serial Electrically
-  Erasable PROM accessed using the I2C protocol.  Thanks to J. Payson
-  (aka Supercat) for the bulk of this code.
-
-  @author Stephen Anthony & J. Payson
-*/
-class MT24LC256 : public MicroChip24LC<32_KB, 64>
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+CartridgeEFFWidget::CartridgeEFFWidget(
+      GuiObject* boss, const GUI::Font& lfont, const GUI::Font& nfont,
+      int x, int y, int w, int h, CartridgeEFF& cart)
+  : CartridgeEnhancedWidget(boss, lfont, nfont, x, y, w, h, cart)
 {
-  using MicroChip24LC::MicroChip24LC;
-};
+  initialize();
+}
 
-#endif
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+string CartridgeEFFWidget::description()
+{
+  ostringstream info;
+
+  info << "64k AtariAge EFF cartridge, 16 4k banks + 2k flash\n"
+       << CartridgeEnhancedWidget::description();
+
+  return info.str();
+}

@@ -71,6 +71,7 @@ SOURCES_CXX := \
 	$(CORE_DIR)/emucore/CartE0.cxx \
 	$(CORE_DIR)/emucore/CartE7.cxx \
 	$(CORE_DIR)/emucore/CartEF.cxx \
+	$(CORE_DIR)/emucore/CartEFF.cxx \
 	$(CORE_DIR)/emucore/CartEFSC.cxx \
 	$(CORE_DIR)/emucore/CartELF.cxx \
 	$(CORE_DIR)/emucore/CartF0.cxx \
@@ -118,7 +119,6 @@ SOURCES_CXX := \
 	$(CORE_DIR)/emucore/M6532.cxx \
 	$(CORE_DIR)/emucore/MD5.cxx \
 	$(CORE_DIR)/emucore/MindLink.cxx \
-	$(CORE_DIR)/emucore/MT24LC256.cxx \
 	$(CORE_DIR)/emucore/OSystem.cxx \
 	$(CORE_DIR)/emucore/Paddles.cxx \
 	$(CORE_DIR)/emucore/PlusROM.cxx \

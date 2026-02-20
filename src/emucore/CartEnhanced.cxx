@@ -101,7 +101,9 @@ void CartridgeEnhanced::install(System& system)
     // Set the page accessing method for the RAM writing pages
     // Note: Writes are mapped to poke() (NOT using directPokeBase) to check for read from write port (RWP)
     access.type = System::PageAccessType::WRITE;
-    for(size_t addr = ROM_OFFSET + myWriteOffset; addr < ROM_OFFSET + myWriteOffset + myRamSize; addr += System::PAGE_SIZE)
+    for(size_t addr = ROM_OFFSET + myWriteOffset;
+        addr < ROM_OFFSET + myWriteOffset + myRamSize;
+        addr += System::PAGE_SIZE)
     {
       const uInt16 offset = addr & myRamMask;
 

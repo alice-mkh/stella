@@ -12,19 +12,23 @@
                               Release History
 ===========================================================================
 
-7.x to 8.0 (xxx x, 202x)
+7.0 to 8.0 (mmm dd, 2026)
 
-  * Ported Stella to SDL3 
+  * Ported Stella to SDL3.
 
-  * Added option for switching Stella's theme in sync with OS
+  * Added support for 'EFF' bankswitching (Bruce-Robert Pocock), as well
+    as auto-detection of this format.
 
-7.0 to 7.1 (xxx x, 202x)
+  * Added option for switching Stella's theme in sync with OS.
 
-  * Enhanced PAL-60 detection, searches for signature (e.g. PAL60) in ROM
+  * Enhanced PAL-60 detection, searches for signature (e.g. PAL60) in ROM.
 
-  * Enhanced VSYNC emulation, considers VBLANK now too
+  * Enhanced VSYNC emulation, considers VBLANK now too.
 
-  * Added developer option for disabling PlusROM support
+  * Added developer option for disabling PlusROM support.
+
+-Have fun!
+
 
 6.7.1 to 7.0 (October 5, 2024)
 
@@ -82,8 +86,6 @@
 
   * Codebase now uses C++20 features, which means a minimum of gcc-11
     or clang-10 for Linux/Mac, and Visual Studio 2022 for Windows.
-
--Have fun!
 
 
 6.7 to 6.7.1 (January 15, 2024)
