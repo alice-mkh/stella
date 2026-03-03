@@ -74,7 +74,6 @@ stella_source = [
   '../../common/repository/KeyValueRepositoryJsonFile.cxx',
   '../../common/repository/KeyValueRepositoryPropertyFile.cxx',
   '../../emucore/AtariVox.cxx',
-  '../../emucore/Bankswitch.cxx',
   '../../emucore/Booster.cxx',
   '../../emucore/Cart.cxx',
   '../../emucore/CartCreator.cxx',
