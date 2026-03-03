@@ -123,7 +123,7 @@ class MicroChip24LC
     bool myDataChanged{false};
 
     // Required for I2C functionality
-    bool jpee_smallmode{0};
+    bool jpee_smallmode{false};
     Int32 jpee_mdat{0}, jpee_sdat{0}, jpee_mclk{0};
     Int32 jpee_sizemask{0}, jpee_pagemask{0}, jpee_logmode{0};
     Int32 jpee_pptr{0}, jpee_state{0}, jpee_nb{0};

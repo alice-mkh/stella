@@ -53,8 +53,8 @@ template <typename T, uInt32 CAPACITY = 100>
 class LinkedObjectPool
 {
   public:
-    using iter = typename std::list<T>::iterator;
-    using const_iter = typename std::list<T>::const_iterator;
+    using iter = std::list<T>::iterator;
+    using const_iter = std::list<T>::const_iterator;
 
     /*
       Create a pool of size CAPACITY; the active list starts out empty.

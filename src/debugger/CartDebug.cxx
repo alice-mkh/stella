@@ -1347,7 +1347,7 @@ string CartDebug::saveDisassembly(string path)
         if (addLine)
           out << "\n";
         out << ALIGN(16) << ourZPMnemonic[addr - 0x80] << "= $"
-          << Base::HEX2 << right << (addr)
+          << Base::HEX2 << right << addr
           << ((stackUsed || codeUsed) ? "; (" : "")
           << (codeUsed ? "c" : "")
           << (stackUsed ? "s" : "")
@@ -1358,7 +1358,7 @@ string CartDebug::saveDisassembly(string path)
         if (addLine)
           out << "\n";
         out << ALIGN(18) << ";" << "$"
-          << Base::HEX2 << right << (addr)
+          << Base::HEX2 << right << addr
           << "  ("
           << (ramUsed ? "i" : "")
           << (codeUsed ? "c" : "")

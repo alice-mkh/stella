@@ -1418,7 +1418,7 @@ CortexM0::err_t CortexM0::execute(uInt16 inst, uInt8 op)
     case Op::blt: {
       DO_DISS("blt 0x" << Base::HEX8 << branch_target_9(inst) << "\n");
       if((!(znFlags & 0x80000000) && vFlag) ||
-         (((znFlags & 0x80000000)) && !vFlag))
+         ( (znFlags & 0x80000000) && !vFlag))
         write_register(15, branch_target_9(inst));
       return ERR_NONE;
     }
@@ -1438,7 +1438,7 @@ CortexM0::err_t CortexM0::execute(uInt16 inst, uInt8 op)
       DO_DISS("ble 0x" << Base::HEX8 << branch_target_9(inst) << "\n");
       if(!znFlags ||
          (!(znFlags & 0x80000000) && vFlag) ||
-         (((znFlags & 0x80000000)) && !vFlag))
+         ( (znFlags & 0x80000000) && !vFlag))
         write_register(15, branch_target_9(inst));
       return ERR_NONE;
     }

@@ -81,7 +81,7 @@ class FileListWidget : public StringListWidget
                           will instead be used, and the file will be selected
         @param select     An optional entry to select (if applicable)
     */
-    void setDirectory(const FSNode& node, string_view select = EmptyString);
+    void setDirectory(const FSNode& node, string_view select = EmptyString());
 
     /** Descend into currently selected directory */
     void selectDirectory();
@@ -182,11 +182,11 @@ class FileListWidget : public StringListWidget
     StellaMod _firstMod{StellaMod::KBDM_NONE};
     string _quickSelectStr;
     uInt64 _quickSelectTime{0};
-    static uInt64 _QUICK_SELECT_DELAY;
+    static inline uInt64 _QUICK_SELECT_DELAY{300};
 
     unique_ptr<ProgressDialog> myProgressDialog;
 
-    static FSNode ourDefaultNode;
+    static inline const FSNode ourDefaultNode{"~"};  // NOLINT
 
   private:
     // Following constructors and assignment operators not supported

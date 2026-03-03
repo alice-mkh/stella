@@ -257,7 +257,7 @@ void CartridgeCDFWidget::saveOldState()
   {
     myOldState.mfreqs.push_back(myCart.myMusicFrequencies[i]);
     myOldState.mwaves.push_back(myCart.getWaveform(i) >> 5);
-    myOldState.mwavesizes.push_back(myCart.getWaveformSize((i)));
+    myOldState.mwavesizes.push_back(myCart.getWaveformSize(i));
   }
 
   for(uInt32 i = 0; i < internalRamSize(); ++i)

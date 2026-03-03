@@ -33,8 +33,8 @@ class CartridgeEFFWidget : public CartridgeEnhancedWidget
 
   private:
     string manufacturer() override { return "Fred Quimby/AtariAge"; }
-
     string description() override;
+    int descriptionLines() override;
 
   private:
     // Following constructors and assignment operators not supported

@@ -105,7 +105,6 @@ class CartridgeEnhancedWidget : public CartDebugWidget
 
     std::unique_ptr<PopUpWidget* []> myBankWidgets{nullptr};
 
-
     // Display all addresses based on this
     static constexpr uInt16 ADDR_BASE = 0xF000;
 
@@ -119,4 +118,3 @@ class CartridgeEnhancedWidget : public CartDebugWidget
 };
 
 #endif
-

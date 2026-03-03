@@ -654,7 +654,7 @@ void FrameBuffer::showTextMessage(string_view message,
   const int HBORDER = fontWidth * 1.25 / 2.0;
 
   myMsg.showGauge = false;
-  myMsg.w         = std::min(fontWidth * (MESSAGE_WIDTH) - HBORDER * 2,
+  myMsg.w         = std::min(fontWidth * MESSAGE_WIDTH - HBORDER * 2,
                              font().getStringWidth(message) + HBORDER * 2);
 
   createMessage(message, position, force);

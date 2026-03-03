@@ -223,7 +223,7 @@ void Cartridge3EPlusWidget::updateUIState()
     else
     {
       buf << "ROM @ $" << Common::Base::HEX4
-        << ((bank << myCart3EP.myBankShift));
+        << (bank << myCart3EP.myBankShift);
       myBankState[bank_off]->setText(buf.view());
 
       buf.str("");

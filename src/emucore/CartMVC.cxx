@@ -45,300 +45,299 @@ namespace {
   constexpr int BACK_SECONDS = 10;
 
   constexpr int TITLE_CYCLES = 1000000;
-} // namespace
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-  Simulate retrieval 512 byte chunks from a serial source
-*/
-class StreamReader : public Serializable
-{
-  public:
-    StreamReader() = default;
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+    Simulate retrieval 512 byte chunks from a serial source
+  */
+  class StreamReader : public Serializable
+  {
+    public:
+      StreamReader() = default;
 
-    bool open(string_view path) {
-      myFile = Serializer(path, Serializer::Mode::ReadOnly);
-      myFileSize = myFile ? myFile.size() : 0;
+      bool open(string_view path) {
+        myFile = Serializer(path, Serializer::Mode::ReadOnly);
+        myFileSize = myFile ? myFile.size() : 0;
 
-      return static_cast<bool>(myFile);
-    }
-
-    [[nodiscard]] bool isValid() const {
-      return myFileSize > 0;
-    }
-
-    void blankPartialLines(bool index) {
-      const int colorSize = myVisibleLines * 5;
-      if(index)
-      {
-        // top line
-        myColor[0] = 0;
-        myColor[1] = 0;
-        myColor[2] = 0;
-        myColor[3] = 0;
-        myColor[4] = 0;
-      }
-      else
-      {
-        // bottom line
-        myColor[colorSize - 5] = 0;
-        myColor[colorSize - 4] = 0;
-        myColor[colorSize - 3] = 0;
-        myColor[colorSize - 2] = 0;
-        myColor[colorSize - 1] = 0;
+        return static_cast<bool>(myFile);
       }
 
-      myColorBK[0] = 0;
-    }
-
-    void swapField(bool index, bool odd) {
-      uInt8* offset = index ? myBuffer1.data() : myBuffer2.data();
-
-      class FrameFormat
-      {
-        public:
-
-          uInt8 version[4];   // ('M', 'V', 'C', 0)
-          uInt8 format;       // ( 1-------)
-          uInt8 timecode[4];  // (hour, minute, second, fame)
-          uInt8 vsync;        // eg 3
-          uInt8 vblank;       // eg 37
-          uInt8 overscan;     // eg 30
-          uInt8 visible;      // eg 192
-          uInt8 rate;         // eg 60
-          uInt8 dataStart;
-
-          // sound[vsync+blank+overscan+visible]
-          // graph[5 * visible]
-          // color[5 * visible]
-          // bkcolor[1 * visible]
-          // timecode[60]
-          // padding
-      };
-
-      const FrameFormat* ff = reinterpret_cast<FrameFormat*>(offset);
-
-      if(ff->format & 0x80)
-      {
-        myVSyncLines = ff->vsync;
-        myBlankLines = ff->vblank;
-        myOverscanLines = ff->overscan;
-        myVisibleLines = ff->visible;
-        myEmbeddedFrame = ff->timecode[3] + 1;
-
-        const int totalLines = myVSyncLines + myBlankLines + myOverscanLines + myVisibleLines;
-
-        myAudio    = const_cast<uInt8*>(&ff->dataStart);
-        myGraph    = myAudio + totalLines;
-        myColor    = const_cast<uInt8*>(myGraph) +
-                     static_cast<ptrdiff_t>(5 * myVisibleLines);
-        myColorBK  = myColor + static_cast<ptrdiff_t>(5 * myVisibleLines);
-        myTimecode = myColorBK + static_cast<ptrdiff_t>(1 * myVisibleLines);
-      }
-      else // previous format, ntsc assumed
-      {
-        myVSyncLines = 3;
-        myBlankLines = 37;
-        myOverscanLines = 30;
-        myVisibleLines = 192;
-        myEmbeddedFrame = offset[4 + 3 -1];
-
-        const int totalLines = myVSyncLines + myBlankLines + myOverscanLines + myVisibleLines;
-
-        myAudio    = offset + 4 + 3;
-        myGraph    = myAudio + totalLines;
-        myTimecode = const_cast<uInt8*>(myGraph) +
-                     static_cast<ptrdiff_t>(5 * myVisibleLines);
-        myColor    = const_cast<uInt8*>(myTimecode) + 60;
-        myColorBK  = myColor + static_cast<ptrdiff_t>(5 * myVisibleLines);
+      [[nodiscard]] bool isValid() const {
+        return myFileSize > 0;
       }
 
-      if(!odd)
-          myColorBK++;
-    }
-
-    bool readField(uInt32 fnum, bool index) {
-      if(myFile)
-      {
-        const size_t offset = ((fnum + 0) * CartridgeMVC::MVC_FIELD_SIZE);
-
-        if(offset + CartridgeMVC::MVC_FIELD_SIZE <= myFileSize)
+      void blankPartialLines(bool index) {
+        const int colorSize = myVisibleLines * 5;
+        if(index)
         {
-          myFile.setPosition(offset);
-          if(index)
-            myFile.getByteArray(myBuffer1.data(), myBuffer1.size());
-          else
-            myFile.getByteArray(myBuffer2.data(), myBuffer2.size());
-
-          return true;
+          // top line
+          myColor[0] = 0;
+          myColor[1] = 0;
+          myColor[2] = 0;
+          myColor[3] = 0;
+          myColor[4] = 0;
         }
+        else
+        {
+          // bottom line
+          myColor[colorSize - 5] = 0;
+          myColor[colorSize - 4] = 0;
+          myColor[colorSize - 3] = 0;
+          myColor[colorSize - 2] = 0;
+          myColor[colorSize - 1] = 0;
+        }
+
+        myColorBK[0] = 0;
       }
-      return false;
-    }
 
-    uInt8 readColor()   { return *myColor++;   }
-    uInt8 readColorBK() { return *myColorBK++; }
+      void swapField(bool index, bool odd) {
+        uInt8* offset = index ? myBuffer1.data() : myBuffer2.data();
 
-    uInt8 readGraph() {
-      return myGraphOverride ? *myGraphOverride++ : *myGraph++;
-    }
+        class FrameFormat
+        {
+          public:
+            uInt8 version[4];   // ('M', 'V', 'C', 0)
+            uInt8 format;       // ( 1-------)
+            uInt8 timecode[4];  // (hour, minute, second, fame)
+            uInt8 vsync;        // eg 3
+            uInt8 vblank;       // eg 37
+            uInt8 overscan;     // eg 30
+            uInt8 visible;      // eg 192
+            uInt8 rate;         // eg 60
+            uInt8 dataStart;
 
-    void overrideGraph(const uInt8* p) { myGraphOverride = p; }
+            // sound[vsync+blank+overscan+visible]
+            // graph[5 * visible]
+            // color[5 * visible]
+            // bkcolor[1 * visible]
+            // timecode[60]
+            // padding
+        };
 
-    uInt8 readAudio() { return *myAudio++; }
+        const FrameFormat* ff = reinterpret_cast<FrameFormat*>(offset);
 
-    [[nodiscard]] uInt8 getVisibleLines() const  { return myVisibleLines; }
-    [[nodiscard]] uInt8 getVSyncLines() const    { return myVSyncLines; }
-    [[nodiscard]] uInt8 getBlankLines() const    { return myBlankLines; }
-    [[nodiscard]] uInt8 getOverscanLines() const { return myOverscanLines; }
-    [[nodiscard]] uInt8 getEmbeddedFrame() const { return myEmbeddedFrame; }
-    [[nodiscard]] uInt8 peekAudio() const        { return *myAudio; }
+        if(ff->format & 0x80)
+        {
+          myVSyncLines = ff->vsync;
+          myBlankLines = ff->vblank;
+          myOverscanLines = ff->overscan;
+          myVisibleLines = ff->visible;
+          myEmbeddedFrame = ff->timecode[3] + 1;
 
-    void startTimeCode() { myGraph = myTimecode; }
+          const int totalLines = myVSyncLines + myBlankLines + myOverscanLines + myVisibleLines;
 
-    bool save(Serializer& out) const override {
-      try
-      {
-        out.putByteArray(myBuffer1.data(), myBuffer1.size());
-        out.putByteArray(myBuffer2.data(), myBuffer2.size());
+          myAudio    = const_cast<uInt8*>(&ff->dataStart);
+          myGraph    = myAudio + totalLines;
+          myColor    = const_cast<uInt8*>(myGraph) +
+                     static_cast<ptrdiff_t>(5 * myVisibleLines);
+          myColorBK  = myColor + static_cast<ptrdiff_t>(5 * myVisibleLines);
+          myTimecode = myColorBK + static_cast<ptrdiff_t>(1 * myVisibleLines);
+        }
+        else // previous format, ntsc assumed
+        {
+          myVSyncLines = 3;
+          myBlankLines = 37;
+          myOverscanLines = 30;
+          myVisibleLines = 192;
+          myEmbeddedFrame = offset[4 + 3 -1];
 
-      #if 0  // FIXME - determine whether we need to load/save this
-        const uInt8*  myAudio
-        const uInt8*  myGraph
-        const uInt8*  myGraphOverride
-        const uInt8*  myTimecode
-        const uInt8*  myColor
-        const uInt8*  myColorBK
-      #endif
+          const int totalLines = myVSyncLines + myBlankLines + myOverscanLines + myVisibleLines;
+
+          myAudio    = offset + 4 + 3;
+          myGraph    = myAudio + totalLines;
+          myTimecode = const_cast<uInt8*>(myGraph) +
+                       static_cast<ptrdiff_t>(5 * myVisibleLines);
+          myColor    = const_cast<uInt8*>(myTimecode) + 60;
+          myColorBK  = myColor + static_cast<ptrdiff_t>(5 * myVisibleLines);
+        }
+
+        if(!odd)
+            myColorBK++;
       }
-      catch(...)
-      {
+
+      bool readField(uInt32 fnum, bool index) {
+        if(myFile)
+        {
+          const size_t offset = ((fnum + 0) * CartridgeMVC::MVC_FIELD_SIZE);
+
+          if(offset + CartridgeMVC::MVC_FIELD_SIZE <= myFileSize)
+          {
+            myFile.setPosition(offset);
+            if(index)
+              myFile.getByteArray(myBuffer1.data(), myBuffer1.size());
+            else
+              myFile.getByteArray(myBuffer2.data(), myBuffer2.size());
+
+            return true;
+          }
+        }
         return false;
       }
-      return true;
-    }
 
-    bool load(Serializer& in) override {
-      try
-      {
-        in.getByteArray(myBuffer1.data(), myBuffer1.size());
-        in.getByteArray(myBuffer2.data(), myBuffer2.size());
+      uInt8 readColor()   { return *myColor++;   }
+      uInt8 readColorBK() { return *myColorBK++; }
 
-      #if 0  // FIXME - determine whether we need to load/save this
-        const uInt8*  myAudio
-        const uInt8*  myGraph
-        const uInt8*  myGraphOverride
-        const uInt8*  myTimecode
-        const uInt8*  myColor
-        const uInt8*  myColorBK
-      #endif
+      uInt8 readGraph() {
+        return myGraphOverride ? *myGraphOverride++ : *myGraph++;
       }
-      catch(...)
-      {
-        return false;
+
+      void overrideGraph(const uInt8* p) { myGraphOverride = p; }
+
+      uInt8 readAudio() { return *myAudio++; }
+
+      [[nodiscard]] uInt8 getVisibleLines() const  { return myVisibleLines; }
+      [[nodiscard]] uInt8 getVSyncLines() const    { return myVSyncLines; }
+      [[nodiscard]] uInt8 getBlankLines() const    { return myBlankLines; }
+      [[nodiscard]] uInt8 getOverscanLines() const { return myOverscanLines; }
+      [[nodiscard]] uInt8 getEmbeddedFrame() const { return myEmbeddedFrame; }
+      [[nodiscard]] uInt8 peekAudio() const        { return *myAudio; }
+
+      void startTimeCode() { myGraph = myTimecode; }
+
+      bool save(Serializer& out) const override {
+        try
+        {
+          out.putByteArray(myBuffer1.data(), myBuffer1.size());
+          out.putByteArray(myBuffer2.data(), myBuffer2.size());
+
+        #if 0  // FIXME - determine whether we need to load/save this
+          const uInt8*  myAudio
+          const uInt8*  myGraph
+          const uInt8*  myGraphOverride
+          const uInt8*  myTimecode
+          const uInt8*  myColor
+          const uInt8*  myColorBK
+        #endif
+        }
+        catch(...)
+        {
+          return false;
+        }
+        return true;
       }
-      return true;
-    }
 
-  private:
-    const uInt8*  myAudio{nullptr};
+      bool load(Serializer& in) override {
+        try
+        {
+          in.getByteArray(myBuffer1.data(), myBuffer1.size());
+          in.getByteArray(myBuffer2.data(), myBuffer2.size());
 
-    const uInt8*  myGraph{nullptr};
-    const uInt8*  myGraphOverride{nullptr};
-
-    const uInt8*  myTimecode{nullptr};
-    uInt8*        myColor{nullptr};
-    uInt8*        myColorBK{nullptr};
-
-    std::array<uInt8, CartridgeMVC::MVC_FIELD_SIZE> myBuffer1{};
-    std::array<uInt8, CartridgeMVC::MVC_FIELD_SIZE> myBuffer2{};
-
-    uInt8         myVisibleLines{192};
-    uInt8         myVSyncLines{3};
-    uInt8         myBlankLines{37};
-    uInt8         myOverscanLines{30};
-    uInt8         myEmbeddedFrame{0};
-
-    Serializer myFile;
-    size_t myFileSize{0};
-};
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-  State of current switches and joystick positions to control MovieCart
-*/
-class MovieInputs : public Serializable
-{
-  public:
-    MovieInputs() = default;
-
-    void init() {
-      bw = fire = select = reset = false;
-      right = left = up = down = false;
-    }
-
-    bool bw{false}, fire{false}, select{false}, reset{false};
-    bool right{false}, left{false}, up{false}, down{false};
-
-    void updateDirection(uInt8 val) {
-      right = val & TRANSPORT_RIGHT;
-      left  = val & TRANSPORT_LEFT;
-      up    = val & TRANSPORT_UP;
-      down  = val & TRANSPORT_DOWN;
-    }
-
-    void updateTransport(uInt8 val) {
-      bw     = val & TRANSPORT_BW;
-      fire   = val & TRANSPORT_BUTTON;
-      select = val & TRANSPORT_SELECT;
-      reset  = val & TRANSPORT_RESET;
-    }
-
-    bool save(Serializer& out) const override {
-      try
-      {
-        out.putBool(bw);      out.putBool(fire);
-        out.putBool(select);  out.putBool(reset);
-        out.putBool(right);   out.putBool(left);
-        out.putBool(up);      out.putBool(down);
+        #if 0  // FIXME - determine whether we need to load/save this
+          const uInt8*  myAudio
+          const uInt8*  myGraph
+          const uInt8*  myGraphOverride
+          const uInt8*  myTimecode
+          const uInt8*  myColor
+          const uInt8*  myColorBK
+        #endif
+        }
+        catch(...)
+        {
+          return false;
+        }
+        return true;
       }
-      catch(...)
-      {
-        return false;
-      }
-      return true;
-    }
 
-    bool load(Serializer& in) override {
-      try
-      {
-        bw = in.getBool();      fire = in.getBool();
-        select = in.getBool();  reset = in.getBool();
-        right = in.getBool();   left = in.getBool();
-        up = in.getBool();      down = in.getBool();
-      }
-      catch(...)
-      {
-        return false;
-      }
-      return true;
-    }
+    private:
+      const uInt8*  myAudio{nullptr};
 
-  private:
-    static constexpr uInt8
-        TRANSPORT_RIGHT   = 0x10,
-        TRANSPORT_LEFT    = 0x08,
-        TRANSPORT_DOWN    = 0x04,
-        TRANSPORT_UP      = 0x02,
-        TRANSPORT_UNUSED1 = 0x01; // Right-2
+      const uInt8*  myGraph{nullptr};
+      const uInt8*  myGraphOverride{nullptr};
 
-    static constexpr uInt8
-        TRANSPORT_BW      = 0x10,
-        TRANSPORT_UNUSED2 = 0x08,
-        TRANSPORT_SELECT  = 0x04,
-        TRANSPORT_RESET   = 0x02,
-        TRANSPORT_BUTTON  = 0x01;
+      const uInt8*  myTimecode{nullptr};
+      uInt8*        myColor{nullptr};
+      uInt8*        myColorBK{nullptr};
+
+      uInt8         myVisibleLines{192};
+      uInt8         myVSyncLines{3};
+      uInt8         myBlankLines{37};
+      uInt8         myOverscanLines{30};
+      uInt8         myEmbeddedFrame{0};
+
+      Serializer myFile;
+      size_t myFileSize{0};
+
+      std::array<uInt8, CartridgeMVC::MVC_FIELD_SIZE> myBuffer1{};
+      std::array<uInt8, CartridgeMVC::MVC_FIELD_SIZE> myBuffer2{};
   };
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+    State of current switches and joystick positions to control MovieCart
+  */
+  class MovieInputs : public Serializable
+  {
+    public:
+      MovieInputs() = default;
+
+      void init() {
+        bw = fire = select = reset = false;
+        right = left = up = down = false;
+      }
+
+      bool bw{false}, fire{false}, select{false}, reset{false};
+      bool right{false}, left{false}, up{false}, down{false};
+
+      void updateDirection(uInt8 val) {
+        right = val & TRANSPORT_RIGHT;
+        left  = val & TRANSPORT_LEFT;
+        up    = val & TRANSPORT_UP;
+        down  = val & TRANSPORT_DOWN;
+      }
+
+      void updateTransport(uInt8 val) {
+        bw     = val & TRANSPORT_BW;
+        fire   = val & TRANSPORT_BUTTON;
+        select = val & TRANSPORT_SELECT;
+        reset  = val & TRANSPORT_RESET;
+      }
+
+      bool save(Serializer& out) const override {
+        try
+        {
+          out.putBool(bw);      out.putBool(fire);
+          out.putBool(select);  out.putBool(reset);
+          out.putBool(right);   out.putBool(left);
+          out.putBool(up);      out.putBool(down);
+        }
+        catch(...)
+        {
+          return false;
+        }
+        return true;
+      }
+
+      bool load(Serializer& in) override {
+        try
+        {
+          bw = in.getBool();      fire = in.getBool();
+          select = in.getBool();  reset = in.getBool();
+          right = in.getBool();   left = in.getBool();
+          up = in.getBool();      down = in.getBool();
+        }
+        catch(...)
+        {
+          return false;
+        }
+        return true;
+      }
+
+    private:
+      static constexpr uInt8
+          TRANSPORT_RIGHT   = 0x10,
+          TRANSPORT_LEFT    = 0x08,
+          TRANSPORT_DOWN    = 0x04,
+          TRANSPORT_UP      = 0x02;
+//           TRANSPORT_UNUSED1 = 0x01; // Right-2
+
+      static constexpr uInt8
+          TRANSPORT_BW      = 0x10,
+//           TRANSPORT_UNUSED2 = 0x08,
+          TRANSPORT_SELECT  = 0x04,
+          TRANSPORT_RESET   = 0x02,
+          TRANSPORT_BUTTON  = 0x01;
+    };
+} // namespace
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**

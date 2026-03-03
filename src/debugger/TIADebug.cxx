@@ -1059,7 +1059,7 @@ string TIADebug::decWithLabel(string_view label, uInt16 value,
   ostringstream buf;
 
   buf << label;
-  if(label != EmptyString)
+  if(label != EmptyString())
     buf << "=";
   buf << "#" << std::setw(width) << std::dec << std::left << value;
 
@@ -1077,7 +1077,7 @@ string TIADebug::hexWithLabel(string_view label, uInt16 value,
   ostringstream buf;
 
   buf << label;
-  if(label != EmptyString)
+  if(label != EmptyString())
     buf << "=";
   buf << "$" << (width == 1 ? Common::Base::HEX1 : Common::Base::HEX2) << value;
 
@@ -1094,7 +1094,7 @@ string TIADebug::binWithLabel(string_view label, uInt16 value, bool changed)
   ostringstream buf;
 
   buf << label;
-  if(label != EmptyString)
+  if(label != EmptyString())
     buf << "=";
   buf << "%" << Common::Base::toString(value, Common::Base::Fmt::_2_8);
 
@@ -1350,15 +1350,3 @@ string TIADebug::toString()
   // note: last line should not contain \n, caller will add.
   return buf.str();
 }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const std::array<string, 8> TIADebug::nusizStrings = {
-  "1 copy              ",
-  "2 copies - close (8)",
-  "2 copies - med (24) ",
-  "3 copies - close (8)",
-  "2 copies - wide (56)",
-  "2x (16) sized player",
-  "3 copies - med (24) ",
-  "4x (32) sized player"
-};

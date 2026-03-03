@@ -101,7 +101,7 @@ class AtariNTSC
     // Width might be rounded down slightly; use inWidth() on result to
     // find rounded value. Guaranteed not to round 160 down at all.
     static constexpr uInt32 outWidth(uInt32 in_width) {
-      return ((((in_width) - 1) / PIXEL_in_chunk + 1)* PIXEL_out_chunk) + 8;
+      return (((in_width - 1) / PIXEL_in_chunk + 1)* PIXEL_out_chunk) + 8;
     }
 
   private:
@@ -177,13 +177,28 @@ class AtariNTSC
     };
     init_t myImpl;
 
+    // Converted from C-style macros; I don't even pretend to understand the logic here :)
+    static constexpr int PIXEL_OFFSET1( int ntsc, int scaled ) {
+      return (kernel_size / 2 + (ntsc - scaled / rescale_out * rescale_in) +
+        (((scaled + rescale_out * 10) % rescale_out) != 0) +
+        (rescale_out - ((scaled + rescale_out * 10) % rescale_out)) % rescale_out +
+        (kernel_size * 2 * ((scaled + rescale_out * 10) % rescale_out)));
+    }
+    static constexpr float PIXEL_OFFSET2( int ntsc ) {
+      return 1.0F - ((ntsc + 100) & 2);
+    }
+
     struct pixel_info_t
     {
       int offset{0};
       float negate{0.F};
-      std::array<float, 4> kernel{0.F};
+      std::array<float, 4> kernel{};
     };
-    static const std::array<pixel_info_t, alignment_count> atari_ntsc_pixels;
+    // NOLINTNEXTLINE: seems we can't do constexpr on std::array inside another
+    static inline const std::array<pixel_info_t, alignment_count> atari_ntsc_pixels = {{
+      { PIXEL_OFFSET1(-4, -9), PIXEL_OFFSET2(-4), { 1, 1, 1, 1            } },
+      { PIXEL_OFFSET1( 0, -5), PIXEL_OFFSET2( 0), {            1, 1, 1, 1 } }
+    }};
 
     static constexpr std::array<float, 6> default_decoder = {
       0.9563F, 0.6210F, -0.2721F, -0.6474F, -1.1070F, 1.7046F
@@ -223,7 +238,7 @@ class AtariNTSC
 
     // Common ntsc macros
     static constexpr void ATARI_NTSC_CLAMP( uInt32& io, uInt32 shift ) {
-      const uInt32 sub = io >> (9-(shift)) & atari_ntsc_clamp_mask;
+      const uInt32 sub = io >> (9-shift) & atari_ntsc_clamp_mask;
       uInt32 clamp = atari_ntsc_clamp_add - sub;
       io |= clamp;
       clamp -= sub;
@@ -245,17 +260,6 @@ class AtariNTSC
 
     static constexpr uInt32 PACK_RGB( int r, int g, int b ) {
       return r << 21 | g << 11 | b << 1;
-    }
-
-    // Converted from C-style macros; I don't even pretend to understand the logic here :)
-    static constexpr int PIXEL_OFFSET1( int ntsc, int scaled ) {
-      return (kernel_size / 2 + ((ntsc) - (scaled) / rescale_out * rescale_in) +
-        ((((scaled) + rescale_out * 10) % rescale_out) != 0) +
-        (rescale_out - (((scaled) + rescale_out * 10) % rescale_out)) % rescale_out +
-        (kernel_size * 2 * (((scaled) + rescale_out * 10) % rescale_out)));
-    }
-    static constexpr float PIXEL_OFFSET2( int ntsc ) {
-      return 1.0F - (((ntsc) + 100) & 2);
     }
 
   #if 0  // DEAD CODE

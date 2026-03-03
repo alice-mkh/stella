@@ -26,36 +26,38 @@
 #include "PhosphorHandler.hxx"
 #include "Base.hxx"
 
-enum CollisionMask: uInt16 {
-  player0   = 0b0111110000000000,
-  player1   = 0b0100001111000000,
-  missile0  = 0b0010001000111000,
-  missile1  = 0b0001000100100110,
-  ball      = 0b0000100010010101,
-  playfield = 0b0000010001001011
-};
+namespace {
+  enum CollisionMask: uInt16 {
+    player0   = 0b0111110000000000,
+    player1   = 0b0100001111000000,
+    missile0  = 0b0010001000111000,
+    missile1  = 0b0001000100100110,
+    ball      = 0b0000100010010101,
+    playfield = 0b0000010001001011
+  };
 
-enum Delay: uInt8 {
-  hmove = 6,
-  pf = 2,
-  grp = 1,
-  shufflePlayer = 1,
-  shuffleBall = 1,
-  hmp = 2,
-  hmm = 2,
-  hmbl = 2,
-  hmclr = 2,
-  refp = 1,
-  enabl = 1,
-  enam = 1,
-  vblank = 1
-};
+  enum Delay: uInt8 {
+    hmove = 6,
+    pf = 2,
+    grp = 1,
+    shufflePlayer = 1,
+    shuffleBall = 1,
+    hmp = 2,
+    hmm = 2,
+    hmbl = 2,
+    hmclr = 2,
+    refp = 1,
+    enabl = 1,
+    enam = 1,
+    vblank = 1
+  };
 
-enum ResxCounter: uInt8 {
-  hblank = 159,
-  lateHblank = 158,
-  frame = 157
-};
+  enum ResxCounter: uInt8 {
+    hblank = 159,
+    lateHblank = 158,
+    frame = 157
+  };
+}  // namespace
 
 // This parameter still has room for tuning. If we go lower than 73, long005 will show
 // a slight artifact (still have to crosscheck on real hardware), if we go lower than

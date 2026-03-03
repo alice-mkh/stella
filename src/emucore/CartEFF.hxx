@@ -28,7 +28,7 @@ class System;
 #endif
 
 /**
-   Based on EF, the EFF cartridge  adds strobe addresses for i2c access to
+   Based on EF, the EFF cartridge adds strobe addresses for i2c access to
    an EEPROM, like an on-cartridge SaveKey interface.
 
    @author Stephen Anthony, Thomas Jentzsch, Bruce-Robert Pocock
@@ -71,10 +71,6 @@ class CartridgeEFF : public CartridgeEF
     }
   #endif
 
-    int descriptionLines();
-
-    string ramDescription();
-
     uInt8 peek(uInt16 address) override;
     bool poke(uInt16 address, uInt8 value) override;
     void setNVRamFile(string_view path) override;
@@ -85,9 +81,6 @@ class CartridgeEFF : public CartridgeEF
     uInt16 hotspot() const override { return 0x1FE0; }
 
     uInt16 getStartBank() const override { return 1; }
-
-    // RAM size
-    static constexpr size_t RAM_SIZE = 0;
 
     void setI2CClock(bool value);
     void setI2CData(bool value);

@@ -242,7 +242,7 @@ void SoundSDL::adjustVolume(int direction)
 
   // Now show an onscreen message
   ostringstream strval;
-  (percent) ? strval << percent << "%" : strval << "Off";
+  percent ? strval << percent << "%" : strval << "Off";
   myOSystem.frameBuffer().showGaugeMessage("Volume", strval.view(), percent);
 }
 

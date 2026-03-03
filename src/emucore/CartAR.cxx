@@ -273,16 +273,16 @@ void CartridgeAR::initializeROM()
   ourDummyROMCode[281] = mySystem->randGenerator().next();
 
   // Initialize ROM with illegal 6502 opcode that causes a real 6502 to jam
-  std::fill_n(myImage.begin() + (RAM_SIZE), BANK_SIZE, 0x02);
+  std::fill_n(myImage.begin() + RAM_SIZE, BANK_SIZE, 0x02);
 
   // Copy the "dummy" Supercharger BIOS code into the ROM area
-  std::copy_n(ourDummyROMCode.data(), ourDummyROMCode.size(), myImage.data() + (RAM_SIZE));
+  std::copy_n(ourDummyROMCode.data(), ourDummyROMCode.size(), myImage.data() + RAM_SIZE);
 
   // Finally set 6502 vectors to point to initial load code at 0xF80A of BIOS
-  myImage[(RAM_SIZE) + BANK_SIZE - 4] = 0x0A;
-  myImage[(RAM_SIZE) + BANK_SIZE - 3] = 0xF8;
-  myImage[(RAM_SIZE) + BANK_SIZE - 2] = 0x0A;
-  myImage[(RAM_SIZE) + BANK_SIZE - 1] = 0xF8;
+  myImage[RAM_SIZE + BANK_SIZE - 4] = 0x0A;
+  myImage[RAM_SIZE + BANK_SIZE - 3] = 0xF8;
+  myImage[RAM_SIZE + BANK_SIZE - 2] = 0x0A;
+  myImage[RAM_SIZE + BANK_SIZE - 1] = 0xF8;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

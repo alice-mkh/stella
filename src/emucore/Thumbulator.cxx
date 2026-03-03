@@ -1413,7 +1413,7 @@ FORCE_INLINE int Thumbulator::execute()  // NOLINT (readability-function-size)
     case Op::blt: {
       THUMB_STAT(_stats.branches)
       if((!(znFlags & 0x80000000) && vFlag) ||
-         (((znFlags & 0x80000000)) && !vFlag))
+         ( (znFlags & 0x80000000) && !vFlag))
         write_register(15, decodedParam[instructionPtr2]);
       return 0;
     }
@@ -1432,7 +1432,7 @@ FORCE_INLINE int Thumbulator::execute()  // NOLINT (readability-function-size)
       THUMB_STAT(_stats.branches)
       if(!znFlags ||
          (!(znFlags & 0x80000000) && vFlag) ||
-         (((znFlags & 0x80000000)) && !vFlag))
+         ( (znFlags & 0x80000000) && !vFlag))
         write_register(15, decodedParam[instructionPtr2]);
       return 0;
     }
