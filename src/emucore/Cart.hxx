@@ -152,9 +152,9 @@ class Cartridge : public Device
     /**
       Enable or disable PlusROM support.
 
-      @param enabled  Whether to enable the PlusROM support
+      @param enable  Whether to enable the PlusROM support
     */
-    virtual void enablePlusROM(bool enable) { };
+    virtual void enablePlusROM(bool enable) { }
 
     /**
       Set the callback for displaying messages
@@ -447,7 +447,6 @@ class Cartridge : public Device
     // The array containing information about every byte of ROM indicating
     // how often it is accessed.
     std::unique_ptr<Device::AccessCounter[]> myRomAccessCounter;
-
 
     // Contains address of illegal RAM write access or 0
     uInt16 myRamWriteAccess{0};
