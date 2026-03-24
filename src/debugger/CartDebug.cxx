@@ -706,13 +706,13 @@ bool CartDebug::getLabel(ostream& buf, uInt16 addr, bool isRead,
     {
       // RAM can use user-defined labels; otherwise we default to
       // standard mnemonics
-      AddrToLabel::const_iterator iter;
       const uInt16 a = addr & 0xFF, offset = addr & 0xFF00;
       bool found = false;
 
       // Search for nearest label
       for(uInt16 i = a; i >= 0x80; --i)
-        if((iter = myUserLabels.find(i)) != myUserLabels.end())
+      {
+        if(const auto& iter = myUserLabels.find(i); iter != myUserLabels.end())
         {
           buf << iter->second;
           if(a != i)
@@ -720,6 +720,7 @@ bool CartDebug::getLabel(ostream& buf, uInt16 addr, bool isRead,
           found = true;
           break;
         }
+      }
       if(!found)
         buf << ourZPMnemonic[a - 0x80];
       if(offset > 0)
@@ -733,22 +734,21 @@ bool CartDebug::getLabel(ostream& buf, uInt16 addr, bool isRead,
       // These addresses can never be in the system labels list
       if(isRam) // cartridge RAM
       {
-        AddrToLabel::const_iterator iter;
-
         // Search for nearest label
         for(uInt16 i = addr; i >= (addr & 0xf000); --i)
-          if((iter = myUserLabels.find(i)) != myUserLabels.end())
+        {
+          if(const auto& iter = myUserLabels.find(i); iter != myUserLabels.end())
           {
             buf << iter->second;
             if(addr != i)
               buf << "+$" << Base::HEX1 << (addr - i);
             return true;
           }
+        }
       }
       else
       {
-        const auto& iter = myUserLabels.find(addr);
-        if(iter != myUserLabels.end())
+        if(const auto& iter = myUserLabels.find(addr); iter != myUserLabels.end())
         {
           buf << iter->second;
           return true;
@@ -790,11 +790,10 @@ string CartDebug::getLabel(uInt16 addr, bool isRead, int places, bool isRam) con
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 int CartDebug::getAddress(const string& label) const
 {
-  LabelToAddr::const_iterator iter;
-
-  if((iter = mySystemAddresses.find(label)) != mySystemAddresses.end() ||
-    ((iter = myUserAddresses.find(label)) != myUserAddresses.end()))
-    return iter->second;
+  if(const auto it1 = mySystemAddresses.find(label); it1 != mySystemAddresses.end())
+    return it1->second;
+  else if(const auto it2 = myUserAddresses.find(label); it2 != myUserAddresses.end())
+    return it2->second;
   else
     return -1;
 }
@@ -1087,7 +1086,7 @@ string CartDebug::saveConfigFile()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 string CartDebug::saveDisassembly(string path)
 {
-#define ALIGN(x) setfill(' ') << left << setw(x)
+#define ALIGN(x) setfill(' ') << left << setw(x)  // NOLINT no easier way to do this
 
   // We can't print the header to the disassembly until it's actually
   // been processed; therefore buffer output to a string first

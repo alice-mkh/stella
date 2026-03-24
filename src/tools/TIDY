@@ -1,21 +1,16 @@
 #!/usr/bin/env bash
 
-run-clang-tidy-22 -header-filter=\(.*\.hxx\) \
+time run-clang-tidy-22 -header-filter=\(.*\.hxx\) \
 -checks=*,\
 -abseil*,\
 -altera*,\
 -android*,\
 -fuchsia*,\
--llvm-prefer-static-over-anonymous-namespace,\
--llvmlibc-inline-function-decl,\
+-llvm*,\
 -boost-use-ranges,\
--bugprone-assignment-in-if-condition,\
 -bugprone-branch-clone,\
 -bugprone-easily-swappable-parameters,\
 -bugprone-narrowing-conversions,\
--bugprone-reserved-identifier,\
--cert-dcl37-c,\
--cert-dcl51-cpp,\
 -cert-err58-cpp,\
 -cert-int09-c,\
 -clang-analyzer-cplusplus.NewDeleteLeaks,\
@@ -23,7 +18,6 @@ run-clang-tidy-22 -header-filter=\(.*\.hxx\) \
 -cppcoreguidelines-avoid-c-arrays,\
 -cppcoreguidelines-avoid-do-while,\
 -cppcoreguidelines-avoid-magic-numbers,\
--cppcoreguidelines-macro-usage,\
 -cppcoreguidelines-narrowing-conversions,\
 -cppcoreguidelines-non-private-member-variables-in-classes,\
 -cppcoreguidelines-owning-memory,\
@@ -43,27 +37,17 @@ run-clang-tidy-22 -header-filter=\(.*\.hxx\) \
 -google-readability-todo,\
 -hicpp-avoid-c-arrays,\
 -hicpp-braces-around-statements,\
--hicpp-explicit-conversions,\
 -hicpp-named-parameter,\
 -hicpp-no-array-decay,\
 -hicpp-signed-bitwise,\
--hicpp-special-member-functions,\
--hicpp-use-equals-default,\
 -hicpp-use-equals-delete,\
 -hicpp-vararg,\
--llvm-else-after-return,\
--llvm-header-guard,\
--llvm-include-order,\
--llvmlibc-callee-namespace,\
--llvmlibc-implementation-in-namespace,\
--llvmlibc-restrict-system-libc-headers,\
 -misc-confusable-identifiers,\
 -misc-include-cleaner,\
 -misc-multiple-inheritance,\
 -misc-no-recursion,\
 -misc-non-private-member-variables-in-classes,\
 -misc-unused-parameters,\
--misc-override-with-different-visibility,\
 -modernize-avoid-bind,\
 -modernize-avoid-c-arrays,\
 -modernize-pass-by-value,\

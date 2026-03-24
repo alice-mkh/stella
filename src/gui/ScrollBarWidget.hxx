@@ -32,26 +32,27 @@ class ScrollBarWidget : public Widget, public CommandSender
     ~ScrollBarWidget() override = default;
 
     void recalc();
+    void handleMouseDown(int x, int y, MouseButton b, int clickCount) override;
+    void handleMouseUp(int x, int y, MouseButton b, int clickCount) override;
+    void handleMouseMoved(int x, int y) override;
     void handleMouseWheel(int x, int y, int direction) override;
+    bool handleMouseClicks(int x, int y, MouseButton b) override;
+    void handleMouseLeft() override;
 
-    static void setWheelLines(int lines) { _WHEEL_LINES = lines; }
-    static int  getWheelLines()          { return _WHEEL_LINES;  }
+    static void setWheelLines(int lines) { S_WHEEL_LINES = lines; }
+    static int  getWheelLines()          { return S_WHEEL_LINES;  }
     static int scrollBarWidth(const GUI::Font& font) {
       return font.getFontHeight() < 24 ? 15 : 23;
     }
 
-  private:
+  protected:
     void drawWidget(bool hilite) override;
-    void checkBounds(int old_pos);
 
-    void handleMouseDown(int x, int y, MouseButton b, int clickCount) override;
-    void handleMouseUp(int x, int y, MouseButton b, int clickCount) override;
-    void handleMouseMoved(int x, int y) override;
-    bool handleMouseClicks(int x, int y, MouseButton b) override;
-    void handleMouseLeft() override;
+  private:
+    void checkBounds(int old_pos);
     void setArrows();
 
-  public:
+  public:  // TODO: these shouldn't be public
     int _numEntries{0};
     int _entriesPerPage{0};
     int _currentPos{0};
@@ -72,7 +73,7 @@ class ScrollBarWidget : public Widget, public CommandSender
     const uInt32* _upImg{nullptr};
     const uInt32* _downImg{nullptr};
 
-    static int _WHEEL_LINES;
+    static int S_WHEEL_LINES;
 
   private:
     // Following constructors and assignment operators not supported

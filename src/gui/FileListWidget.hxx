@@ -58,6 +58,7 @@ class FileListWidget : public StringListWidget
     ~FileListWidget() override = default;
 
     bool handleKeyDown(StellaKey key, StellaMod mod) override;
+    bool handleText(char text) override;
 
     string getToolTip(const Common::Point& pos) const override;
 
@@ -101,11 +102,13 @@ class FileListWidget : public StringListWidget
     const FSNode& selected();
     const FSNode& currentDir() const { return _node; }
 
-    static void setQuickSelectDelay(uInt64 time) { _QUICK_SELECT_DELAY = time; }
-    static uInt64 getQuickSelectDelay() { return _QUICK_SELECT_DELAY; }
+    static void setQuickSelectDelay(uInt64 time) { S_QUICK_SELECT_DELAY = time; }
+    static uInt64 getQuickSelectDelay() { return S_QUICK_SELECT_DELAY; }
 
     ProgressDialog& progress();
     void incProgress();
+
+    virtual bool isDirectory(const FSNode& node) const;
 
   protected:
     struct HistoryType
@@ -143,7 +146,6 @@ class FileListWidget : public StringListWidget
     void selectPrevHistory();
     /** Select next directory in history (if applicable) */
     void selectNextHistory();
-    virtual bool isDirectory(const FSNode& node) const;
     virtual void getChildren(const FSNode::CancelCheck& isCancelled);
     virtual void extendLists(StringList& list) { }
     virtual IconType getIconType(string_view path) const;
@@ -152,6 +154,9 @@ class FileListWidget : public StringListWidget
     virtual bool fullPathToolTip() const { return false; }
     static string& fixPath(string& path);
     void addHistory(const FSNode& node);
+
+    int drawIcon(int i, int x, int y, ColorId color) override;
+    void handleCommand(CommandSender* sender, int cmd, int data, int id) override;
 
   protected:
     FSNode _node;
@@ -163,11 +168,6 @@ class FileListWidget : public StringListWidget
     int _historyHome{0}; // offset into initially created history
     std::vector<HistoryType>::iterator _currentHistory{_history.begin()};
     IconTypeList _iconTypeList;
-
-  private:
-    bool handleText(char text) override;
-    void handleCommand(CommandSender* sender, int cmd, int data, int id) override;
-    int drawIcon(int i, int x, int y, ColorId color) override;
 
   private:
     FSNode::ListMode _fsmode{FSNode::ListMode::All};
@@ -182,7 +182,7 @@ class FileListWidget : public StringListWidget
     StellaMod _firstMod{StellaMod::KBDM_NONE};
     string _quickSelectStr;
     uInt64 _quickSelectTime{0};
-    static inline uInt64 _QUICK_SELECT_DELAY{300};
+    static inline uInt64 S_QUICK_SELECT_DELAY{300};
 
     unique_ptr<ProgressDialog> myProgressDialog;
 
