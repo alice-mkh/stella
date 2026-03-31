@@ -224,3 +224,7 @@ configure_file(
   install_dir: core_dir,
   install: true
 )
+
+install_data('..' / '..' / '..' / 'Copyright.txt',
+  install_dir: core_dir
+)
