@@ -31,8 +31,8 @@
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 StellaHIGHSCORE::StellaHIGHSCORE()
-  : rom_image{make_unique<uInt8[]>(getROMMax())},
-    audio_buffer{make_unique<Int16[]>(audio_buffer_max)}
+  : rom_image{std::make_unique<uInt8[]>(getROMMax())},
+    audio_buffer{std::make_unique<Int16[]>(audio_buffer_max)}
 {
 }
 
@@ -44,7 +44,7 @@ bool StellaHIGHSCORE::create(bool logging)
   // build play system
   destroy();
 
-  myOSystem = make_unique<OSystemHIGHSCORE>();
+  myOSystem = std::make_unique<OSystemHIGHSCORE>();
 
   Settings::Options options;
   myOSystem->initialize(options);

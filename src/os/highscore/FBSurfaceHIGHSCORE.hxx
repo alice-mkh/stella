@@ -33,7 +33,7 @@ class FBSurfaceHIGHSCORE : public FBSurface
     FBSurfaceHIGHSCORE(uInt32 width, uInt32 height)
       : myWidth{width},
         myHeight{height},
-        myPixelData{make_unique<uInt32[]>(myWidth * myHeight)}
+        myPixelData{std::make_unique<uInt32[]>(myWidth * myHeight)}
     {
       ////////////////////////////////////////////////////
       // These *must* be set for the parent class
