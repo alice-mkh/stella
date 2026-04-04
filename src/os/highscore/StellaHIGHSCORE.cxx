@@ -189,7 +189,7 @@ bool StellaHIGHSCORE::loadState(const void* data, size_t size)
 {
   Serializer state;
 
-  state.putByteArray(reinterpret_cast<const uInt8*>(data), size);
+  state.putByteArray(std::span{reinterpret_cast<const uInt8*>(data), size});
 
   if(!myOSystem->state().loadState(state))
     return false;
@@ -209,7 +209,7 @@ bool StellaHIGHSCORE::saveState(void* data, size_t size) const
   if (state.size() > size)
     return false;
 
-  state.getByteArray(reinterpret_cast<uInt8*>(data), state.size());
+  state.getByteArray(std::span{reinterpret_cast<uInt8*>(data), state.size()});
   return true;
 }
 
