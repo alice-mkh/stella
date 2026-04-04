@@ -52,18 +52,18 @@ class FSNodeFactory
       {
         case Type::SYSTEM:
         #if defined(BSPF_UNIX) || defined(BSPF_MACOS)
-          return make_unique<FSNodePOSIX>(path);
+          return std::make_unique<FSNodePOSIX>(path);
         #elif defined(BSPF_WINDOWS)
-          return make_unique<FSNodeWINDOWS>(path);
+          return std::make_unique<FSNodeWINDOWS>(path);
         #elif defined(__LIB_RETRO__)
-          return make_unique<FSNodeLIBRETRO>(path);
+          return std::make_unique<FSNodeLIBRETRO>(path);
         #elif defined(__HIGHSCORE__)
-          return make_unique<FSNodeHIGHSCORE>(path);
+          return std::make_unique<FSNodeHIGHSCORE>(path);
         #endif
           break;
         case Type::ZIP:
         #ifdef ZIP_SUPPORT
-          return make_unique<FSNodeZIP>(path);
+          return std::make_unique<FSNodeZIP>(path);
         #endif
           break;
         default:

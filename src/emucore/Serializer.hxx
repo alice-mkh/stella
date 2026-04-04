@@ -19,8 +19,10 @@
 #define SERIALIZER_HXX
 
 #include <bit>
-#include <span>
+#include <cstring>
+#include <fstream>
 #include <optional>
+#include <span>
 
 #include "bspf.hxx"
 
@@ -264,9 +266,11 @@ class Serializer
                           // possible clang bug; fails to compile with default
 
       void ensureCapacity(size_t additional) {
-        const size_t needed = pos + additional;
-        if(needed > buffer.size()) {
-          const size_t newSize = std::max(buffer.size() * 2, needed);
+        ensureSize(pos + additional);
+      }
+      void ensureSize(size_t absolute) {
+        if(absolute > buffer.size()) {
+          const size_t newSize = std::max(buffer.size() * 2, absolute);
           buffer.resize(newSize);
         }
       }
@@ -275,7 +279,7 @@ class Serializer
 
     // File backend
     struct FileStream {
-      fstream stream;
+      std::fstream stream;
 
       vector<std::byte> writeBuffer;
       size_t bufferPos{0};

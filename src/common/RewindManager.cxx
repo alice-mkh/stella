@@ -234,7 +234,7 @@ string RewindManager::saveAllStates()
 
   try
   {
-    ostringstream buf;
+    std::ostringstream buf;
     buf << myOSystem.stateDir()
       << myOSystem.console().properties().get(PropType::Cart_Name)
       << ".sta";
@@ -290,7 +290,7 @@ string RewindManager::loadAllStates()
 {
   try
   {
-    ostringstream buf;
+    std::ostringstream buf;
     buf << myOSystem.stateDir()
       << myOSystem.console().properties().get(PropType::Cart_Name)
       << ".sta";
@@ -391,7 +391,7 @@ string RewindManager::loadState(Int64 startCycles, uInt32 numStates)
   myOSystem.console().tia().loadDisplay(s);
 
   const Int64 diff = startCycles - state.cycles;
-  stringstream message;
+  std::ostringstream message;
 
   if(diff)
     message << (diff > 0 ? "Rewind" : "Unwind") << " " << getUnitString(diff);
@@ -424,7 +424,7 @@ string RewindManager::getUnitString(Int64 cycles)
     1, 76, 76 * scanlines, freq, freq * 60, Int64{1} << 62
   };
 
-  stringstream result;
+  std::ostringstream result;
   size_t i = 0;
 
   const uInt64 u_cycles = std::abs(cycles);
@@ -470,9 +470,8 @@ IntArray RewindManager::cyclesList() const
   IntArray arr;
 
   const uInt64 firstCycle = getFirstCycles();
-  // NOLINTNEXTLINE (TODO: convert myStateList to use range-for)
-  for(auto it = myStateList.cbegin(); it != myStateList.cend(); ++it)
-    arr.push_back(static_cast<uInt32>(it->cycles - firstCycle));
+  for(const auto& it: myStateList)
+    arr.push_back(static_cast<uInt32>(it.cycles - firstCycle));
 
   return arr;
 }

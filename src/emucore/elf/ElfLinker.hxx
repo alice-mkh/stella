@@ -18,6 +18,9 @@
 #ifndef ELF_LINKER
 #define ELF_LINKER
 
+#include <optional>
+#include <unordered_map>
+
 #include "bspf.hxx"
 #include "ElfFile.hxx"
 
@@ -65,7 +68,7 @@ class ElfLinker {
     };
 
     struct RelocatedSymbol {
-      optional<SegmentType> segment;
+      std::optional<SegmentType> segment;
       uInt32 value{0};
       bool undefined{true};
     };
@@ -140,8 +143,8 @@ class ElfLinker {
     unique_ptr<uInt8[]> myDataData;
     unique_ptr<uInt8[]> myRodataData;
 
-    vector<optional<RelocatedSection>> myRelocatedSections;
-    vector<optional<RelocatedSymbol>> myRelocatedSymbols;
+    vector<std::optional<RelocatedSection>> myRelocatedSections;
+    vector<std::optional<RelocatedSymbol>> myRelocatedSymbols;
 
     vector<uInt32> myInitArray;
     vector<uInt32> myPreinitArray;

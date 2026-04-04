@@ -16,6 +16,7 @@
 //============================================================================
 
 #include <cmath>
+#include <iomanip>
 
 #include "Console.hxx"
 #include "FrameBuffer.hxx"
@@ -101,7 +102,7 @@ bool PaletteHandler::isRGBShift() const
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void PaletteHandler::showAdjustableMessage()
 {
-  ostringstream msg, buf;
+  std::ostringstream msg, buf;
 
   msg << "Palette " << myAdjustables[myCurrentAdjustable].name;
   if(isPhaseShift())

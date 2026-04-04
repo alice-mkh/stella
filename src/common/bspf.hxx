@@ -25,7 +25,6 @@
   @author Bradford W. Mott and Stephen Anthony
 */
 
-#include <climits>
 #include <cstdint>
 // Types for 8/16/32/64-bit signed and unsigned integers
 using Int8   = int8_t;
@@ -44,34 +43,21 @@ using uInt64 = uint64_t;
 #include <bit>
 #include <compare>
 #include <iostream>
-#include <fstream>
-#include <functional>
-#include <iomanip>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <charconv>
 #include <sstream>
-#include <cstring>
 #include <cctype>
-#include <cstdio>
 #include <ctime>
 #include <numbers>
 #include <ranges>
 #include <utility>
 #include <vector>
-#include <optional>
 
 using std::cin;
 using std::cout;
 using std::cerr;
-using std::string;
-using std::string_view;
-using std::istream;
-using std::ostream;
-using std::fstream;
-using std::iostream;
-using std::istringstream;
 // Android NDK 26 libc++ lacks ostringstream::view() (C++20 P0408R7)
 #if defined(__ANDROID__) && !defined(__cpp_lib_sstream_from_string_view)
 class ostringstream : public std::ostringstream {
@@ -84,18 +70,15 @@ public:
   using std::stringstream::stringstream;
   std::string view() const { return str(); }
 };
-#else
-using std::ostringstream;
-using std::stringstream;
 #endif
+
+// Frequently used data types
+using std::string;
+using std::string_view;
 using std::unique_ptr;
 using std::shared_ptr;
-using std::make_unique;
-using std::make_shared;
 using std::array;
 using std::vector;
-using std::runtime_error;
-using std::optional;
 
 // Common array types
 using IntArray = std::vector<Int32>;
@@ -136,10 +119,10 @@ inline const string& EmptyString() { static const string empty; return empty; }
 
 namespace BSPF
 {
-  constexpr float PI_f = std::numbers::pi_v<float>;
+  constexpr float  PI_f = std::numbers::pi_v<float>;
   constexpr double PI_d = std::numbers::pi_v<double>;
   constexpr double ln10 = std::numbers::ln10;
-  constexpr double ln2 = std::numbers::ln2;
+  constexpr double ln2  = std::numbers::ln2;
 
   // CPU architecture type
   // This isn't complete yet, but takes care of all the major platforms
@@ -215,15 +198,15 @@ namespace BSPF
   template<int BASE = 10>
   inline int stoi(string_view s, int defaultValue = 0)
   {
-      // Skip leading spaces safely
-      const auto pos = s.find_first_not_of(' ');
-      if(pos == string_view::npos)
-        return defaultValue;
-      s.remove_prefix(pos);
+    // Skip leading spaces safely
+    const auto pos = s.find_first_not_of(' ');
+    if(pos == string_view::npos)
+      return defaultValue;
+    s.remove_prefix(pos);
 
-      int i{};
-      const auto result = std::from_chars(s.data(), s.data() + s.size(), i, BASE);
-      return (result.ec == std::errc()) ? i : defaultValue;
+    int i{};
+    const auto result = std::from_chars(s.data(), s.data() + s.size(), i, BASE);
+    return (result.ec == std::errc()) ? i : defaultValue;
   }
 
   // Convert character to uppercase (ASCII only)

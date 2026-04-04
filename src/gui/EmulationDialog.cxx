@@ -15,6 +15,8 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
+#include <iomanip>
+
 #include "OSystem.hxx"
 #include "Console.hxx"
 #include "FrameBuffer.hxx"
@@ -52,7 +54,7 @@ namespace {
   }
 
   string formatSpeed(int speed) {
-    stringstream ss;
+    std::ostringstream ss;
 
     ss
       << std::setw(3) << std::fixed << std::setprecision(0)

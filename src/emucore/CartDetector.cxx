@@ -264,7 +264,7 @@ Bankswitch::Type CartDetector::autodetectType(const ByteBuffer& image, size_t si
   if(type == Bankswitch::Type::AUTO)
     type = Bankswitch::Type::_4K;  // Most common bankswitching type
 
-  ostringstream ss;
+  std::ostringstream ss;
   ss << "Bankswitching type '" << Bankswitch::typeToDesc(type) << "' detected";
   Logger::debug(ss.view());
 
@@ -771,6 +771,9 @@ size_t CartDetector::isProbablyMVC(const FSNode& rom)
   if(Bankswitch::typeFromExtension(rom) == Bankswitch::Type::MVC)
     return frameSize;
 
+  // TODO: Maybe we can determine whether a ROM is MVC before opening it
+  //       Perhaps based on size??  This call is made for every attempt
+  //       to open _any_ ROM, and most of the time they won't be MVC
   Serializer s(rom.getPath(), Serializer::FileMode::ReadOnly);
   if(s)
   {
