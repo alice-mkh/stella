@@ -15,8 +15,6 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#include "bspf.hxx"
-
 #include "Dialog.hxx"
 #include "Debugger.hxx"
 #include "CartDebug.hxx"
@@ -39,6 +37,7 @@
 #include "FrameBuffer.hxx"
 #include "TimerManager.hxx"
 #include "Vec.hxx"
+#include "bspf.hxx"
 
 #include "Base.hxx"
 using Common::Base;
@@ -2757,7 +2756,7 @@ void DebuggerParser::executeUHex()
   const bool enable = !Base::hexUppercase();
   Base::setHexUppercase(enable);
 
-  settings.setValue("dbg.uHex", enable);
+  settings.setValue("dbg.uhex", enable);
   debugger.rom().invalidate();
 
   commandResult << "uppercase HEX " << (enable ? "enabled" : "disabled");
