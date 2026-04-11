@@ -1,9 +1,6 @@
 MODULE := src/debugger/gui
 
 MODULE_OBJS := \
-        src/debugger/gui/AmigaMouseWidget.o \
-        src/debugger/gui/AtariMouseWidget.o \
-        src/debugger/gui/AtariVoxWidget.o \
         src/debugger/gui/AudioWidget.o \
         src/debugger/gui/BoosterWidget.o \
         src/debugger/gui/Cart03E0Widget.o \
@@ -83,15 +80,13 @@ MODULE_OBJS := \
         src/debugger/gui/RomListSettings.o \
         src/debugger/gui/RomListWidget.o \
         src/debugger/gui/RomWidget.o \
-        src/debugger/gui/SaveKeyWidget.o \
         src/debugger/gui/TiaInfoWidget.o \
         src/debugger/gui/TiaOutputWidget.o \
         src/debugger/gui/TiaWidget.o \
         src/debugger/gui/TiaZoomWidget.o \
         src/debugger/gui/ToggleBitWidget.o \
         src/debugger/gui/TogglePixelWidget.o \
-        src/debugger/gui/ToggleWidget.o \
-        src/debugger/gui/TrakBallWidget.o
+        src/debugger/gui/ToggleWidget.o
 
 MODULE_TEST_OBJS =
 

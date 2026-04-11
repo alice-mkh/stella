@@ -840,15 +840,6 @@
     <ClCompile Include="..\..\debugger\yacc\YaccParser.cxx">
       <Filter>Source Files\debugger\yacc</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\debugger\gui\AmigaMouseWidget.cxx">
-      <Filter>Source Files\debugger\gui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\debugger\gui\AtariMouseWidget.cxx">
-      <Filter>Source Files\debugger\gui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\debugger\gui\AtariVoxWidget.cxx">
-      <Filter>Source Files\debugger\gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\debugger\gui\AudioWidget.cxx">
       <Filter>Source Files\debugger\gui</Filter>
     </ClCompile>
@@ -1062,9 +1053,6 @@
     <ClCompile Include="..\..\debugger\gui\RomWidget.cxx">
       <Filter>Source Files\debugger\gui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\debugger\gui\SaveKeyWidget.cxx">
-      <Filter>Source Files\debugger\gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\debugger\gui\TiaInfoWidget.cxx">
       <Filter>Source Files\debugger\gui</Filter>
     </ClCompile>
@@ -1084,9 +1072,6 @@
       <Filter>Source Files\debugger\gui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\debugger\gui\ToggleWidget.cxx">
-      <Filter>Source Files\debugger\gui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\debugger\gui\TrakBallWidget.cxx">
       <Filter>Source Files\debugger\gui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\debugger\gui\CpuWidget.cxx">
