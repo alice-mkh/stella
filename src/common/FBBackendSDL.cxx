@@ -72,8 +72,8 @@ FBBackendSDL::~FBBackendSDL()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void FBBackendSDL::queryHardware(vector<Common::Size>& fullscreenRes,
-                                 vector<Common::Size>& windowedRes,
+void FBBackendSDL::queryHardware(std::map<uInt32, Common::Size>& fullscreenRes,
+                                 std::map<uInt32, Common::Size>& windowedRes,
                                  VariantList& renderers)
 {
   ASSERT_MAIN_THREAD;
@@ -90,12 +90,14 @@ void FBBackendSDL::queryHardware(vector<Common::Size>& fullscreenRes,
   {
     // Fullscreen mode
     const SDL_DisplayMode* display = SDL_GetDesktopDisplayMode(displays[i]);
-    fullscreenRes.emplace_back(display->w, display->h);
+    SDL_Rect bounds;
+    SDL_GetDisplayBounds(displays[i], &bounds);
+    fullscreenRes.try_emplace(displays[i], bounds.w, bounds.h);
 
     // Windowed mode
     SDL_Rect r{};
     if(SDL_GetDisplayUsableBounds(displays[i], &r))
-      windowedRes.emplace_back(r.w, r.h);
+      windowedRes.try_emplace(displays[i], r.w, r.h);
 
     int numModes = 0;
     SDL_DisplayMode** modes = SDL_GetFullscreenDisplayModes(displays[i], &numModes);  // NOLINT
@@ -116,8 +118,10 @@ void FBBackendSDL::queryHardware(vector<Common::Size>& fullscreenRes,
       }
 
       const bool isDesktopMode =
-        mode->w == display->w &&
-        mode->h == display->h &&
+        //mode->w == display->w &&
+        //mode->h == display->h &&
+        mode->w == bounds.w &&
+        mode->h == bounds.h &&
         std::equal_to()(mode->refresh_rate, display->refresh_rate);
       log += std::format("{:>7}{}", std::format("{}Hz", mode->refresh_rate),
                          isDesktopMode ? "* " : "  ");
@@ -205,12 +209,15 @@ bool FBBackendSDL::setVideoMode(const VideoModeHandler::Mode& mode,
   if(SDL_WasInit(SDL_INIT_VIDEO) == 0)
     return false;
 
-  const uInt32 displayIndex = std::min<uInt32>(myNumDisplays, winIdx);
+  // TODO SDL3:  uses IDs
+  //const uInt32 displayIndex = std::min<uInt32>(myNumDisplays, winIdx);
+  SDL_DisplayID* displayIds = SDL_GetDisplays(NULL);
+  SDL_DisplayID displayId = winIdx;// displayIds[displayIndex];
   int posX = 0, posY = 0;
 
   myCenter = myOSystem.settings().getBool("center");
   if(myCenter)
-    posX = posY = SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex);
+    posX = posY = SDL_WINDOWPOS_CENTERED_DISPLAY(displayId);
   else
   {
     posX = winPos.x;
@@ -219,11 +226,11 @@ bool FBBackendSDL::setVideoMode(const VideoModeHandler::Mode& mode,
     // Make sure the window is at least partially visibile
     int x0 = INT_MAX, y0 = INT_MAX, x1 = 0, y1 = 0;
 
-    for(int display = myNumDisplays - 1; display >= 0; --display)
+    for(int i = myNumDisplays - 1; i >= 0; --i)
     {
       SDL_Rect rect;
 
-      if(SDL_GetDisplayUsableBounds(display, &rect))
+      if(SDL_GetDisplayUsableBounds(displayIds[i], &rect))
       {
         x0 = std::min(x0, rect.x);
         y0 = std::min(y0, rect.y);
@@ -246,7 +253,7 @@ bool FBBackendSDL::setVideoMode(const VideoModeHandler::Mode& mode,
     && refreshRate() % gameRefreshRate != 0
     && refreshRate() % (gameRefreshRate - 1) != 0;
   const bool adaptRefresh = shouldAdapt &&
-      adaptRefreshRate(displayIndex, adaptedSdlMode);
+      adaptRefreshRate(displayId, adaptedSdlMode);
 #else
   const bool adaptRefresh = false;
 #endif
@@ -259,7 +266,7 @@ bool FBBackendSDL::setVideoMode(const VideoModeHandler::Mode& mode,
     int w{0}, h{0};
 
     SDL_GetWindowSize(myWindow, &w, &h);
-    if(d != displayIndex ||
+    if(d != displayId ||
        std::cmp_not_equal(w, mode.screenS.w) ||
        std::cmp_not_equal(h, mode.screenS.h) || adaptRefresh)
     {
@@ -299,6 +306,7 @@ bool FBBackendSDL::setVideoMode(const VideoModeHandler::Mode& mode,
     {
       Logger::error(std::format("ERROR: Unable to open SDL window: {}",
                                 SDL_GetError()));
+      SDL_free(displayIds);
       return false;
     }
 
@@ -334,16 +342,18 @@ bool FBBackendSDL::setVideoMode(const VideoModeHandler::Mode& mode,
     SDL_ShowWindow(myWindow);
   }
 
+  SDL_free(displayIds);
   return result;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool FBBackendSDL::adaptRefreshRate(Int32 displayIndex,
+bool FBBackendSDL::adaptRefreshRate(SDL_DisplayID displayId,
                                     SDL_DisplayMode& adaptedSdlMode)
 {
+  // TODO SDL3: uses IDs (displayIndex)
   ASSERT_MAIN_THREAD;
 
-  const SDL_DisplayMode* sdlMode = SDL_GetCurrentDisplayMode(displayIndex);
+  const SDL_DisplayMode* sdlMode = SDL_GetCurrentDisplayMode(displayId);
 
   if(sdlMode == nullptr)
   {
@@ -373,7 +383,7 @@ bool FBBackendSDL::adaptRefreshRate(Int32 displayIndex,
     SDL_DisplayMode closestSdlMode{};
     const float refresh_rate = wantedRefreshRate * m;
 
-    if(!SDL_GetClosestFullscreenDisplayMode(displayIndex, sdlMode->w, sdlMode->h,
+    if(!SDL_GetClosestFullscreenDisplayMode(displayId, sdlMode->w, sdlMode->h,
                                             refresh_rate, true, &closestSdlMode))
     {
       Logger::error("ERROR: Closest display mode could not be retrieved");

@@ -132,6 +132,7 @@ void FrameBuffer::initialize()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 int FrameBuffer::displayId(BufferType bufferType) const
 {
+  // TODO SDL3
   const int maxDisplay = static_cast<int>(myWindowedDisplays.size()) - 1;
   int display = 0;
 
@@ -1328,7 +1329,7 @@ FBInitStatus FrameBuffer::applyVideoMode()
 {
   // Update display size, in case windowed/fullscreen mode has changed
   const Settings& s = myOSystem.settings();
-  const int ID = displayId();
+  const int ID = displayId(); // TODO SDL 3:
 
   if(s.getBool("fullscreen"))
     myVidModeHandler.setDisplaySize(myFullscreenDisplays[ID], true);
