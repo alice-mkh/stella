@@ -51,6 +51,7 @@ using uInt64 = uint64_t;
 #include <ctime>
 #include <numbers>
 #include <ranges>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -80,13 +81,34 @@ using std::array;
 using std::vector;
 
 // Common array types
-using IntArray = std::vector<Int32>;
-using uIntArray = std::vector<uInt32>;
-using BoolArray = std::vector<bool>;
-using ByteArray = std::vector<uInt8>;
+using BoolArray  = std::vector<bool>;
+using ByteArray  = std::vector<uInt8>;
 using ShortArray = std::vector<uInt16>;
+using IntArray   = std::vector<Int32>;
+using uIntArray  = std::vector<uInt32>;
 using StringList = std::vector<std::string>;
-using ByteBuffer = std::unique_ptr<uInt8[]>;
+
+// Common const span types
+template<typename T>
+using SpanOf = std::span<const T>;
+
+using BoolSpan  = SpanOf<bool>;
+using ByteSpan  = SpanOf<uInt8>;
+using ShortSpan = SpanOf<uInt16>;
+using IntSpan   = SpanOf<uInt32>;
+using sIntSpan  = SpanOf<Int32>;
+
+// Common mutable span types
+template<typename T>
+using MSpanOf = std::span<T>;
+
+using BoolMSpan  = MSpanOf<bool>;
+using ByteMSpan  = MSpanOf<uInt8>;
+using ShortMSpan = MSpanOf<uInt16>;
+using IntMSpan   = MSpanOf<uInt32>;
+using sIntMSpan  = MSpanOf<Int32>;
+
+using ByteBuffer  = std::unique_ptr<uInt8[]>;
 using DWordBuffer = std::unique_ptr<uInt32[]>;
 
 // We use KB a lot; let's make a literal for it
@@ -100,6 +122,19 @@ template<typename T>
 std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
   for(const auto& elem: v)
     out << elem << " ";
+  return out;
+}
+
+// Output contents of a map
+template<typename T>
+concept MapLike = requires(T m) {
+  typename T::key_type;
+  typename T::mapped_type;
+};
+template<MapLike M>
+std::ostream& operator<<(std::ostream& out, const M& m) {
+  for(const auto& [key, value]: m)
+    out << key << ": " << value << '\n';
   return out;
 }
 
@@ -143,6 +178,17 @@ namespace BSPF
     #define FORCE_INLINE __forceinline
   #else
     #define FORCE_INLINE inline __attribute__((always_inline))
+  #endif
+
+  // Portable restrict hint — tells the compiler that pointer arguments
+  // do not alias each other, enabling auto-vectorization of hot loops.
+  #if defined(__clang__) || defined(__GNUC__)
+    #define FORCE_RESTRICT __restrict__
+  #elif defined(_MSC_VER)
+    #define FORCE_RESTRICT __restrict
+  #else
+    /* no support for restricted pointers */
+    #define FORCE_RESTRICT
   #endif
 
   // Get next power of two greater than or equal to the given value
@@ -490,6 +536,39 @@ namespace BSPF
     constexpr string_view spaces{" ,.;:+-*&/\\'"};
     return spaces.find(c) != string_view::npos;
   }
-} // namespace BSPF
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Search the image for the specified byte signature
+  //
+  // @param image      The ROM image as a span
+  // @param signature  The byte sequence to search for as a span
+  // @param minhits    The minimum number of times a signature is to be found
+  // @return  True if the signature was found at least 'minhits' times, else false
+  constexpr bool searchForBytes(ByteSpan image, ByteSpan signature,
+                                size_t minhits = 1)
+  {
+    const auto sigsize = signature.size();
+    if(image.size() < sigsize)
+      return false;
+
+    size_t count{0};
+    for(size_t i = 0; i < image.size() - sigsize; ++i)
+    {
+      size_t j{0};
+      for(j = 0; j < sigsize; ++j)
+      {
+        if(image[i + j] != signature[j])
+          break;
+      }
+      if(j == sigsize)
+      {
+        if(++count == minhits)
+          break;
+        i += sigsize - 1;  // -1 because the loop will increment i
+      }
+    }
+    return (count == minhits);
+  }
+}  // namespace BSPF
 
 #endif

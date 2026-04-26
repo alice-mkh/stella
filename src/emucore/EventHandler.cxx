@@ -77,9 +77,7 @@ EventHandler::EventHandler(OSystem& osystem)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-EventHandler::~EventHandler()  // NOLINT (we need an empty d'tor)
-{
-}
+EventHandler::~EventHandler() = default;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void EventHandler::initialize()
@@ -1573,11 +1571,11 @@ void EventHandler::handleEvent(Event::Type event, Int32 value, bool repeated)
     case Event::ToggleContSnapshotsFrame:
       if(pressed && !repeated) myOSystem.png().toggleContinuousSnapshots(true);
       return;
-  #endif
 
     case Event::TakeSnapshot:
-      if(pressed && !repeated) myOSystem.frameBuffer().tiaSurface().saveSnapShot();
+      if(pressed && !repeated) myOSystem.png().takeSnapshot();
       return;
+  #endif
 
     case Event::ExitMode:
       // Special handling for Escape key
