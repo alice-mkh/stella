@@ -38,20 +38,6 @@ class FBBackendHIGHSCORE : public FBBackend
 
   protected:
     /**
-      This method is called to map a given R/G/B triple to the screen palette.
-
-      @param r  The red component of the color.
-      @param g  The green component of the color.
-      @param b  The blue component of the color.
-    */
-    uInt32 mapRGB(uInt8 r, uInt8 g, uInt8 b) const override {
-      return (r << 16) | (g << 8) | b;
-    }
-    uInt32 mapRGBA(uInt8 r, uInt8 g, uInt8 b, uInt8 a) const override {
-      return (a << 24) | (r << 16) | (g << 8) | b;
-    }
-
-    /**
       This method is called to query and initialize the video hardware
       for desktop and fullscreen resolution information.  Since several
       monitors may be attached, we need the resolution for all of them.
@@ -99,15 +85,17 @@ class FBBackendHIGHSCORE : public FBBackend
     void setTitle(string_view) override { }
     void showCursor(bool) override { }
     bool fullScreen() const override { return true; }
-    void getRGB(uInt32, uInt8*, uInt8*, uInt8*) const override { }
-    void getRGBA(uInt32, uInt8*, uInt8*, uInt8*, uInt8*) const override { }
-    void getSurface(FBSurface& surface) const override { }
+    uInt32 rMask() const override { return 0; }
+    uInt32 gMask() const override { return 0; }
+    uInt32 bMask() const override { return 0; }
+    uInt32 aMask() const override { return 0; }
+    const FBSurface& compositedSurface() { static FBSurfaceHIGHSCORE tmp(0, 0); return tmp; }
     bool isCurrentWindowPositioned() const override { return true; }
     Common::Point getCurrentWindowPos() const override { return Common::Point{}; }
     uInt32 getCurrentDisplayID() const override { return 0; }
     void clear() override { }
     bool setVideoMode(const VideoModeHandler::Mode&,
-                      int, const Common::Point&) override { return true; }
+                      uInt32, const Common::Point&) override { return true; }
     void grabMouse(bool) override { }
     void enableTextEvents(bool enable) override { }
     void renderToScreen() override { }

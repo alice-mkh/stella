@@ -93,7 +93,7 @@ bool StellaHIGHSCORE::create(bool logging)
 
   FSNode rom(rom_path);
 
-  if(myOSystem->createConsole(rom) != EmptyString())
+  if(!myOSystem->createConsole(rom).empty())
     return false;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
