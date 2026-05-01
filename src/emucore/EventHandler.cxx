@@ -1922,7 +1922,7 @@ bool EventHandler::changeStateByEvent(Event::Type type)
         handled = false;
       break;
 
-#endif // GUI_SUPPORT
+#endif  // GUI_SUPPORT
 
     case Event::TimeMachineMode:
       if(myState == EventHandlerState::EMULATION || myState == EventHandlerState::PAUSE
@@ -2485,14 +2485,14 @@ string EventHandler::actionAtIndex(int idx, Event::Group group)
   if(group == Event::Group::Menu)
   {
     if(index < 0 || std::cmp_greater_equal(index, ourMenuActionList.size()))
-      return EmptyString();
+      return string{};
     else
       return ourMenuActionList[index].action;
   }
   else
   {
     if(index < 0 || std::cmp_greater_equal(index, ourEmulActionList.size()))
-      return EmptyString();
+      return string{};
     else
       return ourEmulActionList[index].action;
   }
@@ -2506,14 +2506,14 @@ string EventHandler::keyAtIndex(int idx, Event::Group group)
   if(group == Event::Group::Menu)
   {
     if(index < 0 || std::cmp_greater_equal(index, ourMenuActionList.size()))
-      return EmptyString();
+      return string{};
     else
       return ourMenuActionList[index].key;
   }
   else
   {
     if(index < 0 || std::cmp_greater_equal(index, ourEmulActionList.size()))
-      return EmptyString();
+      return string{};
     else
       return ourEmulActionList[index].key;
   }

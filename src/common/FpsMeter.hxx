@@ -39,7 +39,7 @@ class FpsMeter
 
     struct Entry {
       uInt32 frames{0};
-      std::chrono::time_point<std::chrono::high_resolution_clock> timestamp{};
+      std::chrono::time_point<std::chrono::high_resolution_clock> timestamp;
     };
 
   private:
@@ -62,4 +62,4 @@ class FpsMeter
     FpsMeter& operator=(FpsMeter&&) = delete;
 };
 
-#endif // FPS_METER_HXX
+#endif  // FPS_METER_HXX

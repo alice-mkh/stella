@@ -51,11 +51,11 @@ void FSNode::setPath(string_view path)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 FSNode& FSNode::operator/=(string_view path)
 {
-  if(path != EmptyString())
+  if(!path.empty())
   {
     string newPath = getPath();
     newPath.reserve(newPath.size() + 1 + path.size());
-    if(newPath != EmptyString() && newPath[newPath.length()-1] != PATH_SEPARATOR)
+    if(!newPath.empty() && newPath[newPath.length()-1] != PATH_SEPARATOR)
       newPath += PATH_SEPARATOR;
     newPath += path;
     setPath(newPath);
@@ -210,42 +210,53 @@ const string& FSNode::getPath() const
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 string FSNode::getShortPath() const
 {
-  return _realNode ? _realNode->getShortPath() : EmptyString();
+  return _realNode ? _realNode->getShortPath() : string{};
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+FSNode FSNode::getSiblingNode(string_view ext) const
+{
+  if(_realNode)
+    if(const auto sibling = _realNode->getSiblingNode(ext); sibling)
+      return FSNode(sibling);
+
+  string s = getPath();
+  const size_t dot = s.find_last_of('.');
+  if(dot != string::npos)
+    s.replace(dot, string::npos, ext);
+  else
+    s.append(ext);
+
+  return FSNode(s);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+string FSNode::getBaseName() const
+{
+  if(!_realNode)
+    return {};
+
+  const string& name = _realNode->getName();
+  const size_t dot = name.find_last_of('.');
+  return dot != string::npos ? name.substr(0, dot) : name;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 string FSNode::getNameWithExt(string_view ext) const
 {
   if(!_realNode)
-    return EmptyString();
+    return {};
+  if(ext.empty())
+    return _realNode->getName();
 
-  const string& name = _realNode->getName();
-  const size_t sep = name.find_last_of("/\\");
-  string s = (sep == string::npos) ? name : name.substr(sep + 1);
-
-  const size_t dot = s.find_last_of('.');
+  string name = _realNode->getName();
+  const size_t dot = name.find_last_of('.');
   if(dot != string::npos)
-    s.replace(dot, string::npos, ext);
+    name.replace(dot, string::npos, ext);
   else
-    s.append(ext);
+    name.append(ext);
 
-  return s;
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-string FSNode::getPathWithExt(string_view ext) const
-{
-  if(!_realNode)
-    return EmptyString();
-
-  string s = _realNode->getPath();
-  const size_t dot = s.find_last_of('.');
-  if(dot != string::npos)
-    s.replace(dot, string::npos, ext);
-  else
-    s.append(ext);
-
-  return s;
+  return name;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

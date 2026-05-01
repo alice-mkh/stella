@@ -43,7 +43,7 @@ class FrameLayoutDetector: public AbstractFrameManager
      */
     FrameLayout detectedLayout(bool detectPal60 = false,
                                bool detectNtsc50 = false,
-                               string_view name = EmptyString()) const;
+                               string_view name = {}) const;
 
     /**
      * Called when a pixel is rendered.
@@ -143,4 +143,4 @@ class FrameLayoutDetector: public AbstractFrameManager
 
 };
 
-#endif // TIA_FRAME_LAYOUT_DETECTOR
+#endif  // TIA_FRAME_LAYOUT_DETECTOR

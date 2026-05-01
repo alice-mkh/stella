@@ -110,12 +110,10 @@ uInt32 Bezel::borderSize(uInt32 x, uInt32 y, uInt32 size, Int32 step) const
 
   pixels += x + y * pitch;
 
+  const uInt32 aMask = myFB.aMask();
   for(uInt32 i = 0; i < size; ++i, pixels += step)
   {
-    uInt8 r{0}, g{0}, b{0}, a{0};
-
-    myFB.getRGBA(*pixels, &r, &g, &b, &a);
-    if(a < 255) // transparent pixel?
+    if((*pixels & aMask) != aMask)  // transparent pixel?
       return i;
   }
   return size - 1;
@@ -190,14 +188,14 @@ bool Bezel::load()
       // HY: 12, 12,  0,  0%
       // P1: 25, 25, 11, 22%
       // P2: 23, 23,  7, 20%
-      left = std::min(w - 1, static_cast<Int32>(
-        std::lround(w * settings.getInt("bezel.win.left") / 100.F)));
-      right = w - 1 - std::min(w - 1, static_cast<Int32>(
-        std::lround(w * settings.getInt("bezel.win.right") / 100.F)));
-      top = std::min(h - 1, static_cast<Int32>(
-        std::lround(h * settings.getInt("bezel.win.top") / 100.F)));
-      bottom = h - 1 - std::min(h - 1, static_cast<Int32>(
-        std::lround(h * settings.getInt("bezel.win.bottom") / 100.F)));
+      const auto bezelBorder = [&](Int32 dim, string_view key) {
+        return std::min(dim - 1, static_cast<Int32>(
+            std::lround(dim * settings.getInt(key) / 100.0)));
+      };
+      left   = bezelBorder(w, "bezel.win.left");
+      right  = w - 1 - bezelBorder(w, "bezel.win.right");
+      top    = bezelBorder(h, "bezel.win.top");
+      bottom = h - 1 - bezelBorder(h, "bezel.win.bottom");
     }
 
     //cerr << (int)(right - left + 1) << " x " << (int)(bottom - top + 1) << " = "

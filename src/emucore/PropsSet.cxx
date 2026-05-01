@@ -141,7 +141,7 @@ void PropertiesSet::loadPerROM(const FSNode& rom, string_view md5)
 
   // First, does this ROM have a per-ROM properties entry?
   // If so, load it into the database
-  const FSNode propsNode(rom.getPathWithExt(".pro"));
+  const FSNode propsNode = rom.getSiblingNode(".pro");
   if(propsNode.exists())
   {
     KeyValueRepositoryPropertyFile repo(propsNode);
@@ -155,9 +155,9 @@ void PropertiesSet::loadPerROM(const FSNode& rom, string_view md5)
     props.set(PropType::Cart_MD5, md5);
     toInsert = true;
   }
-  if(toInsert || props.get(PropType::Cart_Name) == EmptyString())
+  if(toInsert || props.get(PropType::Cart_Name).empty())
   {
-    props.set(PropType::Cart_Name, rom.getNameWithExt(""));
+    props.set(PropType::Cart_Name, rom.getBaseName());
     toInsert = true;
   }
 
