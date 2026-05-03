@@ -161,7 +161,7 @@ class ZipHandler
       vector<uInt8>     myCd;       // central directory raw data
       vector<ZipHeader> myHeaders;  // stable parsed headers
 
-      array<uInt8, DECOMPRESS_BUFSIZE> myBuffer{}; // buffer for decompression
+      std::array<uInt8, DECOMPRESS_BUFSIZE> myBuffer{}; // buffer for decompression
 
       /** Lookup support */
       mutable std::unordered_map<string_view, size_t> myHeaderIndex;
@@ -367,18 +367,10 @@ class ZipHandler
 
     ZipFilePtr myZip;
 
-    // Transparent hasher to allow string_view lookups in unordered_map keyed by string
-    struct StringHash {
-      using is_transparent = void;
-      size_t operator()(string_view sv) const {
-        return std::hash<string_view>{}(sv);
-      }
-    };
-
     // LRU cache: map filename -> (ZipFilePtr, iterator in list)
     std::unordered_map<string,
       std::pair<ZipFilePtr, std::list<string>::iterator>,
-      StringHash,
+      BSPF::StringHash,
       std::equal_to<>> myZipCache;
     std::list<string> myCacheOrder; // front = oldest, back = newest
 

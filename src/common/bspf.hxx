@@ -77,7 +77,6 @@ using std::string;
 using std::string_view;
 using std::unique_ptr;
 using std::shared_ptr;
-using std::array;
 using std::vector;
 
 // Common array types
@@ -138,7 +137,7 @@ std::ostream& operator<<(std::ostream& out, const M& m) {
   return out;
 }
 
-// This is so we can return empty string references with creating temporaries
+// This is so we can return empty string references without creating temporaries
 inline const string& EmptyString() { static const string empty; return empty; }
 
 // This is defined by some systems, but Stella has other uses for it
@@ -222,6 +221,7 @@ namespace BSPF
   }
 
   // Test whether a container contains the given value
+  // NOTE: Only needed until std::vector gets a contains() method
   template<typename Container>
   bool contains(const Container& c, typename Container::const_reference elem) {
     return std::ranges::find(c, elem) != c.end();
@@ -507,14 +507,14 @@ namespace BSPF
   }
 
   // Trim leading and trailing whitespace from a string
-  constexpr string trim(string_view str)
+  constexpr string_view trim(string_view str)
   {
     const auto first = str.find_first_not_of(' ');
     if(first == string_view::npos)
       return {};
 
     const auto last = str.find_last_not_of(' ');
-    return string{str.substr(first, last - first + 1)};
+    return str.substr(first, last - first + 1);
   }
 
   // C++11 way to get local time
@@ -569,6 +569,17 @@ namespace BSPF
     }
     return (count == minhits);
   }
+
+  // Used with various map objects to accept string_view
+  struct StringHash {
+    using is_transparent = void;
+    size_t operator()(string_view sv) const noexcept {
+      return std::hash<string_view>{}(sv);
+    }
+    size_t operator()(const string& s) const noexcept {
+      return std::hash<string>{}(s);
+    }
+  };
 }  // namespace BSPF
 
-#endif
+#endif  // BSPF_HXX
