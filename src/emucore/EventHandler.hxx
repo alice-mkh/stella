@@ -340,7 +340,7 @@ class EventHandler
     /**
       Return a simple list of all physical joysticks currently in the internal database
     */
-    PhysicalJoystickHandler::MinStrickInfoList physicalJoystickList() const {
+    PhysicalJoystickHandler::MinStickInfoList physicalJoystickList() const {
       return myPJoyHandler->minStickList();
     }
 
@@ -556,6 +556,7 @@ class EventHandler
     using MenuActionList = std::array<ActionList, MENU_ACTIONLIST_SIZE>;
     static MenuActionList ourMenuActionList;
 
+  private:
     // Following constructors and assignment operators not supported
     EventHandler() = delete;
     EventHandler(const EventHandler&) = delete;
@@ -564,4 +565,4 @@ class EventHandler
     EventHandler& operator=(EventHandler&&) = delete;
 };
 
-#endif
+#endif  // EVENTHANDLER_HXX
