@@ -79,7 +79,7 @@ class OSystemHIGHSCORE : public OSystem
 
   protected:
     void initPersistence(FSNode& basedir) override { }
-    string describePresistence() override { return "none"; }
+    string describePersistence() override { return "none"; }
 };
 
 #endif
