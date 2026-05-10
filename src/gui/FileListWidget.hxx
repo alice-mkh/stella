@@ -177,16 +177,19 @@ class FileListWidget : public StringListWidget
     uInt32 _selected{0};
 
     // Allow quick select for "uppercase", non-letter input
-    StellaKey _lastKey{StellaKey::KBDK_UNKNOWN};
-    StellaMod _lastMod{StellaMod::KBDM_NONE};
-    StellaMod _firstMod{StellaMod::KBDM_NONE};
+    StellaKey _lastKey{StellaKey::UNKNOWN};
+    StellaMod _lastMod{StellaMod::NONE};
+    StellaMod _firstMod{StellaMod::NONE};
     string _quickSelectStr;
     uInt64 _quickSelectTime{0};
     static inline uInt64 S_QUICK_SELECT_DELAY{300};
 
     unique_ptr<ProgressDialog> myProgressDialog;
 
-    static inline const FSNode ourDefaultNode{"~"};  // NOLINT
+    static const FSNode& defaultNode() {
+      static const FSNode node{"~"};
+      return node;
+    }
 
   private:
     // Following constructors and assignment operators not supported

@@ -53,14 +53,14 @@ namespace {
 } // namespace
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-CartridgeCDF::CartridgeCDF(const ByteBuffer& image, size_t size,
-                           string_view md5, const Settings& settings)
+CartridgeCDF::CartridgeCDF(ByteSpan image, string_view md5,
+                           const Settings& settings)
   : CartridgeARM(settings, md5)
 {
   // Copy the ROM image into my buffer
-  mySize = std::min(size, 512_KB);
+  mySize = std::min(image.size(), 512_KB);
   myImage = std::make_unique<uInt8[]>(mySize);
-  std::copy_n(image.get(), mySize, myImage.get());
+  std::copy_n(image.data(), mySize, myImage.get());
 
   // Detect cart version
   setupVersion();
@@ -70,7 +70,7 @@ CartridgeCDF::CartridgeCDF(const ByteBuffer& image, size_t size,
 
   // Pointer to the program ROM
   // which starts after the 2K driver (and 2K C Code for CDF)
-  // NOLINTNEXTLINE: we want to initialize here, not in the member list
+  // NOLINTNEXTLINE(cppcoreguidelines-prefer-member-initializer)
   myProgramImage = myImage.get() + (isCDFJplus() ? 2_KB : 4_KB);
 
   // Pointer to CDF driver in RAM
@@ -104,12 +104,12 @@ CartridgeCDF::CartridgeCDF(const ByteBuffer& image, size_t size,
     thumulatorConfiguration(myCDFSubtype),
     this);
 
-  this->setInitialState();  // NOLINT
+  this->setInitialState();  // NOLINT(clang-analyzer-optin.cplusplus.VirtualCall)
 
   myPlusROM = std::make_unique<PlusROM>(mySettings, *this);
 
   // Determine whether we have a PlusROM cart
-  myPlusROM->initialize(myImage, mySize);
+  myPlusROM->initialize(ByteSpan{myImage.get(), mySize});
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -504,10 +504,9 @@ bool CartridgeCDF::patch(uInt16 address, uInt8 value)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ByteBuffer& CartridgeCDF::getImage(size_t& size) const
+ByteSpan CartridgeCDF::getImage() const
 {
-  size = mySize;
-  return myImage;
+  return {myImage.get(), mySize};
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

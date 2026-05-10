@@ -76,7 +76,7 @@ enum class JoyHatDir: uInt8 {
   CENTER = 4
 };
 
-enum JoyHatMask: uInt8 {      // NOLINT / TODO masks can't be 'enum class'
+enum JoyHatMask: uInt8 {
   EVENT_HATUP_M     = 1<<0,
   EVENT_HATDOWN_M   = 1<<1,
   EVENT_HATLEFT_M   = 1<<2,
@@ -99,19 +99,19 @@ enum class EventMode: uInt8 {
 };
 
 namespace GUI {
-  static constexpr std::string_view SELECT = "Select";
-  static constexpr std::string_view LEFT_DIFFICULTY = "Left difficulty";
-  static constexpr std::string_view LEFT_DIFFICULTY_A = "Left difficulty A";
-  static constexpr std::string_view LEFT_DIFFICULTY_B = "Left difficulty B";
-  static constexpr std::string_view RIGHT_DIFFICULTY = "Right difficulty";
-  static constexpr std::string_view RIGHT_DIFFICULTY_A = "Right difficulty A";
-  static constexpr std::string_view RIGHT_DIFFICULTY_B = "Right difficulty B";
-  static constexpr std::string_view LEFT_DIFF = "Left Diff";
-  static constexpr std::string_view LEFT_DIFF_A = "Left Diff A";
-  static constexpr std::string_view LEFT_DIFF_B = "Left Diff B";
-  static constexpr std::string_view RIGHT_DIFF = "Right Diff";
-  static constexpr std::string_view RIGHT_DIFF_A = "Right Diff A";
-  static constexpr std::string_view RIGHT_DIFF_B = "Right Diff B";
+  static constexpr string_view SELECT = "Select";
+  static constexpr string_view LEFT_DIFFICULTY = "Left difficulty";
+  static constexpr string_view LEFT_DIFFICULTY_A = "Left difficulty A";
+  static constexpr string_view LEFT_DIFFICULTY_B = "Left difficulty B";
+  static constexpr string_view RIGHT_DIFFICULTY = "Right difficulty";
+  static constexpr string_view RIGHT_DIFFICULTY_A = "Right difficulty A";
+  static constexpr string_view RIGHT_DIFFICULTY_B = "Right difficulty B";
+  static constexpr string_view LEFT_DIFF = "Left Diff";
+  static constexpr string_view LEFT_DIFF_A = "Left Diff A";
+  static constexpr string_view LEFT_DIFF_B = "Left Diff B";
+  static constexpr string_view RIGHT_DIFF = "Right Diff";
+  static constexpr string_view RIGHT_DIFF_A = "Right Diff A";
+  static constexpr string_view RIGHT_DIFF_B = "Right Diff B";
 }  // namespace GUI
 
 #endif  // EVENT_HANDLER_CONSTANTS_HXX

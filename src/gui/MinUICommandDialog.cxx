@@ -49,7 +49,7 @@ MinUICommandDialog::MinUICommandDialog(OSystem& osystem, DialogContainer& parent
   // Set real dimensions
   _w = 3 * (buttonWidth + 5) + HBORDER * 2;
   _h = 6 * rowHeight - VGAP + VBORDER * 2 + _th;
-  ButtonWidget* bw = nullptr;  // NOLINT (erroneously marked as const)
+  ButtonWidget* bw = nullptr;
   WidgetArray wid;
   int xoffset = HBORDER, yoffset = VBORDER + _th;
 
@@ -152,7 +152,7 @@ void MinUICommandDialog::handleKeyDown(StellaKey key, StellaMod mod, bool repeat
 {
   switch (key)
   {
-    case KBDK_F8: // front  ("Skill P2")
+    case StellaKey::F8: // front  ("Skill P2")
       instance().eventHandler().leaveMenuMode();
       break;
 
