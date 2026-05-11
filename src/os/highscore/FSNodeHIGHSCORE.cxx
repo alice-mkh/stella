@@ -107,14 +107,15 @@ AbstractFSNodePtr FSNodeHIGHSCORE::getParent() const
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-size_t FSNodeHIGHSCORE::read(ByteBuffer& image, size_t) const
+size_t FSNodeHIGHSCORE::read(ByteArray& image, size_t) const
 {
-  image = std::make_unique<uInt8[]>(Cartridge::maxSize());
+  image.resize(Cartridge::maxSize());
 
   extern uInt32 hs_read_rom(void* data);
-  return hs_read_rom(image.get());
+  return hs_read_rom(image.data());
 }
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 size_t FSNodeHIGHSCORE::read(std::stringstream& buffer) const
 {
   extern uInt32 hs_read_rom_size(void);
