@@ -31,7 +31,7 @@
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 StellaHIGHSCORE::StellaHIGHSCORE()
-  : rom_image{std::make_unique<uInt8[]>(getROMMax())},
+  : rom_image(getROMMax()),
     audio_buffer{std::make_unique<Int16[]>(audio_buffer_max)}
 {
 }
@@ -308,7 +308,7 @@ void StellaHIGHSCORE::setROM(const char* path, const void* data, size_t size)
 {
   rom_path = path;
 
-  memcpy(rom_image.get(), data, size);
+  memcpy(rom_image.data(), data, size);
 
   rom_size = static_cast<uInt32>(size);
 }
