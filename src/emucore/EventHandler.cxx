@@ -306,6 +306,7 @@ void EventHandler::poll(uInt64 time)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void EventHandler::enableTextEvents(bool enable)
 {
+  myTextEventsEnabled = enable;
   myOSystem.frameBuffer().enableTextEvents(enable);
 }
 
@@ -314,7 +315,7 @@ void EventHandler::handleTextEvent(char text)
 {
 #ifdef GUI_SUPPORT
   // Text events are only used in GUI mode
-  if(myOverlay)
+  if(myOverlay && myTextEventsEnabled)
     myOverlay->handleTextEvent(text);
 #endif
 }
@@ -421,7 +422,7 @@ void EventHandler::handleSystemEvent(SystemEvent e, int, int)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// NOLINTNEXTLINE(readability-function-size)
+// NOLINTNEXTLINE(readability-function-size,google-readability-function-size,hicpp-function-size)
 void EventHandler::handleEvent(Event::Type event, Int32 value, bool repeated)
 {
   // Take care of special events that aren't part of the emulation core

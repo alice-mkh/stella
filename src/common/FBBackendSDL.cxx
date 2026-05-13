@@ -89,9 +89,6 @@ void FBBackendSDL::queryHardware(std::unordered_map<uInt32, Common::Size>& fulls
   // Get the maximum fullscreen and windowed desktop resolutions
   for(uInt32 i = 0; i < myNumDisplays; ++i)
   {
-SDL_DisplayID instance_id = displays[i];
-cerr << std::format("Display {} -> {}\n", instance_id, SDL_GetDisplayName(instance_id));
-
     // Fullscreen mode
     const SDL_DisplayMode* display = SDL_GetDesktopDisplayMode(displays[i]);
     SDL_Rect bounds;
@@ -131,6 +128,7 @@ cerr << std::format("Display {} -> {}\n", instance_id, SDL_GetDisplayName(instan
                          isDesktopMode ? "* " : "  ");
     }
     Logger::debug(log);
+    SDL_free(modes);
   }
   SDL_free(displays);
 
@@ -558,6 +556,7 @@ void FBBackendSDL::enableTextEvents(bool enable)
     SDL_StartTextInput(myWindow);
   else
     SDL_StopTextInput(myWindow);
+
   // myWindows can still be null, so we remember the state and set again when
   // the window is created
   myTextEventsEnabled = enable;
@@ -686,7 +685,7 @@ const FBSurface& FBBackendSDL::compositedSurface()
 
     auto* row = pixels;
     for(uInt32 y = 0; y < h; ++y, row += pitch)
-      std::transform(row, row + w, row, applyGamma);
+      std::ranges::transform(std::span{row, w}, row, applyGamma);
   }
   myCompositedSurface = std::make_unique<FBSurfaceSDL>
     (const_cast<FBBackendSDL&>(*this), sdlSurface, ScalingInterpolation::none);

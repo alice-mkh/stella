@@ -136,7 +136,7 @@ class MicroChip24LC
     Controller::onMessageCallback myCallback;
 
     // The EEPROM data buffer, allocated on first use
-    ByteBuffer myData;
+    ByteArray myData;
 
     // Tracks which EEPROM pages have been accessed by the current ROM
     std::array<bool, PAGE_NUM> myPageHit{};
@@ -329,8 +329,7 @@ MicroChip24LC<FLASH_SIZE, PAGE_SIZE>
 
   if(!fileValid)
   {
-    myData = std::make_unique<uInt8[]>(FLASH_SIZE);
-    std::fill_n(myData.get(), FLASH_SIZE, INITIAL_VALUE);
+    myData.assign(FLASH_SIZE, INITIAL_VALUE);
     myDataChanged = true;
   }
 
@@ -345,7 +344,7 @@ MicroChip24LC<FLASH_SIZE, PAGE_SIZE>
   // Save EEPROM data to external file only when necessary
   if(myDataChanged)
   {
-    try { myDataFile.write(myData, FLASH_SIZE); }
+    try { myDataFile.write(myData); }
     catch(...) {
       cerr << "ERROR writing MT24LC flash data file " << myDataFile.getPath() << '\n';
     }
@@ -413,7 +412,7 @@ template<size_t FLASH_SIZE, size_t PAGE_SIZE>
 void MicroChip24LC<FLASH_SIZE, PAGE_SIZE>
 ::eraseAll()
 {
-  std::fill_n(myData.get(), FLASH_SIZE, INITIAL_VALUE);
+  myData.assign(FLASH_SIZE, INITIAL_VALUE);
   myDataChanged = true;
 }
 
@@ -426,7 +425,7 @@ void MicroChip24LC<FLASH_SIZE, PAGE_SIZE>
   {
     if(myPageHit[page])
     {
-      std::fill_n(myData.get() + page * PAGE_SIZE, PAGE_SIZE, INITIAL_VALUE);
+      std::fill_n(myData.data() + page * PAGE_SIZE, PAGE_SIZE, INITIAL_VALUE);
       myDataChanged = true;
     }
   }
@@ -664,15 +663,15 @@ bool MicroChip24LC<FLASH_SIZE, PAGE_SIZE>
 {
   /*
     Number of 2600 CPU cycles corresponding to the 24LC256's 5ms write cycle
-    time (tWR).  5,000,000 microseconds per 5ms divided by ~838 CPU cycles
-    per millisecond (derived from the 2600's ~1.19MHz CPU clock:
-    3.58MHz master / 3 / ~1428).
+    time (tWR), during which the chip ignores new START conditions.
+
+    NTSC master clock (3,579,545 Hz) divided by the CPU clock divider (3)
+    gives a ~1.193 MHz CPU clock; multiplying by 5ms gives the cycle count.
 
     The chip must not receive a new START condition until this timer expires.
-
-    TODO: The 838 is a conservative value; document where it's coming from
   */
-  static constexpr auto TIMER_CYCLES = static_cast<uInt64>(5000000.0 / 838.0);
+  static constexpr auto TIMER_CYCLES =
+      static_cast<uInt64>(5.0e-3 * 3'579'545.0 / 3.0);  // 5ms × CPU clock
 
   if(mode == TimerMode::Set)
   {

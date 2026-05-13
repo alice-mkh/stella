@@ -24,7 +24,6 @@
 Cartridge4A50::Cartridge4A50(ByteSpan image, string_view md5,
                              const Settings& settings)
   : Cartridge(settings, md5),
-    myImage{std::make_unique<uInt8[]>(128_KB)},
     mySize{image.size()}
 {
   // Copy the ROM image into my buffer
@@ -34,7 +33,7 @@ Cartridge4A50::Cartridge4A50(ByteSpan image, string_view md5,
   else if(size < 128_KB)  size = 64_KB;
   else                    size = 128_KB;
   for(uInt32 slice = 0; slice < 128_KB / size; ++slice)
-    std::copy_n(image.data(), size, myImage.get() + (slice*size));
+    std::copy_n(image.data(), size, myImage.data() + (slice*size));
 
   // We use System::PageAccess.romAccessBase, but don't allow its use
   // through a pointer, since the address space of 4A50 carts can change
@@ -49,7 +48,7 @@ Cartridge4A50::Cartridge4A50(ByteSpan image, string_view md5,
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Cartridge4A50::reset()
 {
-  initializeRAM(myRAM.data(), myRAM.size());
+  initializeRAM(myRAM);
 
   mySliceLow = mySliceMiddle = mySliceHigh = 0;
   myIsRomLow = myIsRomMiddle = myIsRomHigh = true;
@@ -354,7 +353,7 @@ bool Cartridge4A50::patch(uInt16 address, uInt8 value)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ByteSpan Cartridge4A50::getImage() const
 {
-  return {myImage.get(), mySize};
+  return ByteSpan{myImage}.first(mySize);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

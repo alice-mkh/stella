@@ -37,32 +37,26 @@ class KeyMap
       StellaKey key{StellaKey::UNKNOWN};
       StellaMod mod{StellaMod::NONE};
 
-      explicit Mapping(EventMode c_mode, StellaKey c_key, StellaMod c_mod)
-        : mode{c_mode}, key{c_key}, mod{c_mod} { }
-      explicit Mapping(EventMode c_mode, int c_key, int c_mod)
-        : mode{c_mode}, key{static_cast<StellaKey>(c_key)}, mod{static_cast<StellaMod>(c_mod)} { }
+      Mapping(EventMode c_mode, int c_key, int c_mod)
+        : Mapping{c_mode, static_cast<StellaKey>(c_key), static_cast<StellaMod>(c_mod)} { }
 
-      bool operator==(const Mapping& other) const {
-        return (key == other.key
-          && mode == other.mode
-          && (((mod | other.mod) & StellaMod::SHIFT) != StellaMod::NONE
-            ? (mod & other.mod & StellaMod::SHIFT) != StellaMod::NONE
-            : true)
-          && (((mod | other.mod) & StellaMod::CTRL ) != StellaMod::NONE
-            ? (mod & other.mod & StellaMod::CTRL ) != StellaMod::NONE
-            : true)
-          && (((mod | other.mod) & StellaMod::ALT  ) != StellaMod::NONE
-            ? (mod & other.mod & StellaMod::ALT  ) != StellaMod::NONE
-            : true)
-          && (((mod | other.mod) & StellaMod::GUI  ) != StellaMod::NONE
-            ? (mod & other.mod & StellaMod::GUI  ) != StellaMod::NONE
-            : true)
-          );
-      }
-      bool operator<(const Mapping& other) const {
-        if(mode != other.mode) return mode < other.mode;
-        if(key  != other.key)  return key  < other.key;
-        return mod < other.mod;
+      Mapping(EventMode c_mode, StellaKey c_key, StellaMod c_mod)
+        : mode{c_mode}, key{c_key},
+          mod{StellaKeyTest::isModifierKey(c_key)
+              ? StellaMod::NONE
+              : groupMod(c_mod)} { }
+
+      auto operator<=>(const Mapping&) const = default;
+
+    private:
+      // Collapse L/R modifier variants to their combined group so that e.g.
+      // LCTRL (0x0040) matches a mapping stored as CTRL (LCTRL|RCTRL = 0x00C0).
+      static constexpr StellaMod groupMod(StellaMod m)
+      {
+        return ((m & StellaMod::SHIFT) != StellaMod::NONE ? StellaMod::SHIFT : StellaMod::NONE)
+             | ((m & StellaMod::CTRL ) != StellaMod::NONE ? StellaMod::CTRL  : StellaMod::NONE)
+             | ((m & StellaMod::ALT  ) != StellaMod::NONE ? StellaMod::ALT   : StellaMod::NONE)
+             | ((m & StellaMod::GUI  ) != StellaMod::NONE ? StellaMod::GUI   : StellaMod::NONE);
       }
     };
     using MappingArray = std::vector<Mapping>;
@@ -111,12 +105,9 @@ class KeyMap
     bool& enableMod() { return myModEnabled;  }
 
   private:
-    //** Convert modifiers */
-    static Mapping convertMod(const Mapping& mapping);
-
-    // IMPORTANT: myMap must always be kept sorted by Mapping::operator<.
-    // All access must go through convertMod() first to normalise modifiers,
-    // ensuring operator== and operator< are consistent for binary search.
+    // myMap must always be kept sorted by Mapping::operator<.
+    // Mapping constructors normalise modifiers, ensuring operator== and
+    // operator< are consistent for binary search.
     using MapEntry = std::pair<Mapping, Event::Type>;
     std::vector<MapEntry> myMap;
 

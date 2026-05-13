@@ -279,19 +279,16 @@ class CartridgeCDF : public CartridgeARM
     static constexpr uInt16 LDAXY_OVERRIDE_INACTIVE = 0xFFFF;
 
     // The ROM image of the cartridge
-    ByteBuffer myImage{nullptr};
+    ByteArray myImage;
 
-    // The size of the ROM image
-    size_t mySize{0};
+    // Subspan into myImage for the program ROM
+    ByteMSpan myProgramImage;
 
-    // Pointer to the program ROM image of the cartridge
-    uInt8* myProgramImage{nullptr};
+    // Subspan into the display data in myRAM
+    ByteMSpan myDisplayImage;
 
-    // Pointer to the display ROM image of the cartridge
-    uInt8* myDisplayImage{nullptr};
-
-    // Pointer to the driver image in RAM
-    uInt8* myDriverImage{nullptr};
+    // Subspan into the driver image in myRAM
+    ByteMSpan myDriverImage;
 
     // The CDFJ 8K RAM image, used as:
     //   $0000 - 2K Driver

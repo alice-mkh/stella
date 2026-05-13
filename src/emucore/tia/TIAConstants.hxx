@@ -18,35 +18,63 @@
 #ifndef TIA_CONSTANTS_HXX
 #define TIA_CONSTANTS_HXX
 
+#include "BitmaskEnum.hxx"
 #include "bspf.hxx"
 
+/**
+  Compile-time TIA geometry and timing constants: pixel dimensions, clock
+  frequencies, and blanking intervals. Also defines register name and
+  collision bit enumerations used throughout the emulation core.
+*/
 namespace TIAConstants {
-
+  // TIA output pixels per scanline (visible area)
   static constexpr uInt32 frameBufferWidth = 160;
+  // Maximum scanlines in the internal pixel buffer (2x PAL height)
   static constexpr uInt32 frameBufferHeight = 320;
-  static constexpr Int32  minVcenter = -20; // limit to reasonable values
-  static constexpr Int32  maxVcenter = 20; // limit to reasonable values
+  // Lower bound on vertical centering offset
+  static constexpr Int32  minVcenter = -20;
+  // Upper bound on vertical centering offset
+  static constexpr Int32  maxVcenter = 20;
+  // Display width after 2x horizontal scaling
   static constexpr uInt32 viewableWidth = 320;
+  // Display height for the viewable region
   static constexpr uInt32 viewableHeight = 240;
+  // Frames to discard at startup while the ROM stabilizes
   static constexpr uInt32 initialGarbageFrames = 10;
 
   static constexpr uInt16
-    H_PIXEL = 160, H_CYCLES = 76, CYCLE_CLOCKS = 3,
-    H_CLOCKS = H_CYCLES * CYCLE_CLOCKS,   // = 228
-    H_BLANK_CLOCKS = H_CLOCKS - H_PIXEL;  // = 68
-} // namespace TIAConstants
+    // Visible color clocks per scanline
+    H_PIXEL = 160,
+    // Total CPU cycles per scanline
+    H_CYCLES = 76,
+    // Color clocks per CPU cycle
+    CYCLE_CLOCKS = 3,
+    // Total color clocks per scanline (= 228)
+    H_CLOCKS = H_CYCLES * CYCLE_CLOCKS,
+    // Color clocks in the horizontal blank region (= 68)
+    H_BLANK_CLOCKS = H_CLOCKS - H_PIXEL;
+}  // namespace TIAConstants
 
-enum TIABit: uInt8 {
-  P0Bit       = 0x01,  // Bit for Player 0
-  M0Bit       = 0x02,  // Bit for Missle 0
-  P1Bit       = 0x04,  // Bit for Player 1
-  M1Bit       = 0x08,  // Bit for Missle 1
-  BLBit       = 0x10,  // Bit for Ball
-  PFBit       = 0x20,  // Bit for Playfield
-  ScoreBit    = 0x40,  // Bit for Playfield score mode
-  PriorityBit = 0x80,  // Bit for Playfield priority
-  AllBits     = 0xff
+enum class BitState: uInt8 {
+  Off    = 0,
+  On     = 1,
+  Toggle = 2,
+  Query  = 3
 };
+
+enum class TIABit: uInt8 {
+  None     = 0,
+  P0       = 1 << 0,  // Bit for Player 0
+  M0       = 1 << 1,  // Bit for Missle 0
+  P1       = 1 << 2,  // Bit for Player 1
+  M1       = 1 << 3,  // Bit for Missle 1
+  BL       = 1 << 4,  // Bit for Ball
+  PF       = 1 << 5,  // Bit for Playfield
+  Score    = 1 << 6,  // Bit for Playfield score mode
+  Priority = 1 << 7,  // Bit for Playfield priority
+  All      = 0xff
+};
+template<> inline constexpr bool Bitmask::is_enum_v<TIABit> = true;
 
 enum TIAColor: uInt8 {
   BKColor     = 0,  // Color index for Background
