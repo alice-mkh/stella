@@ -355,6 +355,7 @@ bool FBBackendSDL::setVideoMode(const VideoModeHandler::Mode& mode,
     //       so we check and cache it here
     myIsFullscreen = SDL_GetWindowFlags(myWindow) & SDL_WINDOW_FULLSCREEN;
     SDL_ShowWindow(myWindow);
+    SDL_RenderPresent(myRenderer);  // commit initial blank frame for Wayland
   }
 
   SDL_free(displayIds);
@@ -699,6 +700,14 @@ void FBBackendSDL::clear()
   ASSERT_MAIN_THREAD;
 
   SDL_RenderClear(myRenderer);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void FBBackendSDL::flush()
+{
+  ASSERT_MAIN_THREAD;
+
+  SDL_FlushRenderer(myRenderer);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
