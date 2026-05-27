@@ -100,7 +100,6 @@ class FBBackendHIGHSCORE : public FBBackend
         highscore_core_log(HS_LOG_MESSAGE, myLastMessage.c_str());
       }
     }
-
     int scaleX(int x) const override { return x; }
     int scaleY(int y) const override { return y; }
     void setTitle(string_view) override { }
@@ -110,7 +109,9 @@ class FBBackendHIGHSCORE : public FBBackend
     uInt32 gMask() const override { return 0x0000FF00; }
     uInt32 bMask() const override { return 0x000000FF; }
     uInt32 aMask() const override { return 0xFF000000; }
-    const FBSurface& compositedSurface() { static FBSurfaceHIGHSCORE tmp(0, 0); return tmp; }
+    const FBSurface& compositedSurface() {
+      static FBSurfaceHIGHSCORE tmp(0, 0); return tmp;
+    }
     bool isCurrentWindowPositioned() const override { return true; }
     Common::Point getCurrentWindowPos() const override { return Common::Point{}; }
     uInt32 getCurrentDisplayID() const override { return 0; }
@@ -136,4 +137,4 @@ class FBBackendHIGHSCORE : public FBBackend
     FBBackendHIGHSCORE& operator=(FBBackendHIGHSCORE&&) = delete;
 };
 
-#endif
+#endif  // FB_BACKEND_HIGHSCORE_HXX

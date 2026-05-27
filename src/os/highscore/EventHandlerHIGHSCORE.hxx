@@ -51,4 +51,4 @@ class EventHandlerHIGHSCORE : public EventHandler
     EventHandlerHIGHSCORE& operator=(EventHandlerHIGHSCORE&&) = delete;
 };
 
-#endif
+#endif  // EVENTHANDLER_HIGHSCORE_HXX

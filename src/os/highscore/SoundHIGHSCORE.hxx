@@ -154,6 +154,6 @@ class SoundHIGHSCORE : public Sound
     SoundHIGHSCORE& operator=(SoundHIGHSCORE&&) = delete;
 };
 
-#endif
+#endif  // SOUND_HIGHSCORE_HXX
 
 #endif  // SOUND_SUPPORT

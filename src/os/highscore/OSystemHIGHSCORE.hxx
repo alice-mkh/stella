@@ -80,6 +80,13 @@ class OSystemHIGHSCORE : public OSystem
   protected:
     void initPersistence(FSNode& basedir) override { }
     string describePersistence() override { return "none"; }
+
+  private:
+    // Following constructors and assignment operators not supported
+    OSystemHIGHSCORE(const OSystemHIGHSCORE&) = delete;
+    OSystemHIGHSCORE(OSystemHIGHSCORE&&) = delete;
+    OSystemHIGHSCORE& operator=(const OSystemHIGHSCORE&) = delete;
+    OSystemHIGHSCORE& operator=(OSystemHIGHSCORE&&) = delete;
 };
 
-#endif
+#endif  // OSYSTEM_HIGHSCORE_HXX

@@ -33,7 +33,7 @@ class FBSurfaceHIGHSCORE : public FBSurface
     FBSurfaceHIGHSCORE(uInt32 width, uInt32 height)
       : myWidth{width},
         myHeight{height},
-        myPixelData{std::make_unique<uInt32[]>(myWidth * myHeight)}
+        myPixelData{std::make_unique<uInt32[]>(static_cast<size_t>(myWidth) * myHeight)}
     {
       ////////////////////////////////////////////////////
       // These *must* be set for the parent class
@@ -41,7 +41,7 @@ class FBSurfaceHIGHSCORE : public FBSurface
       myPitch = myWidth;
       ////////////////////////////////////////////////////
     }
-    ~FBSurfaceHIGHSCORE() override { }
+    ~FBSurfaceHIGHSCORE() override = default;
 
     // Most of the surface drawing primitives are implemented in FBSurface;
     void fillRect(uInt32 x, uInt32 y, uInt32 w,
@@ -85,4 +85,4 @@ class FBSurfaceHIGHSCORE : public FBSurface
     FBSurfaceHIGHSCORE& operator=(FBSurfaceHIGHSCORE&&) = delete;
 };
 
-#endif
+#endif  // FBSURFACE_HIGHSCORE_HXX

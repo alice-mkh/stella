@@ -60,4 +60,4 @@ class FSNodeHIGHSCORE : public AbstractFSNode
     bool _isValid{true};
 };
 
-#endif
+#endif  // FS_NODE_HIGHSCORE_HXX

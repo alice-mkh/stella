@@ -178,4 +178,4 @@ class StellaHIGHSCORE
     bool phosphor_default{false};
 };
 
-#endif
+#endif  // STELLA_HIGHSCORE_HXX
