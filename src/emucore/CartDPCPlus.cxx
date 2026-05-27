@@ -145,7 +145,7 @@ void CartridgeDPCPlus::install(System& system)
 FORCE_INLINE void CartridgeDPCPlus::clockRandomNumberGenerator()
 {
   // Update random number generator (32-bit LFSR)
-  myRandomNumber = ((myRandomNumber & (1<<10)) ? 0x10adab1e: 0x00) ^
+  myRandomNumber = ((myRandomNumber & (1U<<10)) ? 0x10adab1e: 0x00) ^
                    ((myRandomNumber >> 11) | (myRandomNumber << 21));
 }
 
@@ -172,7 +172,7 @@ FORCE_INLINE void CartridgeDPCPlus::updateMusicModeDataFetchers()
 
   // Let's update counters and flags of the music mode data fetchers
   if(wholeClocks > 0)
-    for(int x = 0; x <= 2; ++x)
+    for(size_t x = 0; x < myMusicCounters.size(); ++x)
       myMusicCounters[x] += myMusicFrequencies[x] * wholeClocks;
 }
 
@@ -187,15 +187,36 @@ inline void CartridgeDPCPlus::callFunction(uInt8 value)
       myParameterPointer = 0;
       break;
     case 1: // Copy ROM to fetcher
-      for(int i = 0; std::cmp_less(i, myParameter[3]); ++i)
-        myDisplayImage[myCounters[myParameter[2] & 0x7]+i] = myProgramImage[ROMdata+i];
+    {
+      const uInt16 destBase = myCounters[myParameter[2] & 0x7];
+      if(ROMdata < myProgramImage.size() && destBase < myDisplayImage.size())
+      {
+        const uInt32 count = std::min({
+          static_cast<uInt32>(myParameter[3]),
+          static_cast<uInt32>(myProgramImage.size() - ROMdata),
+          static_cast<uInt32>(myDisplayImage.size() - destBase)
+        });
+        for(uInt32 i = 0; i < count; ++i)
+          myDisplayImage[destBase + i] = myProgramImage[ROMdata + i];
+      }
       myParameterPointer = 0;
       break;
+    }
     case 2: // Copy value to fetcher
-      for(int i = 0; std::cmp_less(i, myParameter[3]); ++i)
-        myDisplayImage[myCounters[myParameter[2]]+i] = myParameter[0];
+    {
+      const uInt16 destBase = myCounters[myParameter[2] & 0x7];
+      if(destBase < myDisplayImage.size())
+      {
+        const uInt32 count = std::min(
+          static_cast<uInt32>(myParameter[3]),
+          static_cast<uInt32>(myDisplayImage.size() - destBase)
+        );
+        for(uInt32 i = 0; i < count; ++i)
+          myDisplayImage[destBase + i] = myParameter[0];
+      }
       myParameterPointer = 0;
       break;
+    }
       // Call user written ARM code (most likely be C compiled for ARM)
     case 254: // call with IRQ driven audio, no special handling needed at this
               // time for Stella as ARM code "runs in zero 6507 cycles".
@@ -461,7 +482,7 @@ bool CartridgeDPCPlus::poke(uInt16 address, uInt8 value)
 
       // DFxLOW - data pointer low byte
       case 0x05:
-        myCounters[index] = (myCounters[index] & 0x0F00) | value ;
+        myCounters[index] = (myCounters[index] & 0x0F00) | value;
         break;
 
       // Control registers
@@ -488,7 +509,7 @@ bool CartridgeDPCPlus::poke(uInt16 address, uInt8 value)
           case 0x05:  // WAVEFORM0
           case 0x06:  // WAVEFORM1
           case 0x07:  // WAVEFORM2
-            myMusicWaveforms[index - 5] =  value & 0x7f;
+            myMusicWaveforms[index - 5] = value & 0x7f;
             break;
           default:
             break;
@@ -542,13 +563,8 @@ bool CartridgeDPCPlus::poke(uInt16 address, uInt8 value)
           case 0x05:  // NOTE0
           case 0x06:  // NOTE1
           case 0x07:  // NOTE2
-          {
-            myMusicFrequencies[index-5] = myFrequencyImage[(value<<2)] +
-            (myFrequencyImage[(value<<2)+1]<<8) +
-            (myFrequencyImage[(value<<2)+2]<<16) +
-            (myFrequencyImage[(value<<2)+3]<<24);
+            myMusicFrequencies[index-5] = getUInt32(myFrequencyImage.data(), value << 2);
             break;
-          }
           default:
             break;
         }

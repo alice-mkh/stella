@@ -19,10 +19,10 @@
 #define MISSILE_HXX
 
 class TIA;
-class Player;
 
 #include "Serializable.hxx"
 #include "bspf.hxx"
+#include "Player.hxx"
 #include "TIAConstants.hxx"
 
 /**
@@ -62,13 +62,13 @@ class Missile : public Serializable
     /**
       RESM0/1 write: reset the horizontal position counter.
      */
-    void resm(uInt8 counter, bool hblank);
+    void resm(uInt8 counter, bool hblank, bool lateRespxCondition = false);
 
     /**
       RESMP0/1 write: when bit 1 is set, lock the missile position to its
       associated player.
      */
-    void resmp(uInt8 value, const Player& player);
+    void resmp(uInt8 value);
 
     /**
       NUSIZ0/1 write: update missile size and copy count.
@@ -118,6 +118,11 @@ class Missile : public Serializable
     void setShortLateHMove(bool enable);
 
     /**
+      Enable/disable the "late RESPx" quirk.
+     */
+    void setLateRespx(bool enable);
+
+    /**
       Enable/disable collision detection (debugging only).
      */
     void toggleCollisions(bool enabled);
@@ -158,6 +163,20 @@ class Missile : public Serializable
       Tick one color clock. Inline for performance (implementation below).
      */
     FORCE_INLINE void tick(uInt8 hclock, bool isReceivingMclock = true);
+
+    /**
+      Per-clock RESMP tracking: while locked, snap the missile counter to the
+      player's center position when the player's main-copy scan counter reaches
+      pixel 4 (the FSTOB condition from Andrew Towers' TIA notes).
+     */
+    FORCE_INLINE void resmpTick(const Player& player);
+
+    /**
+      Tick one color clock and apply RESMP tracking against the associated
+      player. Use this overload from tickHframe; movementTick uses the
+      single-argument form.
+     */
+    FORCE_INLINE void tick(uInt8 hclock, const Player& player);
 
   public:
     // 16-bit collision mask; bit 15 encodes current visibility
@@ -236,6 +255,8 @@ class Missile : public Serializable
     bool myUseInvertedPhaseClock{false};
     // Whether the short late HMOVE quirk is active
     bool myUseShortLateHMove{false};
+    // Whether the late RESPx quirk is active
+    bool myUseLateRespx{false};
 
     // Required for flushing the line cache and requesting collision updates
     TIA *myTIA{nullptr};
@@ -279,7 +300,7 @@ void Missile::tick(uInt8 hclock, bool isReceivingMclock)
 {
   // If we are in inverted movement clock phase mode and a movement tick
   // occurred, it will supress the tick.
-  if(myUseInvertedPhaseClock && myInvertedPhaseClock)
+  if(myUseInvertedPhaseClock && myInvertedPhaseClock) [[unlikely]]
   {
     myInvertedPhaseClock = false;
     return;
@@ -295,7 +316,7 @@ void Missile::tick(uInt8 hclock, bool isReceivingMclock)
     ? myCollisionMaskEnabled
     : myCollisionMaskDisabled;
 
-  if (myDecodes[myCounter] && !myResmp) {
+  if (myDecodes[myCounter] && !myResmp) [[unlikely]] {
     myIsRendering = true;
     myRenderCounter = renderCounterOffset;
     myCopy = myDecodes[myCounter];
@@ -323,13 +344,26 @@ void Missile::tick(uInt8 hclock, bool isReceivingMclock)
         }
       }
 
-      if (std::cmp_greater_equal(++myRenderCounter,
-                                 isMoving ? myEffectiveWidth : myWidth))
+      if (++myRenderCounter >= static_cast<Int8>(isMoving ? myEffectiveWidth : myWidth))
         myIsRendering = false;
   }
 
-  if (++myCounter >= TIAConstants::H_PIXEL)
+  if (++myCounter >= TIAConstants::H_PIXEL) [[unlikely]]
     myCounter = 0;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void Missile::resmpTick(const Player& player)
+{
+  if (myResmp && player.isDrawingMainCopyAt4())
+    myCounter = player.getRespClock();
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void Missile::tick(uInt8 hclock, const Player& player)
+{
+  tick(hclock);
+  resmpTick(player);
 }
 
 #endif  // MISSILE_HXX

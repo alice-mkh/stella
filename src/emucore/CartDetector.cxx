@@ -110,7 +110,8 @@ Bankswitch::Type CartDetector::autodetectType(ByteSpan image)
   }
   else if(image.size() == 24_KB || image.size() == 28_KB)
   {
-    type = Bankswitch::Type::FA2;
+    if(isProbablyDEVC(image))  type = Bankswitch::Type::DEVC;
+    else                       type = Bankswitch::Type::FA2;
   }
   else if(image.size() == 29_KB)
   {
@@ -418,6 +419,18 @@ bool CartDetector::isProbablyCV(ByteSpan image)
   return std::ranges::any_of(signature, [&](const auto& sig) {
     return searchForBytes(image, sig);
   });
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CartDetector::isProbablyDEVC(ByteSpan image)
+{
+  // The DevCard requires a 2600 "lock-in" code as first instruction.
+  // Note: The lock-in code is often still present in the final ROMs,
+  // so this should only be a last resort.
+  static constexpr std::array<uInt8, 4> lock =
+    { 0xa9, 0xfd, 0x85, 0x08 }; // LDA #$FD, STA COLUPF
+
+  return searchForBytes(image, lock);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

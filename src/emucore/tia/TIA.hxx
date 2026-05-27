@@ -56,6 +56,11 @@ class DispatchResult;
   This class outputs the serial data into a frame buffer which can then
   be displayed on screen.
 
+  For paddle input, TIA acts as the wiring layer: it reads the resistance
+  Connection set by Paddles, feeds it to AnalogReadout, and exposes the
+  resulting INPT0-3 comparator state to the CPU. See Paddles for an overview
+  of the four-layer input architecture.
+
   @author  Christian Speckner (DirtyHairy) and Stephen Anthony
 */
 class TIA : public Device
@@ -545,6 +550,27 @@ class TIA : public Device
     void setBlShortLateHMove(bool enable);
 
     /**
+      Enables/disables late RESPx for players.
+
+      @param enable   Whether to enable late RESPx for players
+    */
+    void setPlLateRespx(bool enable);
+
+    /**
+      Enables/disables late RESPx for missiles.
+
+      @param enable   Whether to enable late RESPx for missiles
+    */
+    void setMsLateRespx(bool enable);
+
+    /**
+      Enables/disables late RESPx for ball.
+
+      @param enable   Whether to enable late RESPx for ball
+    */
+    void setBlLateRespx(bool enable);
+
+    /**
       This method should be called to update the TIA with a new scanline.
     */
     TIA& updateScanline();
@@ -691,12 +717,12 @@ class TIA : public Device
     /**
      * Advance a single clock during hblank.
      */
-    void tickHblank();
+    FORCE_INLINE void tickHblank();
 
     /**
      * Advance a single clock duing the visible part of the scanline.
      */
-    void tickHframe();
+    FORCE_INLINE void tickHframe();
 
     /**
      * Update the collision bitfield.
@@ -711,7 +737,7 @@ class TIA : public Device
     /**
      * Render the current pixel into the framebuffer.
      */
-    void renderPixel(uInt32 x, uInt32 y);
+    void renderPixel(uInt32 x);
 
     /**
      * Clear the first 8 pixels of a scanline with black if we are in hblank
@@ -853,6 +879,9 @@ class TIA : public Device
      * The paddle readout circuits.
      */
     std::array<AnalogReadout, 4> myAnalogReadouts;
+    // Last connection seen per readout; guards updateEmulation() from firing
+    // when the controller reports an unchanged resistance.
+    std::array<AnalogReadout::Connection, 4> myLastAnalogConnections;
 
     /**
      * Circuits for the "latched inputs".
@@ -866,6 +895,12 @@ class TIA : public Device
     // The frame is rendered to the backbuffer and only copied to the framebuffer
     // upon completion
     std::array<uInt8, static_cast<size_t>(TIAConstants::H_PIXEL * TIAConstants::frameBufferHeight)> myBackBuffer{};
+
+    // Pointer to the first pixel of the current scanline in myBackBuffer.
+    // Precomputed once per line in nextLine() so renderPixel() avoids a
+    // y*H_PIXEL multiply on every one of the 160 visible clocks per scanline.
+    uInt8* myCurrentRowPtr{nullptr};
+
     std::array<uInt8, static_cast<size_t>(TIAConstants::H_PIXEL * TIAConstants::frameBufferHeight)> myFrontBuffer{};
 
     // We snapshot frame statistics when the back buffer is copied to the front buffer

@@ -63,6 +63,7 @@ SOURCES_CXX := \
 	$(CORE_DIR)/emucore/CartCM.cxx \
 	$(CORE_DIR)/emucore/CartCTY.cxx \
 	$(CORE_DIR)/emucore/CartCV.cxx \
+	$(CORE_DIR)/emucore/CartDevCard.cxx \
 	$(CORE_DIR)/emucore/CartDF.cxx \
 	$(CORE_DIR)/emucore/CartDFSC.cxx \
 	$(CORE_DIR)/emucore/CartDPC.cxx \
@@ -95,6 +96,7 @@ SOURCES_CXX := \
 	$(CORE_DIR)/emucore/CartWF8.cxx \
 	$(CORE_DIR)/emucore/CartX07.cxx \
 	$(CORE_DIR)/emucore/CompuMate.cxx \
+	$(CORE_DIR)/emucore/CompuMateCassette.cxx \
 	$(CORE_DIR)/emucore/Console.cxx \
 	$(CORE_DIR)/emucore/Control.cxx \
 	$(CORE_DIR)/emucore/ControllerDetector.cxx \
@@ -106,6 +108,7 @@ SOURCES_CXX := \
 	$(CORE_DIR)/emucore/EventHandler.cxx \
 	$(CORE_DIR)/emucore/FBSurface.cxx \
 	$(CORE_DIR)/emucore/FrameBuffer.cxx \
+	$(CORE_DIR)/emucore/FBMessageHandler.cxx \
 	$(CORE_DIR)/emucore/FSNode.cxx \
 	$(CORE_DIR)/emucore/Genesis.cxx \
 	$(CORE_DIR)/emucore/GlobalKeyHandler.cxx \

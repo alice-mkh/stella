@@ -44,7 +44,6 @@ class M6532 : public Device
     */
     friend class RiotDebug;
 
-  public:
     /**
       Create a new 6532 for the specified console
 
@@ -54,7 +53,6 @@ class M6532 : public Device
     M6532(const ConsoleIO& console, const Settings& settings);
     ~M6532() override = default;
 
-   public:
     /**
       Reset cartridge to its power-on state
     */
@@ -100,7 +98,6 @@ class M6532 : public Device
     */
     bool load(Serializer& in) override;
 
-   public:
     /**
       Get the byte at the specified address
 
@@ -123,12 +120,14 @@ class M6532 : public Device
      */
     void updateEmulation();
 
+  #ifdef __LIB_RETRO__
     /**
-      Get a pointer to the RAM contents.
+      Get mutable RAM contents for direct external access (libretro cheat/memory interface).
 
-      @return  Pointer to RAM array.
+      @return  Mutable span over RAM array.
     */
-    const uInt8* getRAM() const { return myRAM.data(); }
+    ByteMSpan getRAM() { return myRAM; }
+  #endif
 
   #ifdef DEBUGGER_SUPPORT
     /**
@@ -169,6 +168,9 @@ class M6532 : public Device
     void setTimerRegister(uInt8 value, uInt8 interval);
     void setPinState(bool swcha);
 
+    bool samplePA7Raw() const;
+    void updatePA7EdgeDetect();
+
   #ifdef DEBUGGER_SUPPORT
     // The following are used by the debugger to read INTIM/TIMINT
     // We need separate methods to do this, so the state of the system
@@ -197,8 +199,11 @@ class M6532 : public Device
     // Current number of clocks "queued" for the divider
     uInt32 mySubTimer{0};
 
-    // The divider
+    // The divider (always a power of 2: 1, 8, 64, 1024)
     uInt32 myDivider{1};
+
+    // log2 of myDivider; kept in sync so hot-path code can shift instead of divide
+    uInt8 myDividerShift{0};
 
     // Has the timer wrapped this very cycle?
     bool myWrappedThisCycle{false};
@@ -227,6 +232,10 @@ class M6532 : public Device
     // Used to determine whether an active transition on PA7 has occurred
     // True is positive edge-detect, false is negative edge-detect
     bool myEdgeDetectPositive{false};
+
+    // PA7 synchronizer
+    bool myPA7Sync1{true};      // 1st flip-flop stage
+    bool myPA7LastStable{true}; // last stable sampled value
 
     // Last value written to the timer registers
     std::array<uInt8, 4> myOutTimer{};

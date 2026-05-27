@@ -49,13 +49,13 @@ void M6532::reset()
   if(mySettings.getString(devSettings ? "dev.console" : "plr.console") == "7800")
     std::ranges::copy(RAM_7800, myRAM.begin());
   else if(mySettings.getBool(devSettings ? "dev.ramrandom" : "plr.ramrandom"))
-    for(auto& ram: myRAM)
-      ram = mySystem->randGenerator().next();
+    std::ranges::generate(myRAM, [this]{ return mySystem->randGenerator().next(); });
   else
     myRAM.fill(0);
 
   myTimer = mySystem->randGenerator().next() & 0xff;
   myDivider = 1024;
+  myDividerShift = 10;
   mySubTimer = 0;
   myWrappedThisCycle = false;
 
@@ -73,6 +73,9 @@ void M6532::reset()
   // Edge-detect set to negative (high to low)
   myEdgeDetectPositive = false;
 
+  myPA7Sync1 = true;
+  myPA7LastStable = true;
+
   // Let the controllers know about the reset
   myConsole.leftController().reset();
   myConsole.rightController().reset();
@@ -85,46 +88,70 @@ void M6532::reset()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void M6532::update()
 {
-  Controller& lport = myConsole.leftController();
-  Controller& rport = myConsole.rightController();
-
-  // Get current PA7 state
-  const bool prevPA7 = lport.getPin(Controller::DigitalPin::Four);
-
   // Update entire port state
-  lport.update();
-  rport.update();
+  myConsole.leftController().update();
+  myConsole.rightController().update();
   myConsole.switches().update();
+}
 
-  // Get new PA7 state
-  const bool currPA7 = lport.getPin(Controller::DigitalPin::Four);
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+FORCE_INLINE bool M6532::samplePA7Raw() const
+{
+  // If PA7 configured as output, RIOT drives the line
+  if(myDDRA & 0x80) [[unlikely]]
+    return (myOutA & 0x80) != 0;
 
-  // PA7 Flag is set on active transition in appropriate direction
-  if((!myEdgeDetectPositive && prevPA7 && !currPA7) ||
-     (myEdgeDetectPositive && !prevPA7 && currPA7))
+  // Otherwise sample external input
+  return myConsole.leftController().getPin(Controller::DigitalPin::Four);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+FORCE_INLINE void M6532::updatePA7EdgeDetect()
+{
+  // --------------------------------------------------------------------------
+  // Synchronizer model:
+  //
+  // raw input -> sync1 -> sync2 -> edge detector
+  //
+  // This approximates hardware flip-flop synchronization and prevents
+  // controller jitter or frame-rate dependent edge artifacts.
+  // --------------------------------------------------------------------------
+
+  // Simple 2-stage synchronizer (cheap, stable, deterministic)
+  const bool stablePA7 = myPA7Sync1;
+  myPA7Sync1 = samplePA7Raw();
+
+  // Detect transition on the stable (post-sync) signal only
+  const bool edge = (myPA7LastStable != stablePA7) &&
+                    (stablePA7 == myEdgeDetectPositive);
+
+  if(edge) [[unlikely]]
     myInterruptFlag |= PA7Bit;
+
+  myPA7LastStable = stablePA7;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void M6532::updateEmulation()
 {
-  auto cycles = static_cast<uInt32>(mySystem->cycles() - myLastCycle);
+  const uInt64 currentCycle = mySystem->cycles();
+  auto cycles = static_cast<uInt32>(currentCycle - myLastCycle);
   const uInt32 subTimer = mySubTimer;
 
   // Guard against further state changes if the debugger alread forwarded emulation
   // state (in particular myWrappedThisCycle)
-  if(cycles == 0) return;
+  if(cycles == 0) [[unlikely]] return;
 
   myWrappedThisCycle = false;
-  mySubTimer = (cycles + mySubTimer) % myDivider;
+  mySubTimer = (cycles + mySubTimer) & (myDivider - 1);
 
-  if((myInterruptFlag & TimerBit) == 0)
+  if((myInterruptFlag & TimerBit) == 0) [[likely]]
   {
-    const uInt32 timerTicks = (cycles + subTimer) / myDivider;
+    const uInt32 timerTicks = (cycles + subTimer) >> myDividerShift;
 
-    if(timerTicks > myTimer)
+    if(timerTicks > myTimer) [[unlikely]]
     {
-      cycles -= ((myTimer + 1) * myDivider - subTimer);
+      cycles -= ((myTimer + 1) << myDividerShift) - subTimer;
 
       myWrappedThisCycle = cycles == 0;
       myTimer = 0xFF;
@@ -137,13 +164,15 @@ void M6532::updateEmulation()
     }
   }
 
-  if((myInterruptFlag & TimerBit) != 0)
+  if((myInterruptFlag & TimerBit) != 0) [[unlikely]]
   {
     myTimer = (myTimer - cycles) & 0xFF;
     myWrappedThisCycle = myTimer == 0xFF;
   }
 
-  myLastCycle = mySystem->cycles();
+  updatePA7EdgeDetect();
+
+  myLastCycle = currentCycle;
 
 #ifdef DEBUGGER_SUPPORT
   myTimWrappedOnRead = myTimWrappedOnWrite = false;
@@ -186,7 +215,7 @@ uInt8 M6532::peek(uInt16 addr)
   // A9 distinguishes I/O registers from ZP RAM
   // A9 = 1 is read from I/O
   // A9 = 0 is read from RAM
-  if((addr & 0x0200) == 0x0000)
+  if((addr & 0x0200) == 0x0000) [[likely]]
     return myRAM[addr & 0x007f];
 
   switch(addr & 0x07)
@@ -261,7 +290,7 @@ bool M6532::poke(uInt16 addr, uInt8 value)
   // A9 distinguishes I/O registers from ZP RAM
   // A9 = 1 is write to I/O
   // A9 = 0 is write to RAM
-  if((addr & 0x0200) == 0x0000)
+  if((addr & 0x0200) == 0x0000) [[likely]]
   {
     myRAM[addr & 0x007f] = value;
     return true;
@@ -320,8 +349,10 @@ bool M6532::poke(uInt16 addr, uInt8 value)
 void M6532::setTimerRegister(uInt8 value, uInt8 interval)
 {
   static constexpr std::array<uInt32, 4> divider = { 1, 8, 64, 1024 };
+  static constexpr std::array<uInt8,  4> dividerShift = { 0, 3, 6, 10 };
 
   myDivider = divider[interval];
+  myDividerShift = dividerShift[interval];
   myOutTimer[interval] = value;
 
   myTimer = value;
@@ -394,6 +425,9 @@ bool M6532::save(Serializer& out) const
 
     out.putByte(myInterruptFlag);
     out.putBool(myEdgeDetectPositive);
+    out.putBool(myPA7Sync1);
+    out.putBool(myPA7LastStable);
+
     out.putByteArray(myOutTimer);
   }
   catch(...)
@@ -415,6 +449,7 @@ bool M6532::load(Serializer& in)
     myTimer = in.getInt();
     mySubTimer = in.getInt();
     myDivider = in.getInt();
+    myDividerShift = static_cast<uInt8>(std::bit_width(myDivider) - 1);
     myWrappedThisCycle = in.getBool();
     myLastCycle = in.getLong();
     mySetTimerCycle = in.getLong();
@@ -429,6 +464,9 @@ bool M6532::load(Serializer& in)
 
     myInterruptFlag = in.getByte();
     myEdgeDetectPositive = in.getBool();
+    myPA7Sync1 = in.getBool();
+    myPA7LastStable = in.getBool();
+
     in.getByteArray(myOutTimer);
   }
   catch(...)

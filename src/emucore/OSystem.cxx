@@ -673,7 +673,7 @@ unique_ptr<Console> OSystem::openConsole(const FSNode& romfile, string& md5)
 
     // Now create the cartridge
     string cartmd5 = md5;
-    const string& type = props.get(PropType::Cart_Type);
+    string_view type = props.get(PropType::Cart_Type);
     const Cartridge::messageCallback callback = [&os = *this](string_view msg)
     {
       const bool devSettings = os.settings().getBool("dev.settings");
@@ -698,7 +698,7 @@ unique_ptr<Console> OSystem::openConsole(const FSNode& romfile, string& md5)
       {
         // Cart md5 wasn't found, so we create a new props for it
         props.set(PropType::Cart_MD5, cartmd5);
-        props.set(PropType::Cart_Name, props.get(PropType::Cart_Name)+cart->multiCartID());
+        props.set(PropType::Cart_Name, std::format("{}{}", props.get(PropType::Cart_Name), cart->multiCartID()));
         myPropSet->insert(props, false);
       }
     }
@@ -953,8 +953,20 @@ void OSystem::mainLoop()
     double timesliceSeconds;  // NOLINT(cppcoreguidelines-init-variables)
 
     if (myEventHandler->state() == EventHandlerState::EMULATION)
+    {
       // Dispatch emulation and render frame (if applicable)
       timesliceSeconds = dispatchEmulation(emulationWorker);
+    #ifdef IMAGE_SUPPORT
+      if(mySnapshotFrames > 0) [[unlikely]]
+      {
+        if(--mySnapshotFrames == 0)
+        {
+          myPNGLib->takeSnapshot();
+          myQuitLoop = true;
+        }
+      }
+    #endif
+    }
     else if(myEventHandler->state() == EventHandlerState::PLAYBACK)
     {
       // Playback at emulation speed

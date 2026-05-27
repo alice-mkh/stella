@@ -299,6 +299,9 @@ Settings::Settings()
   setPermanent("dev.tia.pllatehmove", "true");
   setPermanent("dev.tia.mslatehmove", "true");
   setPermanent("dev.tia.bllatehmove", "true");
+  setPermanent("dev.tia.pllaterespx", "true");
+  setPermanent("dev.tia.mslaterespx", "true");
+  setPermanent("dev.tia.bllaterespx", "true");
   setPermanent("dev.tia.delaypfbits", "true");
   setPermanent("dev.tia.delaypfcolor", "true");
   setPermanent("dev.tia.pfscoreglitch", "true");
@@ -355,7 +358,6 @@ void Settings::load(const Options& options)
 void Settings::save()
 {
   // Convert unordered_map → map only at the boundary
-  // TODO: maybe KVRMap can be converted to unordered_map too?
   KVRMap out;
   out.insert(myPermanentSettings.begin(), myPermanentSettings.end());
   myRepository->save(out);
@@ -764,6 +766,9 @@ void Settings::usage()
     << "  -dev.tia.mslatehmove   <1|0>      Enable short late HMOVE for\n"
     << "                                    missiles\n"
     << "  -dev.tia.bllatehmove   <1|0>      Enable short late HMOVE for ball\n"
+    << "  -dev.tia.pllaterespx   <1|0>      Enable late RESPx for players\n"
+    << "  -dev.tia.mslaterespx   <1|0>      Enable late RESPx for missiles\n"
+    << "  -dev.tia.bllaterespx   <1|0>      Enable late RESPx for ball\n"
     << "  -dev.tia.delaypfbits   <1|0>      Enable extra delay cycle for PF bits access\n"
     << "  -dev.tia.delaypfcolor  <1|0>      Enable extra delay cycle for PF color\n"
     << "  -dev.tia.pfscoreglitch <1|0>      Enable PF score mode color glitch\n"

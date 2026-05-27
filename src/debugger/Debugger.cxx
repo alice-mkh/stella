@@ -194,10 +194,9 @@ string Debugger::autoExec(StringList* history)
   // Init builtins
   for(const auto& func: ourBuiltinFunctions)
   {
-    // TODO - check this for memory leaks
-    const int res = YaccParser::parse(func.defn);
-    if(res == 0)
-      addFunction(func.name, func.defn, YaccParser::getResult(), true);
+    auto expr = YaccParser::parse(func.defn);
+    if(expr)
+      addFunction(func.name, func.defn, std::move(expr), true);
     else
       cerr << std::format("ERROR in builtin function {}!\n", func.name);
   }
@@ -514,11 +513,11 @@ void Debugger::log(string_view triggerMsg)
 
   // First find the lines in the range, and determine the longest string
   const auto& disasm = myCartDebug->disassembly();
-  const uInt16 start = pc & 0x0FFF;
+  const uInt16 start = pc & mySystem.addressMask();
 
   for(const auto& tag: disasm.list)
   {
-    if((tag.address & 0x0FFF) >= start)
+    if((tag.address & mySystem.addressMask()) >= start)
     {
       const string pcStr = Base::hexUppercase()
         ? std::format("{:04X}", pc)
@@ -798,9 +797,9 @@ void Debugger::setQuitState()
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool Debugger::addFunction(string_view name, string_view definition,
-                           Expression* exp, bool builtin)
+                           unique_ptr<Expression> exp, bool builtin)
 {
-  myFunctions.emplace(name, unique_ptr<Expression>(exp));
+  myFunctions.emplace(name, std::move(exp));
   myFunctionDefs.emplace(name, definition);
 
   return true;

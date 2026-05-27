@@ -107,16 +107,14 @@ inline uInt8 M6502::peek(uInt16 address, Device::AccessFlags flags)
 {
   handleHalt();
 
-  ////////////////////////////////////////////////
-  // TODO - move this logic directly into CartAR
   if(address != myLastAddress)
   {
     ++myNumberOfDistinctAccesses;
     myLastAddress = address;
   }
-  ////////////////////////////////////////////////
-  mySystem->incrementCycles(SYSTEM_CYCLES_PER_CPU);
-  icycles += SYSTEM_CYCLES_PER_CPU;
+
+  mySystem->incrementCycles(1);  // 1 system cycle per CPU cycle on the 6507
+  ++icycles;
   myFlags = flags;
   const uInt8 result = mySystem->peek(address, flags);
 
@@ -147,16 +145,14 @@ inline uInt8 M6502::peek(uInt16 address, Device::AccessFlags flags)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 inline void M6502::poke(uInt16 address, uInt8 value, Device::AccessFlags flags)
 {
-  ////////////////////////////////////////////////
-  // TODO - move this logic directly into CartAR
   if(address != myLastAddress)
   {
     ++myNumberOfDistinctAccesses;
     myLastAddress = address;
   }
-  ////////////////////////////////////////////////
-  mySystem->incrementCycles(SYSTEM_CYCLES_PER_CPU);
-  icycles += SYSTEM_CYCLES_PER_CPU;
+
+  mySystem->incrementCycles(1);  // 1 system cycle per CPU cycle on the 6507
+  ++icycles;
   mySystem->poke(address, value, flags);
 
 #ifdef DEBUGGER_SUPPORT
@@ -191,7 +187,7 @@ void M6502::requestHalt()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 inline void M6502::handleHalt()
 {
-  if(myHaltRequested)
+  if(myHaltRequested) [[unlikely]]
   {
     myOnHaltCallback();
     myHaltRequested = false;
@@ -240,14 +236,14 @@ inline void M6502::_execute(uInt64 cycles, DispatchResult& result)
 #endif
 
   const uInt64 previousCycles = mySystem->cycles();
+  const uInt64 targetCycles = previousCycles + cycles;
   uInt64 currentCycles = 0;
 
   // Loop until execution is stopped or a fatal error occurs
-  for(;;)
+  while (!myExecutionStatus && mySystem->cycles() < targetCycles)
   {
-    while (!myExecutionStatus && currentCycles < cycles * SYSTEM_CYCLES_PER_CPU)
-    {
   #ifdef DEBUGGER_SUPPORT
+      currentCycles = mySystem->cycles() - previousCycles;
       // Don't break if we haven't actually executed anything yet
       if (myLastBreakCycle != mySystem->cycles()) {
         if(myJustHitReadTrapFlag || myJustHitWriteTrapFlag)
@@ -303,7 +299,7 @@ inline void M6502::_execute(uInt64 cycles, DispatchResult& result)
           }
         }
 
-        if(myTimer.isInitialized())
+        if(myTimer.hasTimers())
           myTimer.update(PC, mySystem->cart().getBank(PC), mySystem->cycles());
 
         const int cond = evalCondBreaks();
@@ -397,11 +393,9 @@ inline void M6502::_execute(uInt64 cycles, DispatchResult& result)
         myExecutionStatus |= FatalErrorBit;
         result.setMessage(e.what());
       } catch (const EmulationWarning& e) {
-        result.setDebugger(currentCycles, e.what(), "Emulation exception", PC);
+        result.setDebugger(mySystem->cycles() - previousCycles, e.what(), "Emulation exception", PC);
         return;
       }
-
-      currentCycles = (mySystem->cycles() - previousCycles);
 
   #ifdef DEBUGGER_SUPPORT
       if(myStepStateByInstruction)
@@ -413,30 +407,28 @@ inline void M6502::_execute(uInt64 cycles, DispatchResult& result)
         riot.updateEmulation();
       }
   #endif
-    }
-
-    // See if a fatal error has occurred
-    if(myExecutionStatus & FatalErrorBit)
-    {
-      // Yes, so answer that something when wrong. The message has already been set when
-      // the exception was handled.
-      result.setFatal(currentCycles);
-      return;
-    }
-
-    // See if execution has been stopped
-    if(myExecutionStatus & StopExecutionBit)
-    {
-      // Yes, so answer that everything finished fine
-      result.setOk(currentCycles);
-      return;
-    }
-
-    if (currentCycles >= cycles * SYSTEM_CYCLES_PER_CPU) {
-      result.setOk(currentCycles);
-      return;
-    }
   }
+
+  currentCycles = mySystem->cycles() - previousCycles;
+
+  // See if a fatal error has occurred
+  if(myExecutionStatus & FatalErrorBit) [[unlikely]]
+  {
+    // Yes, so answer that something when wrong. The message has already been set when
+    // the exception was handled.
+    result.setFatal(currentCycles);
+    return;
+  }
+
+  // See if execution has been stopped
+  if(myExecutionStatus & StopExecutionBit)
+  {
+    // Yes, so answer that everything finished fine
+    result.setOk(currentCycles);
+    return;
+  }
+
+  result.setOk(currentCycles);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -552,9 +544,9 @@ void M6502::attach(Debugger& debugger)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt32 M6502::addCondBreak(Expression* e, string_view name, bool oneShot)
+uInt32 M6502::addCondBreak(unique_ptr<Expression> e, string_view name, bool oneShot)
 {
-  myCondBreaks.emplace_back(e);
+  myCondBreaks.emplace_back(std::move(e));
   myCondBreakNames.emplace_back(name);
 
   updateStepStateByInstruction();
@@ -593,9 +585,9 @@ const StringList& M6502::getCondBreakNames() const
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt32 M6502::addCondSaveState(Expression* e, string_view name)
+uInt32 M6502::addCondSaveState(unique_ptr<Expression> e, string_view name)
 {
-  myCondSaveStates.emplace_back(e);
+  myCondSaveStates.emplace_back(std::move(e));
   myCondSaveStateNames.emplace_back(name);
 
   updateStepStateByInstruction();
@@ -634,9 +626,9 @@ const StringList& M6502::getCondSaveStateNames() const
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt32 M6502::addCondTrap(Expression* e, string_view name)
+uInt32 M6502::addCondTrap(unique_ptr<Expression> e, string_view name)
 {
-  myTrapConds.emplace_back(e);
+  myTrapConds.emplace_back(std::move(e));
   myTrapCondNames.emplace_back(name);
 
   updateStepStateByInstruction();

@@ -24,6 +24,9 @@ class OSystem;
 #include "FBBackend.hxx"
 #include "FBSurfaceLIBRETRO.hxx"
 
+// Defined in libretro.cxx; posts an info-level notification to the frontend
+void libretro_show_message(const char* msg);
+
 /**
   This class implements a standard LIBRETRO framebuffer backend.  Most of
   the functionality is not used, since libretro has its own rendering system.
@@ -35,6 +38,9 @@ class FBBackendLIBRETRO : public FBBackend
   public:
     explicit FBBackendLIBRETRO(OSystem&) { }
     ~FBBackendLIBRETRO() override = default;
+
+    int scaleX(int x) const override { return x; }
+    int scaleY(int y) const override { return y; }
 
   protected:
     /**
@@ -64,7 +70,7 @@ class FBBackendLIBRETRO : public FBBackend
     */
     unique_ptr<FBSurface>
       createSurface(uInt32 w, uInt32 h, ScalingInterpolation,
-                    const uInt32*) const override
+                    const uInt32*) override
     {
       return std::make_unique<FBSurfaceLIBRETRO>(w, h);
     }
@@ -80,8 +86,25 @@ class FBBackendLIBRETRO : public FBBackend
     // description, if needed.
     //////////////////////////////////////////////////////////////////////
 
-    int scaleX(int x) const override { return x; }
-    int scaleY(int y) const override { return y; }
+    void showMessage(string_view message) override {
+      if(message != myLastMessage)
+      {
+        myLastMessage = message;
+        libretro_show_message(myLastMessage.c_str());
+      }
+    }
+    void showGaugeMessage(string_view message, string_view valueText,
+                          float /*value*/,
+                          float /*minValue*/, float /*maxValue*/) override {
+      const string combined = valueText.empty()
+        ? string{message}
+        : std::format("{}: {}", message, valueText);
+      if(combined != myLastMessage)
+      {
+        myLastMessage = combined;
+        libretro_show_message(myLastMessage.c_str());
+      }
+    }
     void setTitle(string_view) override { }
     void showCursor(bool) override { }
     bool fullScreen() const override { return true; }
@@ -89,7 +112,9 @@ class FBBackendLIBRETRO : public FBBackend
     uInt32 gMask() const override { return 0x0000FF00; }
     uInt32 bMask() const override { return 0x000000FF; }
     uInt32 aMask() const override { return 0xFF000000; }
-    const FBSurface& compositedSurface() { static FBSurfaceLIBRETRO tmp(0, 0); return tmp; }
+    const FBSurface& compositedSurface() override {
+      static const FBSurfaceLIBRETRO tmp(0, 0); return tmp;
+    }
     bool isCurrentWindowPositioned() const override { return true; }
     Common::Point getCurrentWindowPos() const override { return Common::Point{}; }
     uInt32 getCurrentDisplayID() const override { return 0; }
@@ -105,6 +130,8 @@ class FBBackendLIBRETRO : public FBBackend
     bool isDarkTheme() const override { return false; }
 
   private:
+    string myLastMessage;
+
     // Following constructors and assignment operators not supported
     FBBackendLIBRETRO() = delete;
     FBBackendLIBRETRO(const FBBackendLIBRETRO&) = delete;

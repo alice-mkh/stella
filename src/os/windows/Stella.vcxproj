@@ -187,7 +187,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)asm\windows\%(RelativeDir)</AssemblerListingLocation>
-      <AdditionalOptions>/w14596 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:__cplusplus /w14596 %(AdditionalOptions)</AdditionalOptions>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
@@ -225,7 +225,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)asm\windows\%(RelativeDir)</AssemblerListingLocation>
-      <AdditionalOptions>/w14596 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:__cplusplus /w14596 %(AdditionalOptions)</AdditionalOptions>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
@@ -265,7 +265,7 @@
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)asm\windows\%(RelativeDir)</AssemblerListingLocation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalOptions>/w14596 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:__cplusplus /w14596 %(AdditionalOptions)</AdditionalOptions>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
@@ -307,7 +307,7 @@
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)asm\windows\%(RelativeDir)</AssemblerListingLocation>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalOptions>/w14596 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:__cplusplus /w14596 %(AdditionalOptions)</AdditionalOptions>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
@@ -349,7 +349,7 @@
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)asm\windows\%(RelativeDir)</AssemblerListingLocation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalOptions>/w14596 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:__cplusplus /w14596 %(AdditionalOptions)</AdditionalOptions>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
@@ -389,7 +389,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <AssemblerOutput>All</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)asm\windows\%(RelativeDir)</AssemblerListingLocation>
-      <AdditionalOptions>/w14596 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:__cplusplus /w14596 %(AdditionalOptions)</AdditionalOptions>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
@@ -527,6 +527,7 @@
     <ClCompile Include="..\..\debugger\gui\CartDebugWidget.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\debugger\gui\CartDevCardWidget.cxx" />
     <ClCompile Include="..\..\debugger\gui\CartDFSCWidget.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -661,6 +662,7 @@
     <ClCompile Include="..\..\debugger\TimerMap.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\debugger\yacc\stella.tab.cxx" />
     <ClCompile Include="..\..\emucore\Cart03E0.cxx" />
     <ClCompile Include="..\..\emucore\Cart3EPlus.cxx" />
     <ClCompile Include="..\..\emucore\Cart3EX.cxx" />
@@ -668,6 +670,7 @@
     <ClCompile Include="..\..\emucore\CartARM.cxx" />
     <ClCompile Include="..\..\emucore\Cart0FA0.cxx" />
     <ClCompile Include="..\..\emucore\CartCreator.cxx" />
+    <ClCompile Include="..\..\emucore\CartDevCard.cxx" />
     <ClCompile Include="..\..\emucore\CartE7.cxx" />
     <ClCompile Include="..\..\emucore\CartEFF.cxx" />
     <ClCompile Include="..\..\emucore\CartEnhanced.cxx" />
@@ -690,6 +693,7 @@
     <ClCompile Include="..\..\emucore\CartWD.cxx" />
     <ClCompile Include="..\..\emucore\CartWF8.cxx" />
     <ClCompile Include="..\..\emucore\CompuMate.cxx" />
+    <ClCompile Include="..\..\emucore\CompuMateCassette.cxx" />
     <ClCompile Include="..\..\emucore\ControllerDetector.cxx" />
     <ClCompile Include="..\..\emucore\CortexM0.cxx" />
     <ClCompile Include="..\..\emucore\DispatchResult.cxx" />
@@ -701,6 +705,7 @@
     <ClCompile Include="..\..\emucore\elf\VcsLib.cxx" />
     <ClCompile Include="..\..\emucore\EmulationTiming.cxx" />
     <ClCompile Include="..\..\emucore\EmulationWorker.cxx" />
+    <ClCompile Include="..\..\emucore\FBMessageHandler.cxx" />
     <ClCompile Include="..\..\emucore\FBSurface.cxx" />
     <ClCompile Include="..\..\emucore\GlobalKeyHandler.cxx" />
     <ClCompile Include="..\..\emucore\Joy2BPlus.cxx" />
@@ -1499,6 +1504,7 @@
     <ClInclude Include="..\..\debugger\gui\CartDebugWidget.hxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\..\debugger\gui\CartDevCardWidget.hxx" />
     <ClInclude Include="..\..\debugger\gui\CartDFSCWidget.hxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClInclude>
@@ -1637,6 +1643,7 @@
     <ClInclude Include="..\..\debugger\TrapArray.hxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-NoDebugger|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\..\debugger\yacc\stella.tab.hxx" />
     <ClInclude Include="..\..\emucore\AmigaMouse.hxx" />
     <ClInclude Include="..\..\emucore\AtariMouse.hxx" />
     <ClInclude Include="..\..\emucore\Bankswitch.hxx" />
@@ -1647,6 +1654,7 @@
     <ClInclude Include="..\..\emucore\CartARM.hxx" />
     <ClInclude Include="..\..\emucore\Cart0FA0.hxx" />
     <ClInclude Include="..\..\emucore\CartCreator.hxx" />
+    <ClInclude Include="..\..\emucore\CartDevCard.hxx" />
     <ClInclude Include="..\..\emucore\CartE7.hxx" />
     <ClInclude Include="..\..\emucore\CartEFF.hxx" />
     <ClInclude Include="..\..\emucore\CartEnhanced.hxx" />
@@ -1669,6 +1677,7 @@
     <ClInclude Include="..\..\emucore\CartWD.hxx" />
     <ClInclude Include="..\..\emucore\CartWF8.hxx" />
     <ClInclude Include="..\..\emucore\CompuMate.hxx" />
+    <ClInclude Include="..\..\emucore\CompuMateCassette.hxx" />
     <ClInclude Include="..\..\emucore\ConsoleIO.hxx" />
     <ClInclude Include="..\..\emucore\ConsoleTiming.hxx" />
     <ClInclude Include="..\..\emucore\ControllerDetector.hxx" />
@@ -1688,6 +1697,7 @@
     <ClInclude Include="..\..\emucore\exception\EmulationWarning.hxx" />
     <ClInclude Include="..\..\emucore\exception\FatalEmulationError.hxx" />
     <ClInclude Include="..\..\emucore\FBBackend.hxx" />
+    <ClInclude Include="..\..\emucore\FBMessageHandler.hxx" />
     <ClInclude Include="..\..\emucore\FBSurface.hxx" />
     <ClInclude Include="..\..\emucore\FrameBufferConstants.hxx" />
     <ClInclude Include="..\..\emucore\GlobalKeyHandler.hxx" />

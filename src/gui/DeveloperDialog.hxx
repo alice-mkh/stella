@@ -76,10 +76,6 @@ class DeveloperDialog : public Dialog, DevSettingsHandler
   #endif
     };
 
-    // MUST be aligned with RewindManager!
-    static constexpr int NUM_INTERVALS = 7;
-    static constexpr int NUM_HORIZONS = 8;
-
     static constexpr int DEBUG_COLORS = 6;
 
     TabWidget* myTab{nullptr};
@@ -119,6 +115,11 @@ class DeveloperDialog : public Dialog, DevSettingsHandler
     CheckboxWidget*     myPlLateHMoveWidget{nullptr};
     CheckboxWidget*     myMsLateHMoveWidget{nullptr};
     CheckboxWidget*     myBlLateHMoveWidget{nullptr};
+
+    StaticTextWidget*   myLateRespxLabel{nullptr};
+    CheckboxWidget*     myPlLateRespxWidget{nullptr};
+    CheckboxWidget*     myMsLateRespxWidget{nullptr};
+    CheckboxWidget*     myBlLateRespxWidget{nullptr};
 
     StaticTextWidget*   myPlayfieldLabel{nullptr};
     CheckboxWidget*     myPFBitsWidget{nullptr};

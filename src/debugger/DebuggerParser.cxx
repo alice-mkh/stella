@@ -378,11 +378,8 @@ bool DebuggerParser::getArgs(string_view command, string& verb)
   args.reserve(argCount);
   for(const auto& argStr: argStrings)
   {
-    if(!YaccParser::parse(argStr))
-    {
-      unique_ptr<Expression> expr(YaccParser::getResult());
+    if(auto expr = YaccParser::parse(argStr))
       args.push_back(expr->evaluate());
-    }
     else
       args.push_back(-1);
   }
@@ -542,7 +539,7 @@ string DebuggerParser::eval()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const string& DebuggerParser::cartName() const
+string_view DebuggerParser::cartName() const
 {
   return debugger.myOSystem.console().properties().get(PropType::Cart_Name);
 }
@@ -706,7 +703,7 @@ void DebuggerParser::listTraps(bool listCond)
     if(hasCond != listCond)
       continue;
 
-    const auto& trap = *myTraps[i];
+    const auto& trap = myTraps[i];
 
     if(!firstLine)
       commandResult << '\n';
@@ -826,7 +823,7 @@ string DebuggerParser::saveScriptFile(string file)
   const auto& names = debugger.m6502().getCondTrapNames();
   for(uInt32 i = 0; i < myTraps.size(); ++i)
   {
-    const auto& trap = *myTraps[i];
+    const auto& trap = myTraps[i];
     const bool hasCond = !names[i].empty();
 
     if(trap.read && trap.write) out += "trap";
@@ -872,7 +869,7 @@ void DebuggerParser::saveDump(const FSNode& node, const std::ostringstream& out,
 {
   try
   {
-    node.write(out.view());  // FIXME: can we eliminate the stream?
+    node.write(out.view());
     result << " to file " << node.getShortPath();
   }
   catch(...)
@@ -1012,7 +1009,8 @@ void DebuggerParser::executeBreak()
 // "breakIf"
 void DebuggerParser::executeBreakIf()
 {
-  if(YaccParser::parse(argStrings[0]) != 0)
+  auto expr = YaccParser::parse(argStrings[0]);
+  if(!expr)
   {
     commandResult << red("invalid expression");
     return;
@@ -1030,7 +1028,7 @@ void DebuggerParser::executeBreakIf()
   }
 
   const uInt32 ret = debugger.m6502().addCondBreak(
-                       YaccParser::getResult(), argStrings[0]);
+                       std::move(expr), argStrings[0]);
   commandResult << "added breakIf " << Base::toString(ret);
 }
 
@@ -1193,9 +1191,12 @@ void DebuggerParser::executeDebugColors()
 // "define"
 void DebuggerParser::executeDefine()
 {
-  // TODO: check if label already defined?
-  debugger.cartDebug().addLabel(argStrings[0], args[1]);
-  debugger.rom().invalidate();
+  if(debugger.cartDebug().getAddress(argStrings[0]) != -1)
+    commandResult << "warning: label '" << argStrings[0] << "' already defined\n";
+  if(!debugger.cartDebug().addLabel(argStrings[0], args[1]))
+    commandResult << red("invalid address");
+  else
+    debugger.rom().invalidate();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1251,7 +1252,7 @@ void DebuggerParser::executeDelTrap()
     return;
   }
 
-  const auto& trap = *myTraps[index];
+  const auto& trap = myTraps[index];
   for(uInt32 addr = trap.begin; addr <= trap.end; ++addr)
     executeTrapRW(addr, trap.read, trap.write, false);
 
@@ -1342,7 +1343,7 @@ void DebuggerParser::executeDump()
     return;
   }
 
-  string path = debugger.myOSystem.userDir().getPath() + cartName() + "_dbg_";
+  string path = std::format("{}{}_dbg_", debugger.myOSystem.userDir().getPath(), cartName());
   if(execDepth > 0)
     path += execPrefix;
   else
@@ -1490,13 +1491,14 @@ void DebuggerParser::executeFunction()
     return;
   }
 
-  if(YaccParser::parse(argStrings[1]) != 0)
+  auto expr = YaccParser::parse(argStrings[1]);
+  if(!expr)
   {
     commandResult << red("invalid expression");
     return;
   }
 
-  debugger.addFunction(argStrings[0], argStrings[1], YaccParser::getResult());
+  debugger.addFunction(argStrings[0], argStrings[1], std::move(expr));
   commandResult << "added function " << argStrings[0] << " -> " << argStrings[1];
 }
 
@@ -2088,7 +2090,7 @@ void DebuggerParser::executeS()
 void DebuggerParser::executeSave()
 {
   auto* dlg = debugger.myDialog;
-  const string fileName = dlg->instance().userDir().getPath() + cartName() + ".script";
+  const string fileName = std::format("{}{}.script", dlg->instance().userDir().getPath(), cartName());
 
   if(argCount && argStrings[0] == "?")
   {
@@ -2117,7 +2119,7 @@ void DebuggerParser::executeSaveAccess()
     DebuggerDialog* dlg = debugger.myDialog;
 
     BrowserDialog::show(dlg, "Save Access Counters as",
-                        dlg->instance().userDir().getPath() + cartName() + ".csv",
+                        std::format("{}{}.csv", dlg->instance().userDir().getPath(), cartName()),
                         BrowserDialog::Mode::FileSave,
                         [this, dlg](bool OK, const FSNode& node)
     {
@@ -2149,7 +2151,7 @@ void DebuggerParser::executeSaveDisassembly()
     DebuggerDialog* dlg = debugger.myDialog;
 
     BrowserDialog::show(dlg, "Save Disassembly as",
-                        dlg->instance().userDir().getPath() + cartName() + ".asm",
+                        std::format("{}{}.asm", dlg->instance().userDir().getPath(), cartName()),
                         BrowserDialog::Mode::FileSave,
                         [this, dlg](bool OK, const FSNode& node)
     {
@@ -2173,7 +2175,7 @@ void DebuggerParser::executeSaveRom()
     DebuggerDialog* dlg = debugger.myDialog;
 
     BrowserDialog::show(dlg, "Save ROM as",
-                        dlg->instance().userDir().getPath() + cartName() + ".a26",
+                        std::format("{}{}.a26", dlg->instance().userDir().getPath(), cartName()),
                         BrowserDialog::Mode::FileSave,
                         [this, dlg](bool OK, const FSNode& node)
     {
@@ -2250,7 +2252,8 @@ void DebuggerParser::executeSaveState()
 // "saveStateIf"
 void DebuggerParser::executeSaveStateIf()
 {
-  if(YaccParser::parse(argStrings[0]) != 0)
+  auto expr = YaccParser::parse(argStrings[0]);
+  if(!expr)
   {
     commandResult << red("invalid expression");
     return;
@@ -2268,7 +2271,7 @@ void DebuggerParser::executeSaveStateIf()
   }
 
   const uInt32 ret = debugger.m6502().addCondSaveState(
-    YaccParser::getResult(), argStrings[0]);
+    std::move(expr), argStrings[0]);
   commandResult << "added saveStateIf " << Base::toString(ret);
 }
 
@@ -2294,13 +2297,12 @@ void DebuggerParser::executeStep()
 // "stepWhile"
 void DebuggerParser::executeStepWhile()
 {
-  if(YaccParser::parse(argStrings[0]) != 0)
+  auto expr = YaccParser::parse(argStrings[0]);
+  if(!expr)
   {
     commandResult << red("invalid expression");
     return;
   }
-
-  const Expression* expr = YaccParser::getResult();
   int ncycles = 0;
 
   // Create a progress dialog box to show the progress searching through the
@@ -2573,7 +2575,8 @@ void DebuggerParser::executeTraps(bool read, bool write, string_view command,
   if(hasCond)
     condition += ')';
 
-  if(YaccParser::parse(condition) != 0)
+  auto expr = YaccParser::parse(condition);
+  if(!expr)
   {
     commandResult << red("invalid expression");
     return;
@@ -2581,11 +2584,11 @@ void DebuggerParser::executeTraps(bool read, bool write, string_view command,
 
   // Check for duplicate — duplicates remove each other
   const auto it = std::ranges::find_if(myTraps,
-    [&](const unique_ptr<Trap>& trap)
+    [&](const Trap& trap)
     {
-      return trap->begin == begin && trap->end == end &&
-             trap->read == read   && trap->write == write &&
-             trap->condition == condition;
+      return trap.begin == begin && trap.end == end &&
+             trap.read == read   && trap.write == write &&
+             trap.condition == condition;
     });
 
   if(it != myTraps.end())
@@ -2605,9 +2608,9 @@ void DebuggerParser::executeTraps(bool read, bool write, string_view command,
   else
   {
     const auto ret = debugger.m6502().addCondTrap(
-      YaccParser::getResult(), hasCond ? argStrings[0] : "");
+      std::move(expr), hasCond ? argStrings[0] : "");
     commandResult << "added trap " << Base::toString(ret);
-    myTraps.emplace_back(std::make_unique<Trap>(read, write, begin, end, condition));
+    myTraps.emplace_back(read, write, begin, end, condition);
     for(uInt32 addr = begin; addr <= end; ++addr)
       executeTrapRW(addr, read, write, true);
   }

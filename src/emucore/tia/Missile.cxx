@@ -47,6 +47,7 @@ void Missile::reset()
   myInvertedPhaseClock = false;
   myUseInvertedPhaseClock = false;
   myUseShortLateHMove = false;
+  myUseLateRespx = false;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,8 +71,11 @@ void Missile::hmm(uInt8 value)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void Missile::resm(uInt8 counter, bool hblank)
+void Missile::resm(uInt8 counter, bool hblank, bool lateRespxCondition)
 {
+  if (myUseLateRespx && lateRespxCondition)
+    counter = (counter + TIAConstants::H_PIXEL - 1) % TIAConstants::H_PIXEL;
+
   myCounter = counter;
 
   if (myIsRendering) {
@@ -107,7 +111,7 @@ void Missile::resm(uInt8 counter, bool hblank)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void Missile::resmp(uInt8 value, const Player& player)
+void Missile::resmp(uInt8 value)
 {
   const uInt8 resmp = value & 0x02;
 
@@ -116,9 +120,6 @@ void Missile::resmp(uInt8 value, const Player& player)
   myTIA->flushLineCache();
 
   myResmp = resmp;
-
-  if (!myResmp)
-    myCounter = player.getRespClock();
 
   updateEnabled();
 }
@@ -204,6 +205,12 @@ void Missile::setInvertedPhaseClock(bool enable)
 void Missile::setShortLateHMove(bool enable)
 {
   myUseShortLateHMove = enable;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void Missile::setLateRespx(bool enable)
+{
+  myUseLateRespx = enable;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -300,6 +307,7 @@ bool Missile::save(Serializer& out) const
     out.putByte(myObjectColor);  out.putByte(myDebugColor);
     out.putBool(myDebugEnabled);
     out.putBool(myInvertedPhaseClock);
+    out.putBool(myUseLateRespx);
   }
   catch(...)
   {
@@ -342,6 +350,7 @@ bool Missile::load(Serializer& in)
     myObjectColor = in.getByte();  myDebugColor = in.getByte();
     myDebugEnabled = in.getBool();
     myInvertedPhaseClock = in.getBool();
+    myUseLateRespx = in.getBool();
 
     applyColors();
   }

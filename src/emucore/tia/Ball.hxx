@@ -58,7 +58,7 @@ class Ball : public Serializable
     /**
       RESBL write.
      */
-    void resbl(uInt8 counter);
+    void resbl(uInt8 counter, bool lateRespxCondition = false);
 
     /**
       CTRLPF write.
@@ -109,6 +109,7 @@ class Ball : public Serializable
      */
     void setInvertedPhaseClock(bool enable);
     void setShortLateHMove(bool enable);
+    void setLateRespx(bool enable);
 
     /**
       Start movement --- this is triggered by strobing HMOVE.
@@ -325,6 +326,7 @@ class Ball : public Serializable
     bool myUseInvertedPhaseClock{false};
 
     bool myUseShortLateHMove{false};
+    bool myUseLateRespx{false};
 
     /**
       TIA instance. Required for flushing the line cache and requesting collision updates.
@@ -370,7 +372,7 @@ void Ball::tick(bool isReceivingRegularClock)
 {
   // If we are in inverted movement clock phase mode and a movement tick occurred, it
   // will supress the tick.
-  if(myUseInvertedPhaseClock && myInvertedPhaseClock)
+  if(myUseInvertedPhaseClock && myInvertedPhaseClock) [[unlikely]]
   {
     myInvertedPhaseClock = false;
     return;
@@ -387,7 +389,7 @@ void Ball::tick(bool isReceivingRegularClock)
   const bool starfieldEffect = isMoving && isReceivingRegularClock;
 
   // Decode value that triggers rendering
-  if (myCounter == 156) {
+  if (myCounter == 156) [[unlikely]] {
     myIsRendering = true;
     myRenderCounter = renderCounterOffset;
 
@@ -409,11 +411,11 @@ void Ball::tick(bool isReceivingRegularClock)
         break;
     }
 
-  } else if (myIsRendering && std::cmp_greater_equal(++myRenderCounter,
-        starfieldEffect ? myEffectiveWidth : myWidth))
+  } else if (myIsRendering &&
+             ++myRenderCounter >= static_cast<Int8>(starfieldEffect ? myEffectiveWidth : myWidth))
     myIsRendering = false;
 
-  if (++myCounter >= TIAConstants::H_PIXEL)
+  if (++myCounter >= TIAConstants::H_PIXEL) [[unlikely]]
       myCounter = 0;
 }
 

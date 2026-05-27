@@ -65,7 +65,7 @@ class CartDebug : public DebuggerSystem
     };
 
     // Determine 'type' of address (ie, what part of the system accessed)
-    enum class AddrType: uInt8 { TIA, IO, ZPRAM, ROM };
+    enum class AddrType: uInt8 { TIA, IO, ZPRAM, STACK, ROM };
     static AddrType addressType(uInt16 addr);
 
   public:
@@ -275,8 +275,7 @@ class CartDebug : public DebuggerSystem
   private:
     using AddrToLineList = std::map<uInt16, int>;
     using AddrToLabel = std::map<uInt16, string>;
-    using LabelToAddr = std::map<string, uInt16,
-        std::function<bool(const string&, const string&)>>;
+    using LabelToAddr = std::map<string, uInt16, BSPF::CaseInsensitiveLess>;
 
     using AddrTypeArray = std::array<uInt16, 0x1000>;
 

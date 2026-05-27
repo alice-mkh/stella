@@ -174,6 +174,7 @@ void TIA::initialize()
   myTimestamp = 0;
   for (AnalogReadout& analogReadout : myAnalogReadouts)
     analogReadout.reset(myTimestamp);
+  myLastAnalogConnections.fill(AnalogReadout::disconnect());
 
   myDelayQueue.reset();
 
@@ -193,6 +194,8 @@ void TIA::initialize()
   myBackBuffer.fill(0);
   myFrontBuffer.fill(0);
   myFramebuffer.fill(0);
+
+  myCurrentRowPtr = myBackBuffer.data();
 
   // Prepare variables for auto-phosphor
   myPosP0 = {};
@@ -418,6 +421,12 @@ bool TIA::load(Serializer& in)
 
     // Re-apply dev settings
     applyDeveloperSettings();
+
+    // myCurrentRowPtr is derived state not stored in the save file; recompute
+    // it from the restored y so renderPixel() writes to the correct scanline,
+    // including when the debugger saves and loads state mid-scanline
+    myCurrentRowPtr = myBackBuffer.data() +
+      static_cast<size_t>(myFrameManager->getY()) * TIAConstants::H_PIXEL;
   }
   catch(...)
   {
@@ -788,23 +797,25 @@ bool TIA::poke(uInt16 address, uInt8 value)
 
     case RESM0:
       flushLineCache();
-      myMissile0.resm(resxCounter(), myHstate == HState::blank);
+      myMissile0.resm(resxCounter(), myHstate == HState::blank,
+        myHstate == HState::blank && myMovementInProgress && myMovementClock == 0);
       myShadowRegisters[address] = value;
       break;
 
     case RESM1:
       flushLineCache();
-      myMissile1.resm(resxCounter(), myHstate == HState::blank);
+      myMissile1.resm(resxCounter(), myHstate == HState::blank,
+        myHstate == HState::blank && myMovementInProgress && myMovementClock == 0);
       myShadowRegisters[address] = value;
       break;
 
     case RESMP0:
-      myMissile0.resmp(value, myPlayer0);
+      myMissile0.resmp(value);
       myShadowRegisters[address] = value;
       break;
 
     case RESMP1:
-      myMissile1.resmp(value, myPlayer1);
+      myMissile1.resmp(value);
       myShadowRegisters[address] = value;
       break;
 
@@ -861,13 +872,15 @@ bool TIA::poke(uInt16 address, uInt8 value)
 
     case RESP0:
       flushLineCache();
-      myPlayer0.resp(resxCounter());
+      myPlayer0.resp(resxCounter(),
+        myHstate == HState::blank && myMovementInProgress && myMovementClock == 0);
       myShadowRegisters[address] = value;
       break;
 
     case RESP1:
       flushLineCache();
-      myPlayer1.resp(resxCounter());
+      myPlayer1.resp(resxCounter(),
+        myHstate == HState::blank && myMovementInProgress && myMovementClock == 0);
       myShadowRegisters[address] = value;
       break;
 
@@ -903,7 +916,8 @@ bool TIA::poke(uInt16 address, uInt8 value)
 
     case RESBL:
       flushLineCache();
-      myBall.resbl(resxCounter());
+      myBall.resbl(resxCounter(),
+        myHstate == HState::blank && myMovementInProgress && myMovementClock == 0);
       myShadowRegisters[address] = value;
       break;
 
@@ -995,6 +1009,15 @@ void TIA::applyDeveloperSettings()
     setBlShortLateHMove(custom
       ? mySettings.getBool("dev.tia.bllatehmove")
       : false);
+    setPlLateRespx(custom
+      ? mySettings.getBool("dev.tia.pllaterespx")
+      : BSPF::equalsIgnoreCase("lightsixer", tiaType));
+    setMsLateRespx(custom
+      ? mySettings.getBool("dev.tia.mslaterespx")
+      : BSPF::equalsIgnoreCase("lightsixer", tiaType) || BSPF::equalsIgnoreCase("juniorbug", tiaType));
+    setBlLateRespx(custom
+      ? mySettings.getBool("dev.tia.bllaterespx")
+      : BSPF::equalsIgnoreCase("lightsixer", tiaType));
     setPFBitsDelay(custom
       ? mySettings.getBool("dev.tia.delaypfbits")
       : BSPF::equalsIgnoreCase("pesco", tiaType));
@@ -1019,6 +1042,9 @@ void TIA::applyDeveloperSettings()
     setPlInvertedPhaseClock(false);
     setMsInvertedPhaseClock(false);
     setBlInvertedPhaseClock(false);
+    setPlLateRespx(false);
+    setMsLateRespx(false);
+    setBlLateRespx(false);
     setPFBitsDelay(false);
     setPFColorDelay(false);
     myPlayfield.setScoreGlitch(false);
@@ -1534,13 +1560,12 @@ void TIA::cycle(uInt32 colorClocks)
       [this] (uInt8 address, uInt8 value) {delayedWrite(address, value);}
     );
 
-    myCollisionUpdateRequired = myCollisionUpdateScheduled;
-    myCollisionUpdateScheduled = false;
+    myCollisionUpdateRequired = std::exchange(myCollisionUpdateScheduled, false);
 
     if (myLinesSinceChange < 2) {
       tickMovement();
 
-      if (myHstate == HState::blank)
+      if (myHstate == HState::blank) [[unlikely]]
         tickHblank();
       else
         tickHframe();
@@ -1548,7 +1573,7 @@ void TIA::cycle(uInt32 colorClocks)
       if (myCollisionUpdateRequired && !myFrameManager->vblank()) updateCollision();
     }
 
-    if (++myHctr >= TIAConstants::H_CLOCKS)
+    if (++myHctr >= TIAConstants::H_CLOCKS) [[unlikely]]
       nextLine();
 
   #ifdef SOUND_SUPPORT
@@ -1562,7 +1587,7 @@ void TIA::cycle(uInt32 colorClocks)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 FORCE_INLINE void TIA::tickMovement()
 {
-  if (!myMovementInProgress) return;
+  if (!myMovementInProgress) [[likely]] return;
 
   if ((myHctr & 0x03) == 0) {
     const bool hblank = myHstate == HState::blank;
@@ -1588,7 +1613,7 @@ FORCE_INLINE void TIA::tickMovement()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void TIA::tickHblank()
+FORCE_INLINE void TIA::tickHblank()
 {
   switch (myHctr) {
     case 0:
@@ -1603,7 +1628,7 @@ void TIA::tickHblank()
       if (myExtendedHblank) myHstate = HState::frame;
       break;
 
-    default:
+    [[likely]] default:
       break;
   }
 
@@ -1612,27 +1637,33 @@ void TIA::tickHblank()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void TIA::tickHframe()
+FORCE_INLINE void TIA::tickHframe()
 {
-  const uInt32 y = myFrameManager->getY();
   const uInt32 x = myHctr - TIAConstants::H_BLANK_CLOCKS - myHctrDelta;
 
   myCollisionUpdateRequired = true;
 
   myPlayfield.tick(x);
-  myMissile0.tick(myHctr);
-  myMissile1.tick(myHctr);
   myPlayer0.tick();
   myPlayer1.tick();
+  myMissile0.tick(myHctr, myPlayer0);
+  myMissile1.tick(myHctr, myPlayer1);
   myBall.tick();
 
-  if (myFrameManager->isRendering())
-    renderPixel(x, y);
+  if (myFrameManager->isRendering()) [[likely]]
+    renderPixel(x);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void TIA::applyRsync()
 {
+  // If the write cycle's incrementCycles() already overflowed hctr and fired
+  // nextLine() (leaving myHctr=0), the RSYNC scanline has already ended.
+  // Restoring myHctr to H_CLOCKS-3 would cause a second nextLine() on the
+  // very next CPU cycle, producing a phantom scanline.  Real hardware fires
+  // exactly one scanline advance for RSYNC, so bail out here.
+  if (myHctr == 0) return;
+
   const uInt32 x = myHctr > TIAConstants::H_BLANK_CLOCKS
       ? myHctr - TIAConstants::H_BLANK_CLOCKS : 0;
 
@@ -1662,6 +1693,11 @@ FORCE_INLINE void TIA::nextLine()
   myHctrDelta = 0;
 
   myFrameManager->nextLine();
+  // y only advances here, so this is the single correct update point for the
+  // precomputed row pointer used in renderPixel()
+  myCurrentRowPtr = myBackBuffer.data() +
+    static_cast<size_t>(myFrameManager->getY()) * TIAConstants::H_PIXEL;
+
   myMissile0.nextLine();
   myMissile1.nextLine();
   myPlayer0.nextLine();
@@ -1675,7 +1711,7 @@ FORCE_INLINE void TIA::nextLine()
       flushLineCache();
 
     // Save positions of objects for auto-phosphor
-    if(myAutoPhosphorEnabled)
+    if(myAutoPhosphorEnabled) [[unlikely]]
     {
       // Test ROMs:
       // - missing phosphor:
@@ -1718,7 +1754,7 @@ FORCE_INLINE void TIA::nextLine()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void TIA::cloneLastLine()
 {
-  if(myIsLayoutDetector)
+  if(myIsLayoutDetector) [[unlikely]]
   {
     // y is always 0 in FrameLayoutDetector
     for(uInt32 i = 0 ; i < TIAConstants::H_PIXEL; ++i)
@@ -1730,11 +1766,14 @@ void TIA::cloneLastLine()
 
     if(!myFrameManager->isRendering() || y == 0) return;
 
-    std::copy_n(myBackBuffer.begin() + (y - 1) * TIAConstants::H_PIXEL,
-      TIAConstants::H_PIXEL, myBackBuffer.begin() + y * TIAConstants::H_PIXEL);
+    // myCurrentRowPtr points to row y here: cloneLastLine() is always called
+    // before myFrameManager->nextLine() advances y, so the pointer is still
+    // current and avoids two y*H_PIXEL multiplies
+    std::copy_n(myCurrentRowPtr - TIAConstants::H_PIXEL,
+      TIAConstants::H_PIXEL, myCurrentRowPtr);
 
     // Save positions of objects for auto-phosphor
-    if(myAutoPhosphorEnabled)
+    if(myAutoPhosphorEnabled) [[unlikely]]
     {
       myPosP0[y][myFlickerFrame] = myPosP0[y - 1][myFlickerFrame];
       myPosP1[y][myFlickerFrame] = myPosP1[y - 1][myFlickerFrame];
@@ -1766,9 +1805,9 @@ FORCE_INLINE void TIA::updateCollision()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-FORCE_INLINE void TIA::renderPixel(uInt32 x, uInt32 y)
+FORCE_INLINE void TIA::renderPixel(uInt32 x)
 {
-  if (x >= TIAConstants::H_PIXEL) return;
+  if (x >= TIAConstants::H_PIXEL) [[unlikely]] return;
 
   uInt8 color = 0;
 
@@ -1823,8 +1862,10 @@ FORCE_INLINE void TIA::renderPixel(uInt32 x, uInt32 y)
     }
   }
 
-  myBackBuffer[y * TIAConstants::H_PIXEL + x] = color;
-  if (myIsLayoutDetector)
+  // myCurrentRowPtr is precomputed once per scanline in nextLine(), avoiding
+  // a y*H_PIXEL multiply on every one of the 160 visible clocks per line
+  myCurrentRowPtr[x] = color;
+  if (myIsLayoutDetector) [[unlikely]]
     myFrameManager->pixelColor(color);
 }
 
@@ -1839,7 +1880,7 @@ void TIA::flushLineCache()
     const auto rewindCycles = myHctr;
 
     for (myHctr = 0; myHctr < rewindCycles; ++myHctr) {
-      if (myHstate == HState::blank)
+      if (myHstate == HState::blank) [[unlikely]]
         tickHblank();
       else
         tickHframe();
@@ -1932,6 +1973,25 @@ void TIA::setBlShortLateHMove(bool enable)
   myBall.setShortLateHMove(enable);
 }
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void TIA::setPlLateRespx(bool enable)
+{
+  myPlayer0.setLateRespx(enable);
+  myPlayer1.setLateRespx(enable);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void TIA::setMsLateRespx(bool enable)
+{
+  myMissile0.setLateRespx(enable);
+  myMissile1.setLateRespx(enable);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void TIA::setBlLateRespx(bool enable)
+{
+  myBall.setLateRespx(enable);
+}
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void TIA::delayedWrite(uInt8 address, uInt8 value)
@@ -2084,6 +2144,11 @@ void TIA::updateAnalogReadout(uInt8 idx)
       throw std::runtime_error("invalid analog input");
   }
 
+  if (connection == myLastAnalogConnections[idx])
+    return;
+
+  myLastAnalogConnections[idx] = connection;
+  updateEmulation();
   myAnalogReadouts[idx].update(
     connection,
     myTimestamp,

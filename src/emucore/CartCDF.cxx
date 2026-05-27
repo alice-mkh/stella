@@ -32,13 +32,6 @@ namespace {
   constexpr bool FAST_FETCH_ON(uInt8 mode)    { return (mode & 0x0F) == 0; }
   constexpr bool DIGITAL_AUDIO_ON(uInt8 mode) { return (mode & 0xF0) == 0; }
 
-  constexpr uInt32 getUInt32(const uInt8* _array, size_t _address) {
-    return static_cast<uInt32>(_array[_address + 0]        +
-                              (_array[_address + 1] << 8)  +
-                              (_array[_address + 2] << 16) +
-                              (_array[_address + 3] << 24));
-  }
-
   Thumbulator::ConfigureFor thumulatorConfiguration(CartridgeCDF::CDFSubtype subtype)
   {
     switch (subtype) {
@@ -178,7 +171,7 @@ FORCE_INLINE void CartridgeCDF::updateMusicModeDataFetchers()
 
   // Let's update counters and flags of the music mode data fetchers
   if(wholeClocks > 0)
-    for(int x = 0; x <= 2; ++x)
+    for(size_t x = 0; x < myMusicCounters.size(); ++x)
       myMusicCounters[x] += myMusicFrequencies[x] * wholeClocks;
 }
 
@@ -200,9 +193,7 @@ inline void CartridgeCDF::callFunction(uInt8 value)
       }
       catch(const std::runtime_error& e) {
         if(!mySystem->autodetectMode())
-        {
           FatalEmulationError::raise(e.what());
-        }
       }
       break;
     default:
@@ -239,7 +230,8 @@ uInt8 CartridgeCDF::peek(uInt16 address)
     uInt32 pointer = getDatastreamPointer(myFastJumpStream);
     uInt8 value = 0;
     if (isCDFJplus()) {
-      value = myDisplayImage[ pointer >> 16 ];
+      const uInt32 idx = pointer >> 16;
+      value = (idx < myDisplayImage.size()) ? myDisplayImage[idx] : 0;
       pointer += 0x00010000;  // always increment by 1
     } else {
       value = myDisplayImage[ pointer >> 20 ];
@@ -385,7 +377,9 @@ bool CartridgeCDF::poke(uInt16 address, uInt8 value)
     case 0x0FF0:   // DSWRITE
       pointer = getDatastreamPointer(COMMSTREAM);
       if (isCDFJplus()) {
-        myDisplayImage[ pointer >> 16 ] = value;
+        const uInt32 idx = pointer >> 16;
+        if (idx < myDisplayImage.size())
+          myDisplayImage[idx] = value;
         pointer += 0x00010000;  // always increment by 1 when writing
       } else {
         myDisplayImage[ pointer >> 20 ] = value;
@@ -415,7 +409,7 @@ bool CartridgeCDF::poke(uInt16 address, uInt8 value)
       callFunction(value);
       break;
 
-   case 0x00FF4:
+    case 0x0FF4:
       bank(isCDFJplus() ? 0 : 6);
       break;
 
@@ -470,7 +464,7 @@ bool CartridgeCDF::bank(uInt16 bank, uInt16)
   {
     access.romAccessBase = &myRomAccessBase[myBankOffset + (addr & 0x0FFF)];
     access.romPeekCounter = &myRomAccessCounter[myBankOffset + (addr & 0x0FFF)];
-    access.romPokeCounter = &myRomAccessCounter[myBankOffset + (addr & 0x0FFF) + 28_KB];  // TODO: Change for CDFJ+???
+    access.romPokeCounter = &myRomAccessCounter[myBankOffset + (addr & 0x0FFF) + myAccessSize];
     mySystem->setPageAccess(addr, access);
   }
   return myBankChanged = true;
@@ -499,8 +493,7 @@ bool CartridgeCDF::patch(uInt16 address, uInt8 value)
     myProgramImage[myBankOffset + (address & 0x0FFF)] = value;
     return myBankChanged = true;
   }
-  else
-    return false;
+  return false;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -544,10 +537,7 @@ uInt32 CartridgeCDF::thumbCallback(uInt8 function, uInt32 value1, uInt32 value2)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 uInt8 CartridgeCDF::internalRamGetValue(uInt16 addr) const
 {
-  if(addr < internalRamSize())
-    return myRAM[addr];
-  else
-    return 0;
+  return (addr < internalRamSize()) ? myRAM[addr] : 0;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -640,52 +630,34 @@ bool CartridgeCDF::load(Serializer& in)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 uInt32 CartridgeCDF::getDatastreamPointer(uInt8 index) const
 {
-  const uInt16 address = myDatastreamBase + index * 4;
-
-  return myRAM[address + 0]        +  // low byte
-        (myRAM[address + 1] << 8)  +
-        (myRAM[address + 2] << 16) +
-        (myRAM[address + 3] << 24) ;  // high byte
+  return getUInt32(myRAM.data(), myDatastreamBase + index * 4);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void CartridgeCDF::setDatastreamPointer(uInt8 index, uInt32 value)
 {
-  const uInt16 address = myDatastreamBase + index * 4;
-
-  myRAM[address + 0] = value & 0xff;          // low byte
-  myRAM[address + 1] = (value >> 8) & 0xff;
-  myRAM[address + 2] = (value >> 16) & 0xff;
-  myRAM[address + 3] = (value >> 24) & 0xff;  // high byte
+  putUInt32(myRAM.data(), myDatastreamBase + index * 4, value);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 uInt32 CartridgeCDF::getDatastreamIncrement(uInt8 index) const
 {
-  const uInt16 address = myDatastreamIncrementBase + index * 4;
-
-  return myRAM[address + 0]        +   // low byte
-        (myRAM[address + 1] << 8)  +
-        (myRAM[address + 2] << 16) +
-        (myRAM[address + 3] << 24) ;   // high byte
+  return getUInt32(myRAM.data(), myDatastreamIncrementBase + index * 4);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 uInt32 CartridgeCDF::getWaveform(uInt8 index) const
 {
-  const uInt16 address = myWaveformBase + index * 4;
-
-  uInt32 result = myRAM[address + 0]        +  // low byte
-                 (myRAM[address + 1] << 8)  +
-                 (myRAM[address + 2] << 16) +
-                 (myRAM[address + 3] << 24);   // high byte
+  uInt32 result = getUInt32(myRAM.data(), myWaveformBase + index * 4);
 
   result -= (0x40000000 + static_cast<uInt32>(2_KB));
 
   if (!isCDFJplus()) {
-    if (result >= 4096) {
+    if (result >= 4096)
       result &= 4095;
-    }
+  } else {
+    if (result >= myDisplayImage.size())
+      result = 0;
   }
   return result;
 }
@@ -693,14 +665,7 @@ uInt32 CartridgeCDF::getWaveform(uInt8 index) const
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 uInt32 CartridgeCDF::getSample()
 {
-  const uInt16 address = myWaveformBase;
-
-  const uInt32 result = myRAM[address + 0]        +  // low byte
-                       (myRAM[address + 1] << 8)  +
-                       (myRAM[address + 2] << 16) +
-                       (myRAM[address + 3] << 24);   // high byte
-
-  return result;
+  return getUInt32(myRAM.data(), myWaveformBase);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -728,7 +693,8 @@ uInt8 CartridgeCDF::readFromDatastream(uInt8 index)
   uInt8 value = 0;
   if (isCDFJplus())
   {
-    value = myDisplayImage[ pointer >> 16 ];
+    const uInt32 idx = pointer >> 16;
+    value = (idx < myDisplayImage.size()) ? myDisplayImage[idx] : 0;
     pointer += (increment << 8);
   }
   else
