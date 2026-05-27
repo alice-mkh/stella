@@ -7,4 +7,4 @@ Authors=Bradford W. Mott; Stephen Anthony; The Stella Team;
 Website=https://stella-emu.github.io/
 LicensePath=Copyright.txt
 Platforms=Atari2600;
-StateVersion=1
+StateVersion=2
