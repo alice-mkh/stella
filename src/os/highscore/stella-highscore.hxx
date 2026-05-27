@@ -10,4 +10,6 @@ G_DECLARE_FINAL_TYPE (StellaCore, stella_core, STELLA, CORE, HsCore)
 
 G_MODULE_EXPORT GType hs_get_core_type (void);
 
+void highscore_core_log (HsLogLevel level, const char *message);
+
 G_END_DECLS

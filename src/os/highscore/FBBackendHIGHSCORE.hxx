@@ -23,6 +23,7 @@ class OSystem;
 #include "bspf.hxx"
 #include "FBBackend.hxx"
 #include "FBSurfaceHIGHSCORE.hxx"
+#include "stella-highscore.hxx"
 
 /**
   This class implements a standard HIGHSCORE framebuffer backend.  Most of
@@ -34,7 +35,7 @@ class FBBackendHIGHSCORE : public FBBackend
 {
   public:
     explicit FBBackendHIGHSCORE(OSystem&) { }
-    ~FBBackendHIGHSCORE() override { }
+    ~FBBackendHIGHSCORE() override = default;
 
   protected:
     /**
@@ -80,6 +81,26 @@ class FBBackendHIGHSCORE : public FBBackend
     // description, if needed.
     //////////////////////////////////////////////////////////////////////
 
+    void showMessage(string_view message) override {
+      if(message != myLastMessage)
+      {
+        myLastMessage = message;
+        highscore_core_log(HS_LOG_MESSAGE, myLastMessage.c_str());
+      }
+    }
+    void showGaugeMessage(string_view message, string_view valueText,
+                          float /*value*/,
+                          float /*minValue*/, float /*maxValue*/) override {
+      const string combined = valueText.empty()
+        ? string{message}
+        : std::format("{}: {}", message, valueText);
+      if(combined != myLastMessage)
+      {
+        myLastMessage = combined;
+        highscore_core_log(HS_LOG_MESSAGE, myLastMessage.c_str());
+      }
+    }
+
     int scaleX(int x) const override { return x; }
     int scaleY(int y) const override { return y; }
     void setTitle(string_view) override { }
@@ -105,6 +126,8 @@ class FBBackendHIGHSCORE : public FBBackend
     bool isDarkTheme() const override { return false; }
 
   private:
+    string myLastMessage;
+
     // Following constructors and assignment operators not supported
     FBBackendHIGHSCORE() = delete;
     FBBackendHIGHSCORE(const FBBackendHIGHSCORE&) = delete;

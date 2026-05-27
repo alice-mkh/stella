@@ -456,6 +456,12 @@ stella_hs_log (Logger::Level level, const char *message)
   hs_core_log_literal (HS_CORE (core), hs_level, message);
 }
 
+void
+highscore_core_log (HsLogLevel level, const char *message)
+{
+  hs_core_log_literal (HS_CORE (core), level, message);
+}
+
 GType
 hs_get_core_type (void)
 {
