@@ -53,12 +53,17 @@ class DiStella
       bool bFlag{false};        // Process break routine (-b in Distella)
       int bytesWidth{8+1};      // Number of bytes to use per line (with .byte xxx)
 
-      // When saving a multi-bank ROM, each bank's physical ORG base is stored
-      // here so auto-generated labels use the ORG offset instead of the RORG
-      // (runtime) address.  A label at runtime $F100 in a bank with orgBase=$1000
-      // becomes L1100 rather than LF100, giving unique names across all banks.
-      // When false (the default) labels use the runtime address as usual.
+      // When saving a multi-bank ROM, orgBase is set to each bank's RORG base so
+      // auto-generated labels use the runtime (RORG) address.  A label at runtime
+      // $F100 in a bank with orgBase=$F000 becomes LF100, matching the address the
+      // CPU and original developer see.  When false (the default) labels also use
+      // the runtime address as usual.
+      // When banks share overlapping RORG ranges, the bank index is encoded into
+      // the upper bits of orgBase and labelDigits is widened beyond 4 so that
+      // labels are unique across all banks.  labelDigits=5 handles up to 16 banks
+      // (one leading hex digit for the bank); labelDigits=6 handles up to 256.
       bool useOrgLabels{false};
+      int  labelDigits{4};   // total hex digits in auto-generated label (4, 5, or 6)
       uInt32 orgBase{0};
     };
     static Settings settings;  // Default settings
@@ -135,7 +140,7 @@ class DiStella
         const uInt32 la = mySettings.useOrgLabels
             ? static_cast<uInt32>(addr - myOffset) + mySettings.orgBase
             : addr;
-        buf << std::format("L{:04X}", la);
+        buf << std::format("L{:0{}X}", la, mySettings.labelDigits);
       }
     }
     void labelA12Low(std::ostringstream& buf, uInt8 op, uInt16 addr, AddressType labfound)
