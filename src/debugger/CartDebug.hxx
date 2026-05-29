@@ -20,6 +20,7 @@
 
 class Settings;
 class CartDebugWidget;
+class CartDisassemblyWriter;
 
 // Function type for CartDebug instance methods
 class CartDebug;
@@ -44,8 +45,9 @@ class CartState : public DebuggerState
 
 class CartDebug : public DebuggerSystem
 {
-  // The disassembler needs special access to this class
+  // The disassembler and disassembly writer need special access to this class
   friend class DiStella;
+  friend class CartDisassemblyWriter;
 
   public:
     struct DisassemblyTag {
@@ -305,7 +307,7 @@ class CartDebug : public DebuggerSystem
       std::array<bool, 64>  TIAWrite{};
       std::array<bool, 32>  IOReadWrite{};
       std::array<bool, 128> ZPRAM{};
-      AddrToLabel Label;
+      LabelToAddr Label;
       bool breakFound{false};
     };
     ReservedEquates myReserved;

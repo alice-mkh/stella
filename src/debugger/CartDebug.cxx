@@ -28,6 +28,7 @@
 #include "Version.hxx"
 #include "Cart.hxx"
 #include "CartDebug.hxx"
+#include "CartDisassemblyWriter.hxx"
 #include "CartDebugWidget.hxx"
 #include "CartRamWidget.hxx"
 #include "RomWidget.hxx"
@@ -316,12 +317,16 @@ bool CartDebug::disassemble(int bank, uInt16 PC, Disassembly& disassembly,
     // If the offset has changed, all old addresses must be 'converted'
     // For example, if the list contains any $fxxx and the address space is now
     // $bxxx, it must be changed
-    const uInt16 offset = (PC & 0x1000) ? myConsole.cartridge().bankOrigin(bank, PC) : 0;
+    const uInt16 bankSz = myConsole.cartridge().bankSize(bank);
+    const auto addrMask = static_cast<uInt16>(bankSz - 1);
+    const uInt16 offset = (PC & 0x1000)
+      ? myConsole.cartridge().bankOrigin(bank, PC)
+      : 0;
     if (offset && (info.offset == 0 || mySystem.addressBits() == 16))
       info.offset = offset;
     AddressList& addresses = info.addressList;
     for(auto& i: addresses)
-      i = (i & 0xFFF) + offset; // due to DiStella we have to limit to 4K addresses
+      i = (i & addrMask) + offset; // due to DiStella we have to limit to bank-size addresses
 
     // Only add addresses when absolutely necessary, to cut down on the
     // work that Distella has to do
@@ -1066,320 +1071,9 @@ string CartDebug::saveConfigFile()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 string CartDebug::saveDisassembly(string path)
 {
-  // We can't print the header to the disassembly until it's actually
-  // been processed; therefore buffer output to a string first
-  std::ostringstream buf;
-
-  // Use specific settings for disassembly output
-  // This will most likely differ from what you see in the debugger
-  DiStella::Settings settings;
-  settings.gfxFormat = DiStella::settings.gfxFormat;
-  settings.resolveCode = true;
-  settings.showAddresses = false;
-  settings.aFlag = false; // Otherwise DASM gets confused
-  settings.fFlag = DiStella::settings.fFlag;
-  settings.rFlag = DiStella::settings.rFlag;
-  settings.bytesWidth = 8+1;  // same as Stella debugger
-  settings.bFlag = DiStella::settings.bFlag; // process break routine (TODO)
-
-  Disassembly disasm;
-  disasm.list.reserve(2048);
-  Cartridge& cart = myConsole.cartridge();
-  const uInt16 romBankCount = cart.romBankCount();
-  const uInt16 oldBank = cart.getBank();
-
-  // prepare for switching banks
-  uInt32 origin = 0;
-
-  for(int bank = 0; std::cmp_less(bank, romBankCount); ++bank)
-  {
-    // TODO: not every CartDebugWidget does it like that, we need a method
-    cart.unlockHotspots();
-    cart.bank(bank);
-    cart.lockHotspots();
-
-    BankInfo& info = myBankInfo[bank];
-
-    disassembleBank(bank);
-
-    // An empty address list means that DiStella can't do a disassembly
-    if(info.addressList.empty())
-      continue;
-
-    buf << "\n\n;***********************************************************\n"
-      << ";      Bank " << bank;
-    if (romBankCount > 1)
-      buf << " / 0.." << romBankCount - 1;
-    buf << "\n;***********************************************************\n\n";
-
-    // Disassemble bank
-    disasm.list.clear();
-    const DiStella distella(*this, disasm.list, info, settings,
-                            myDisLabels, myDisDirectives, myReserved);
-
-    if (myReserved.breakFound)
-      addLabel("Break", myDebugger.dpeek(0xfffe));
-
-    buf << "    SEG     CODE\n";
-
-    if(romBankCount == 1)
-      buf << "    ORG     $" << Base::HEX4 << info.offset << "\n\n";
-    else
-      buf << "    ORG     $" << Base::HEX4 << origin << "\n"
-          << "    RORG    $" << Base::HEX4 << info.offset << "\n\n";
-    origin += static_cast<uInt32>(info.size);
-
-    // Format in 'distella' style
-    for(const auto& tag: disasm.list)
-    {
-      // Add label (if any)
-      if(!tag.label.empty())
-        buf << std::format("{:<4}\n", tag.label);
-      buf << "    ";
-
-      switch(tag.type)
-      {
-        case Device::CODE:
-          buf << std::format("{:<32}{}{}{}", tag.disasm,
-            tag.ccount.substr(0, 5), tag.ctotal, tag.ccount.substr(5, 2));
-          if (tag.disasm.find("WSYNC") != std::string::npos)
-            buf << "\n;---------------------------------------";
-          break;
-
-        case Device::ROW:
-          buf << std::format(".byte   {:<32}; ${:04X} (*)", tag.disasm.substr(6, 8*4-1), tag.address);
-          break;
-
-        case Device::GFX:
-          buf << ".byte   " << (settings.gfxFormat == Base::Fmt::_2 ? "%" : "$")
-              << tag.bytes << " ; |";
-          for(int c = 12; c < 20; ++c)
-            buf << ((tag.disasm[c] == '\x1e') ? "#" : " ");
-          buf << std::format("{:<13}${:04X} (G)", "|", tag.address);
-          break;
-
-        case Device::PGFX:
-          buf << ".byte   " << (settings.gfxFormat == Base::Fmt::_2 ? "%" : "$")
-              << tag.bytes << " ; |";
-          for(int c = 12; c < 20; ++c)
-            buf << ((tag.disasm[c] == '\x1f') ? "*" : " ");
-          buf << std::format("{:<13}${:04X} (P)", "|", tag.address);
-          break;
-
-        case Device::COL:
-          buf << std::format(".byte   {:<32}; ${:04X} (C)", tag.disasm.substr(6, 15), tag.address);
-          break;
-
-        case Device::PCOL:
-          buf << std::format(".byte   {:<32}; ${:04X} (CP)", tag.disasm.substr(6, 15), tag.address);
-          break;
-
-        case Device::BCOL:
-          buf << std::format(".byte   {:<32}; ${:04X} (CB)", tag.disasm.substr(6, 15), tag.address);
-          break;
-
-        case Device::AUD:
-          buf << std::format(".byte   {:<32}; ${:04X} (A)", tag.disasm.substr(6, 8 * 4 - 1), tag.address);
-          break;
-
-        case Device::DATA:
-          buf << std::format(".byte   {:<32}; ${:04X} (D)", tag.disasm.substr(6, 8 * 4 - 1), tag.address);
-          break;
-
-        case Device::NONE:
-        default:
-          break;
-      } // switch
-      buf << "\n";
-    }
-  }
-  cart.unlockHotspots();
-  cart.bank(oldBank);
-  cart.lockHotspots();
-
-  // Some boilerplate, similar to what DiStella adds
-  const auto timeinfo = BSPF::localTime();
-  std::ostringstream out;
-  out << "; Disassembly of " << myOSystem.romFile().getShortPath() << "\n"
-      << "; Disassembled " << std::put_time(&timeinfo, "%c\n")
-      << "; Using Stella " << STELLA_VERSION << "\n;\n"
-      << "; ROM properties name : " << myConsole.properties().get(PropType::Cart_Name) << "\n"
-      << "; ROM properties MD5  : " << myConsole.properties().get(PropType::Cart_MD5) << "\n"
-      << "; Bankswitch type     : " << myConsole.cartridge().about() << "\n;\n"
-      << "; Legend: *  = CODE not yet run (tentative code)\n"
-      << ";         D  = DATA directive (referenced in some way)\n"
-      << ";         G  = GFX directive, shown as '#' (stored in player, missile, ball)\n"
-      << ";         P  = PGFX directive, shown as '*' (stored in playfield)\n"
-      << ";         C  = COL directive, shown as color constants (stored in player color)\n"
-      << ";         CP = PCOL directive, shown as color constants (stored in playfield color)\n"
-      << ";         CB = BCOL directive, shown as color constants (stored in background color)\n"
-      << ";         A  = AUD directive (stored in audio registers)\n"
-      << ";         i  = indexed accessed only\n"
-      << ";         c  = used by code executed in RAM\n"
-      << ";         s  = used by stack\n"
-      << ";         !  = page crossed, 1 cycle penalty\n"
-      << "\n    processor 6502\n\n";
-
-  out << "\n;-----------------------------------------------------------\n"
-      << ";      Color constants\n"
-      << ";-----------------------------------------------------------\n\n";
-
-  if(myConsole.timing() == ConsoleTiming::ntsc)
-  {
-    const string NTSC_COLOR[16] = {
-      "BLACK", "YELLOW", "BROWN", "ORANGE",
-      "RED", "MAUVE", "VIOLET", "PURPLE",
-      "BLUE", "BLUE_CYAN", "CYAN", "CYAN_GREEN",
-      "GREEN", "GREEN_YELLOW", "GREEN_BEIGE", "BEIGE"
-    };
-
-    for(int i = 0; i < 16; ++i)
-      out << std::format("{:<16} = ${:02X}\n", NTSC_COLOR[i], i << 4);
-  }
-  else if(myConsole.timing() == ConsoleTiming::pal)
-  {
-    const string PAL_COLOR[16] = {
-      "BLACK0", "BLACK1", "YELLOW", "GREEN_YELLOW",
-      "ORANGE", "GREEN", "RED", "CYAN_GREEN",
-      "MAUVE", "CYAN", "VIOLET", "BLUE_CYAN",
-      "PURPLE", "BLUE", "BLACKE", "BLACKF"
-    };
-
-    for(int i = 0; i < 16; ++i)
-      out << std::format("{:<16} = ${:02X}\n", PAL_COLOR[i], i << 4);
-  }
-  else
-  {
-    const string SECAM_COLOR[8] = {
-      "BLACK", "BLUE", "RED", "PURPLE",
-      "GREEN", "CYAN", "YELLOW", "WHITE"
-    };
-
-    for(int i = 0; i < 8; ++i)
-      out << std::format("{:<16} = ${:X}\n", SECAM_COLOR[i], i << 1);
-  }
-  out << "\n";
-
-  bool addrUsed = false;
-  for(uInt16 addr = 0x00; addr <= 0x0F; ++addr)
-    addrUsed = addrUsed || myReserved.TIARead[addr] || (mySystem.getAccessFlags(addr) & Device::WRITE);
-  for(uInt16 addr = 0x00; addr <= 0x3F; ++addr)
-    addrUsed = addrUsed || myReserved.TIAWrite[addr] || (mySystem.getAccessFlags(addr) & Device::DATA);
-  for(uInt16 addr = 0x00; addr <= 0x17; ++addr)
-    addrUsed = addrUsed || myReserved.IOReadWrite[addr];
-
-  if(addrUsed)
-  {
-    out << "\n;-----------------------------------------------------------\n"
-        << ";      TIA and IO constants accessed\n"
-        << ";-----------------------------------------------------------\n\n";
-
-    // TIA read access
-    for(uInt16 addr = 0x00; addr <= 0x0F; ++addr)
-      if(myReserved.TIARead[addr])
-        out << std::format("{:<16}= ${:02X}  ; (R)\n", ourTIAMnemonicR[addr], addr);
-      else if (mySystem.getAccessFlags(addr) & Device::DATA)
-        out << std::format(";{:<15}= ${:02X}  ; (Ri)\n", ourTIAMnemonicR[addr], addr);
-    out << "\n";
-
-    // TIA write access
-    for(uInt16 addr = 0x00; addr <= 0x3F; ++addr)
-      if(myReserved.TIAWrite[addr])
-        out << std::format("{:<16}= ${:02X}  ; (W)\n", ourTIAMnemonicW[addr], addr);
-      else if (mySystem.getAccessFlags(addr) & Device::WRITE)
-        out << std::format(";{:<15}= ${:02X}  ; (Wi)\n", ourTIAMnemonicW[addr], addr);
-    out << "\n";
-
-    // RIOT IO access
-    for(uInt16 addr = 0x00; addr <= 0x1F; ++addr)
-      if(myReserved.IOReadWrite[addr])
-        out << std::format("{:<16}= ${:04X}\n", ourIOMnemonic[addr], addr + 0x280);
-  }
-
-  addrUsed = false;
-  for(uInt16 addr = 0x80; addr <= 0xFF; ++addr)
-    addrUsed = addrUsed || myReserved.ZPRAM[addr-0x80]
-      || (mySystem.getAccessFlags(addr) & (Device::DATA | Device::WRITE))
-      || (mySystem.getAccessFlags(addr|0x100) & (Device::DATA | Device::WRITE));
-  if(addrUsed)
-  {
-    bool addLine = false;
-    out << "\n\n;-----------------------------------------------------------\n"
-        << ";      RIOT RAM (zero-page) labels\n"
-        << ";-----------------------------------------------------------\n\n";
-
-    for (uInt16 addr = 0x80; addr <= 0xFF; ++addr) {
-      const bool ramUsed = (mySystem.getAccessFlags(addr) & (Device::DATA | Device::WRITE));
-      const bool codeUsed = (mySystem.getAccessFlags(addr) & Device::CODE);
-      const bool stackUsed = (mySystem.getAccessFlags(addr|0x100) & (Device::DATA | Device::WRITE));
-
-      if (myReserved.ZPRAM[addr - 0x80] &&
-          !myUserLabels.contains(addr)) {
-        if (addLine)
-          out << "\n";
-        out << std::format("{:<16}= ${:02X}{}\n", ourZPMnemonic[addr - 0x80], addr,
-          (stackUsed || codeUsed)
-            ? std::format("; ({}{})", codeUsed ? "c" : "", stackUsed ? "s" : "")
-            : std::string{});
-        addLine = false;
-      } else if (ramUsed || codeUsed || stackUsed) {
-        if (addLine)
-          out << "\n";
-        out << std::format("{:<18}${:02X}  ({}{}{})\n", ";", addr,
-          ramUsed ? "i" : "", codeUsed ? "c" : "", stackUsed ? "s" : "");
-        addLine = false;
-      } else
-        addLine = true;
-    }
-  }
-
-  if(!myReserved.Label.empty())
-  {
-    out << "\n\n;-----------------------------------------------------------\n"
-        << ";      Non Locatable Labels\n"
-        << ";-----------------------------------------------------------\n\n";
-    for(const auto& [addr, label]: myReserved.Label)
-      out << std::format("{:<16}= ${:04X}\n", label, addr);
-  }
-
-  if(!myUserLabels.empty())
-  {
-    out << "\n\n;-----------------------------------------------------------\n"
-        << ";      User Defined Labels\n"
-        << ";-----------------------------------------------------------\n\n";
-    int max_len = 16;
-    for(const auto& [addr, label]: myUserLabels)
-      max_len = std::max(max_len, static_cast<int>(label.size()));
-    for(const auto& [addr, label]: myUserLabels)
-      out << std::format("{:<{}}= ${:04X}\n", label, max_len, addr);
-  }
-
-  // And finally, output the disassembly
-  out << buf.view();
-
-  if(path.empty())
-    path = std::format("{}{}.asm", myOSystem.userDir().getPath(),
-                       myConsole.properties().get(PropType::Cart_Name));
-  else
-    // Append default extension when missing
-    if(path.find_last_of('.') == string::npos)
-      path += ".asm";
-
-  const FSNode node(path);
-  try
-  {
-    node.write(out.view());
-    string retVal;
-    if(myConsole.cartridge().romBankCount() > 1)
-      retVal = DebuggerParser::red("disassembly for multi-bank ROM not fully supported\n");
-    retVal += std::format("saved {} OK", node.getShortPath());
-    return retVal;
-  }
-  catch(...)
-  {
-    return std::format("Unable to save disassembly to {}", node.getShortPath());
-  }
+  return CartDisassemblyWriter(*this).save(std::move(path));
 }
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 string CartDebug::saveRom(string path)

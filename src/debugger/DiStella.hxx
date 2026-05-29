@@ -19,6 +19,7 @@
 #define DISTELLA_HXX
 
 #include <queue>
+#include <unordered_set>
 
 #include "Base.hxx"
 #include "CartDebug.hxx"
@@ -51,6 +52,14 @@ class DiStella
       bool rFlag{false};        // Relocate calls out of address range (-r in Distella)
       bool bFlag{false};        // Process break routine (-b in Distella)
       int bytesWidth{8+1};      // Number of bytes to use per line (with .byte xxx)
+
+      // When saving a multi-bank ROM, each bank's physical ORG base is stored
+      // here so auto-generated labels use the ORG offset instead of the RORG
+      // (runtime) address.  A label at runtime $F100 in a bank with orgBase=$1000
+      // becomes L1100 rather than LF100, giving unique names across all banks.
+      // When false (the default) labels use the runtime address as usual.
+      bool useOrgLabels{false};
+      uInt32 orgBase{0};
     };
     static Settings settings;  // Default settings
 
@@ -97,25 +106,37 @@ class DiStella
     // Directives are basically the contents of a distella configuration file
     void processDirectives(const CartDebug::DirectiveList& directives);
 
+    enum class DisasmPass : uInt8 { MarkValid = 2, Output = 3 };
+
+    static constexpr uInt8 OP_BRK   = 0x00;
+    static constexpr uInt8 OP_JMP   = 0x4c;
+    static constexpr uInt8 OP_JMP_I = 0x6c;  // JMP (indirect)
+    static constexpr uInt8 OP_RTS   = 0x60;
+    static constexpr uInt8 OP_RTI   = 0x40;
+
     // These functions are part of the original Distella code
-    void disasm(uInt32 distart, int pass);
+    void disasm(uInt32 distart, DisasmPass pass);
     void disasmPass1(CartDebug::AddressList& debuggerAddresses);
     void disasmFromAddress(uInt32 distart);
 
-    bool check_range(uInt16 start, uInt16 end) const;
+    [[nodiscard]] bool checkRange(uInt16 start, uInt16 end) const;
     AddressType mark(uInt32 address, uInt16 mask, bool directive = false);
-    bool checkBit(uInt16 address, uInt16 mask, bool useDebugger = true) const;
-    bool checkBits(uInt16 address, uInt16 mask, uInt16 notMask, bool useDebugger = true) const;
+    [[nodiscard]] bool checkBit(uInt16 address, uInt16 mask, bool useDebugger = true) const;
+    [[nodiscard]] bool checkBits(uInt16 address, uInt16 mask, uInt16 notMask, bool useDebugger = true) const;
     void outputGraphics();
     void outputColors();
     string getColor(uInt8 byte);
     void outputBytes(Device::AccessType type);
 
     // Convenience methods to generate appropriate labels
-    void labelA12High(std::ostringstream& buf, uInt8 op, uInt16 addr, AddressType labfound)
+    void labelA12High(std::ostringstream& buf, uInt16 addr)
     {
-      if(!myDbg.getLabel(buf, addr, true))
-        buf << "L" << Common::Base::HEX4 << addr;
+      if(!myDbg.getLabel(buf, addr, true)) {
+        const uInt32 la = mySettings.useOrgLabels
+            ? static_cast<uInt32>(addr - myOffset) + mySettings.orgBase
+            : addr;
+        buf << std::format("L{:04X}", la);
+      }
     }
     void labelA12Low(std::ostringstream& buf, uInt8 op, uInt16 addr, AddressType labfound)
     {
@@ -139,12 +160,22 @@ class DiStella
     CartDebug::DisassemblyList& myList;
     const Settings& mySettings;
     CartDebug::ReservedEquates& myReserved;
-    std::stringstream myDisasmBuf;
+    // Staging area for one disassembly line; populated by disasm/output*,
+    // consumed and reset by addEntry()
+    struct DisasmLine {
+      uInt16 address{0};
+      bool   hasAutoLabel{false};
+      string disasm;
+      string ccount;
+      string ctotal;
+      string bytes;
+    } myLine;
+
     std::queue<uInt16> myAddressQueue;
     uInt16 myOffset{0}, myPC{0}, myPCEnd{0};
-    uInt16 mySegType{0};
+    Device::AccessType mySegType{Device::NONE};
 
-    struct resource {
+    struct Resource {
       uInt16 start{0};
       uInt16 end{0};
       uInt16 length{0};
@@ -167,7 +198,7 @@ class DiStella
       ZERO_PAGE, ZERO_PAGE_X, ZERO_PAGE_Y,
       ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y,
       ABS_INDIRECT, INDIRECT_X, INDIRECT_Y,
-      RELATIVE, ASS_CODE
+      RELATIVE
     };
 
     /**
@@ -175,22 +206,14 @@ class DiStella
     */
     enum class AccessMode : uInt8
     {
-      NONE, AC, XR, YR, SP, SR, PC, IMM, ZERO, ZERX, ZERY,
-      ABS, ABSX, ABSY, AIND, INDX, INDY, REL, FC, FD, FI,
-      FV, ADDR,
+      NONE, AC, XR, YR, SP, SR, IMM, ZERO, ZERX, ZERY,
+      ABS, ABSX, ABSY, AIND, INDX, INDY, REL, ADDR,
 
       ACIM, /* Source: AC & IMMED (bus collision) */
       ANXR, /* Source: AC & XR (bus collision) */
       AXIM, /* Source: (AC | #EE) & XR & IMMED (bus collision) */
-      ACNC, /* Dest: AC and Carry = Negative */
-      ACXR, /* Dest: AC, XR */
 
-      SABY, /* Source: (ABS_Y & SP) (bus collision) */
-      ACXS, /* Dest: AC, XR, SP */
-      STH0, /* Dest: Store (src & Addr_Hi+1) to (Addr +0x100) */
-      STH1,
-      STH2,
-      STH3
+      SABY  /* Source: (ABS_Y & SP) (bus collision) */
     };
 
     /**
