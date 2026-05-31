@@ -42,6 +42,7 @@ class Base
       _16_1,    // base 16: 1 byte wide
       _16_2,    // base 16: 2 bytes wide
       _16_2_2,  // base 16: fractional value shown as xx.xx
+      _16_3,    // base 16: 3 bytes wide
       _16_3_2,  // base 16: fractional value shown as xxx.xx
       _16_4,    // base 16: 4 bytes wide
       _16_8,    // base 16: 8 bytes wide
@@ -76,6 +77,18 @@ class Base
     {
       std::array<char, 32> buf{};
       auto* end = toChars(buf.data(), value, outputBase);
+      return {buf.data(), end};
+    }
+
+    /** Return hex-formatted string respecting the current hexUppercase setting */
+    static string hex1(int v) { return toString(v, Fmt::_16_1); }
+    static string hex2(int v) { return toString(v, Fmt::_16_2); }
+    static string hex3(int v) { return toString(v, Fmt::_16_3); }
+    static string hex4(int v) { return toString(v, Fmt::_16_4); }
+    static string hex8(int v) { return toString(v, Fmt::_16_8); }
+    static string hexN(int v, int width) {
+      std::array<char, 32> buf{};
+      auto* end = writeHex(buf.data(), static_cast<uInt32>(v), width);
       return {buf.data(), end};
     }
 
