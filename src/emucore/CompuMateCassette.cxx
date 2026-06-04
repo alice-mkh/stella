@@ -15,18 +15,22 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
+#include "OSystem.hxx"
+#include "FrameBuffer.hxx"
 #include "System.hxx"
 #include "CompuMateCassette.hxx"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-CompuMateCassette::CompuMateCassette(const System& system)
-  : mySystem{system}
+CompuMateCassette::CompuMateCassette(OSystem& osystem, const System& system)
+  : myOSystem{osystem},
+    mySystem{system}
 {
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void CompuMateCassette::load(const FSNode& romFile, ConsoleTiming timing)
 {
+  myCasStartCycle = UINT64_MAX;  // stop any current playback
   myCasRomPath = romFile;
 
   double cpuFreq{};
@@ -49,6 +53,8 @@ void CompuMateCassette::load(const FSNode& romFile, ConsoleTiming timing)
   if(data.size() != CAS_SIZE_NORMAL && data.size() != CAS_SIZE_EXTENDED)
   {
     cerr << std::format("CompuMate: unexpected cassette size {}\n", data.size());
+    myOSystem.frameBuffer().showTextMessage("Invalid CompuMate cassette",
+      MessagePosition::BottomCenter, true);
     return;
   }
 
@@ -77,10 +83,8 @@ uInt8 CompuMateCassette::cassetteBit() const
   if(pct != myCasLastPct)
   {
     myCasLastPct = pct;
-    if(pct < 100)
-      cerr << std::format("\rLoading cassette: {}%", pct) << std::flush;
-    else
-      cerr << "\rLoading cassette: 100%\n";
+    myOSystem.frameBuffer().showGaugeMessage("Loading cassette",
+      std::format("{}%", pct), static_cast<float>(pct), 0.F, 100.F);
   }
 
   uInt8 byte{};
@@ -112,7 +116,8 @@ void CompuMateCassette::startRecord()
 {
   if(myCasFreqRatio == 0.0)
   {
-    cerr << "CompuMate: cassette not initialised; cannot record\n";
+    myOSystem.frameBuffer().showTextMessage("Load a cassette before saving",
+      MessagePosition::BottomCenter, true);
     return;
   }
 
@@ -271,10 +276,8 @@ void CompuMateCassette::finalizeSaveByte()
     if(pct != mySaveLastPct)
     {
       mySaveLastPct = pct;
-      if(pct < 100)
-        cerr << std::format("\rSaving cassette: {}%", pct) << std::flush;
-      else
-        cerr << "\rSaving cassette: 100%\n";
+      myOSystem.frameBuffer().showGaugeMessage("Saving cassette",
+        std::format("{}%", pct), static_cast<float>(pct), 0.F, 100.F);
     }
     if(mySaveBytePos >= mySaveExpectedSize)
       finalizeSave();
@@ -302,6 +305,11 @@ void CompuMateCassette::finalizeSave()
   mySaveT0     = UINT64_MAX;
   cerr << std::format("CompuMate FSK decode: {} bytes ok, {} bytes failed\n",
                       mySaveOkCount, mySaveFailCount);
+  // Decode dropped one or more bytes; the saved file falls back to the
+  // previously-loaded values at those positions, so warn the user
+  if(mySaveFailCount > 0)
+    myOSystem.frameBuffer().showTextMessage("Cassette save had errors",
+      MessagePosition::BottomCenter, true);
   save(mySavePath);
 }
 
@@ -310,12 +318,14 @@ bool CompuMateCassette::save(const FSNode& destFile)
 {
   if(myCasData.empty())
   {
-    cerr << "CompuMate: no cassette data to save\n";
+    myOSystem.frameBuffer().showTextMessage("No cassette data to save",
+      MessagePosition::BottomCenter, true);
     return false;
   }
   if(destFile.write(myCasData) != myCasData.size())
   {
-    cerr << "CompuMate: cassette save write failed\n";
+    myOSystem.frameBuffer().showTextMessage("Cassette save failed",
+      MessagePosition::BottomCenter, true);
     return false;
   }
   cerr << std::format("CompuMate: cassette saved {} bytes to {}\n",
