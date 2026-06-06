@@ -35,8 +35,7 @@ stella_include_dirs = include_directories([
   '../../emucore',
   '../../emucore/elf',
   '../../emucore/tia',
-  '../../lib/json',
-  '../../lib/httplib',
+  '../../lib',
   '../../lib/sqlite',
   '../../os/highscore',
 ])
