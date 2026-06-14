@@ -322,16 +322,10 @@ FBInitStatus FrameBuffer::createDisplay(string_view title, BufferType type,
         break;
 
       default: // PhosphorHandler::ByRom
-      {
-        const string_view ppblend =
-          myOSystem.console().properties().get(PropType::Display_PPBlend);
         enable = myOSystem.console().properties().get(PropType::Display_Phosphor) == "YES";
-        p_blend = ppblend.empty()
-          ? myOSystem.settings().getInt(PhosphorHandler::SETTING_BLEND)
-          : BSPF::stoi(ppblend);
+        p_blend = BSPF::stoi(myOSystem.console().properties().get(PropType::Display_PPBlend));
         myOSystem.console().tia().enableAutoPhosphor(false);
         break;
-      }
     }
     myTIASurface->enablePhosphor(enable, p_blend);
   }
@@ -374,6 +368,9 @@ void FrameBuffer::update(UpdateMode mode)
   const bool rerender = (mode == UpdateMode::REDRAW || mode == UpdateMode::RERENDER
                          || myPendingRender);
   myPendingRender = false;
+
+  // Show any messages enqueued from other threads (e.g. PlusROM/cart callbacks)
+  myMsgHandler.drainPending();
 
   switch(myOSystem.eventHandler().state())
   {
@@ -529,6 +526,10 @@ void FrameBuffer::updateInEmulationMode(float framesPerSecond)
   // always happens at the full framerate
 
   renderTIA();
+
+  // Show any messages enqueued from the emulation worker thread (e.g. AR
+  // Supercharger load notifications) before drawing them this frame
+  myMsgHandler.drainPending();
 
   // Show frame statistics
   if(myMsgHandler.statsShown())
