@@ -175,6 +175,8 @@ stella_core_run_frame (HsCore *core)
     hs_software_context_set_area (self->context, &area);
   }
 
+  hs_software_context_set_colorburst (self->context, 1, 0, 0);
+
   if(self->stella->getVideoReady ()) {
     memcpy (hs_software_context_acquire_framebuffer (self->context),
             self->stella->getVideoBuffer (),
