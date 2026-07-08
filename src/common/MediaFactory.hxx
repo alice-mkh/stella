@@ -29,13 +29,13 @@
 #ifdef BSPF_UNIX
   #include "SerialPortPOSIX.hxx"
   #include "OSystemUNIX.hxx"
-#elif defined(BSPF_WINDOWS)
+#elifdef BSPF_WINDOWS
   #include "SerialPortWINDOWS.hxx"
   #include "OSystemWINDOWS.hxx"
-#elif defined(BSPF_MACOS)
+#elifdef BSPF_MACOS
   #include "SerialPortPOSIX.hxx"
   #include "OSystemMACOS.hxx"
-#elif defined(__LIB_RETRO__)
+#elifdef __LIB_RETRO__
   #include "OSystemLIBRETRO.hxx"
 #elif defined(__HIGHSCORE__)
   #include "OSystemHIGHSCORE.hxx"
@@ -46,10 +46,10 @@
 #ifdef __LIB_RETRO__
   #include "EventHandlerLIBRETRO.hxx"
   #include "FBBackendLIBRETRO.hxx"
-#elif defined(__HIGHSCORE__)
+#elifdef __HIGHSCORE__
   #include "EventHandlerHIGHSCORE.hxx"
   #include "FBBackendHIGHSCORE.hxx"
-#elif defined(SDL_SUPPORT)
+#elifdef SDL_SUPPORT
   #include "EventHandlerSDL.hxx"
   #include "FBBackendSDL.hxx"
 #else
@@ -59,9 +59,9 @@
 #ifdef SOUND_SUPPORT
   #ifdef __LIB_RETRO__
     #include "SoundLIBRETRO.hxx"
-  #elif defined(__HIGHSCORE__)
+  #elifdef __HIGHSCORE__
     #include "SoundHIGHSCORE.hxx"
-  #elif defined(SDL_SUPPORT)
+  #elifdef SDL_SUPPORT
     #include "SoundSDL.hxx"
   #else
     #include "SoundNull.hxx"
@@ -86,11 +86,11 @@ class MediaFactory
     {
     #ifdef BSPF_UNIX
       return std::make_unique<OSystemUNIX>();
-    #elif defined(BSPF_WINDOWS)
+    #elifdef BSPF_WINDOWS
       return std::make_unique<OSystemWINDOWS>();
-    #elif defined(BSPF_MACOS)
+    #elifdef BSPF_MACOS
       return std::make_unique<OSystemMACOS>();
-    #elif defined(__LIB_RETRO__)
+    #elifdef __LIB_RETRO__
       return std::make_unique<OSystemLIBRETRO>();
     #elif defined(__HIGHSCORE__)
       return std::make_unique<OSystemHIGHSCORE>();
@@ -108,9 +108,9 @@ class MediaFactory
     {
     #ifdef BSPF_UNIX
       return std::make_unique<SerialPortPOSIX>();
-    #elif defined(BSPF_WINDOWS)
+    #elifdef BSPF_WINDOWS
       return std::make_unique<SerialPortWINDOWS>();
-    #elif defined(BSPF_MACOS)
+    #elifdef BSPF_MACOS
       return std::make_unique<SerialPortPOSIX>();
     #else
       return std::make_unique<SerialPort>();
@@ -121,9 +121,9 @@ class MediaFactory
     {
     #ifdef __LIB_RETRO__
       return std::make_unique<FBBackendLIBRETRO>(osystem);
-    #elif defined(__HIGHSCORE__)
+    #elifdef __HIGHSCORE__
       return std::make_unique<FBBackendHIGHSCORE>(osystem);
-    #elif defined(SDL_SUPPORT)
+    #elifdef SDL_SUPPORT
       return std::make_unique<FBBackendSDL>(osystem);
     #else
       #error Unsupported platform for FrameBuffer!
@@ -135,9 +135,9 @@ class MediaFactory
     #ifdef SOUND_SUPPORT
       #ifdef __LIB_RETRO__
         return std::make_unique<SoundLIBRETRO>(osystem, audioSettings);
-      #elif defined(__HIGHSCORE__)
+      #elifdef __HIGHSCORE__
         return std::make_unique<SoundHIGHSCORE>(osystem, audioSettings);
-      #elif defined(SOUND_SUPPORT) && defined(SDL_SUPPORT)
+      #elifdef SDL_SUPPORT
         return std::make_unique<SoundSDL>(osystem, audioSettings);
       #else
         return std::make_unique<SoundNull>(osystem);
@@ -151,9 +151,9 @@ class MediaFactory
     {
     #ifdef __LIB_RETRO__
       return std::make_unique<EventHandlerLIBRETRO>(osystem);
-    #elif defined(__HIGHSCORE__)
+    #elifdef __HIGHSCORE__
       return std::make_unique<EventHandlerHIGHSCORE>(osystem);
-    #elif defined(SDL_SUPPORT)
+    #elifdef SDL_SUPPORT
       return std::make_unique<EventHandlerSDL>(osystem);
     #else
       #error Unsupported platform for EventHandler!

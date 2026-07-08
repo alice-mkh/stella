@@ -40,7 +40,7 @@ namespace {
       case CDF1:      return Thumbulator::ConfigureFor::CDF1;
       case CDFJ:      return Thumbulator::ConfigureFor::CDFJ;
       case CDFJplus:  return Thumbulator::ConfigureFor::CDFJplus;
-      default:        throw std::runtime_error("unreachable");
+      default:        std::unreachable();
     }
   }
 }  // namespace
@@ -171,7 +171,7 @@ FORCE_INLINE void CartridgeCDF::updateMusicModeDataFetchers()
 
   // Let's update counters and flags of the music mode data fetchers
   if(wholeClocks > 0)
-    for(size_t x = 0; x < myMusicCounters.size(); ++x)
+    for(auto x = 0uz; x < myMusicCounters.size(); ++x)
       myMusicCounters[x] += myMusicFrequencies[x] * wholeClocks;
 }
 

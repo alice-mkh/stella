@@ -107,7 +107,7 @@ uInt32 ElfLinker::getSegmentSize(SegmentType type) const
       return myRodataSize;
 
     default:
-      throw std::runtime_error("unreachable");
+      std::unreachable();
   }
 }
 
@@ -125,7 +125,7 @@ const uInt8* ElfLinker::getSegmentData(SegmentType type) const
       return myRodataData.get();
 
     default:
-      throw std::runtime_error("unreachable");
+      std::unreachable();
   }
 }
 
@@ -143,7 +143,7 @@ uInt32 ElfLinker::getSegmentBase(SegmentType type) const
       return myRodataBase;
 
     default:
-      throw std::runtime_error("unreachable");
+      std::unreachable();
   }
 }
 
@@ -163,7 +163,7 @@ const vector<uInt32>& ElfLinker::getPreinitArray() const
 ElfLinker::RelocatedSymbol ElfLinker::findRelocatedSymbol(string_view name) const
 {
   const auto& symbols = myElf.getSymbols();
-  for (size_t i = 0; i < symbols.size(); i++) {
+  for (auto i = 0uz; i < symbols.size(); i++) {
     if (symbols[i].name != name) continue;
 
     if (!myRelocatedSymbols[i])
@@ -203,7 +203,7 @@ uInt32& ElfLinker::getSegmentSizeRef(SegmentType type)
       return myRodataSize;
 
     default:
-      throw std::runtime_error("unreachable");
+      std::unreachable();
   }
 }
 
@@ -221,7 +221,7 @@ unique_ptr<uInt8[]>& ElfLinker::getSegmentDataRef(SegmentType type)
       return myRodataData;
 
     default:
-      throw std::runtime_error("unreachable");
+      std::unreachable();
   }
 }
 
@@ -232,7 +232,7 @@ void ElfLinker::relocateSections()
   myRelocatedSections.resize(sections.size(), std::nullopt);
 
   // relocate everything that is not .bss
-  for (size_t i = 0; i < sections.size(); i++) {
+  for (auto i = 0uz; i < sections.size(); i++) {
     const auto& section = sections[i];
 
     const auto segmentType = determineSegmentType(section);
@@ -251,7 +251,7 @@ void ElfLinker::relocateSections()
   }
 
   // relocate all .bss sections
-  for (size_t i = 0; i < sections.size(); i++) {
+  for (auto i = 0uz; i < sections.size(); i++) {
     const auto& section = sections[i];
 
     if (section.type == ElfFile::SHT_NOBITS) {
@@ -290,7 +290,7 @@ void ElfLinker::copySections()
   const auto& sections = myElf.getSections();
 
   // copy segment data
-  for (size_t i = 0; i < sections.size(); i++) {
+  for (auto i = 0uz; i < sections.size(); i++) {
     const auto& relocatedSection = myRelocatedSections[i];
     if (!relocatedSection) continue;
 
@@ -366,7 +366,7 @@ void ElfLinker::relocateSymbols(const vector<ExternalSymbol>& externalSymbols)
   const auto& symbols = myElf.getSymbols();
   myRelocatedSymbols.resize(symbols.size(), std::nullopt);
 
-  for (size_t i = 0; i < symbols.size(); i++) {
+  for (auto i = 0uz; i < symbols.size(); i++) {
     const auto& symbol = symbols[i];
 
     if (symbol.section == ElfFile::SHN_ABS) {
@@ -401,7 +401,7 @@ void ElfLinker::applyRelocationsToSections()
   const auto& sections = myElf.getSections();
 
   // apply relocations
-  for (size_t iSection = 0; iSection < sections.size(); iSection++) {
+  for (auto iSection = 0uz; iSection < sections.size(); iSection++) {
     const auto& relocations = myElf.getRelocations(iSection);
     if (!relocations) continue;
     if (!myRelocatedSections[iSection]) continue;
@@ -421,7 +421,7 @@ void ElfLinker::copyInitArrays(vector<uInt32>& initArray, const std::unordered_m
   for (const auto& [iSection, offset]: relocatedInitArrays) {
     const auto& section = sections[iSection];
 
-    for (size_t i = 0; i < section.size; i += 4)
+    for (auto i = 0uz; i < section.size; i += 4)
       initArray[(offset + i) >> 2] = read32(elfData + section.offset + i);
   }
 }
