@@ -1,6 +1,6 @@
 project('stella-highscore', ['cpp', 'c'],
   version : '7.1',
-  default_options : [ 'cpp_std=c++20' ]
+  default_options : [ 'cpp_std=c++23' ]
 )
 
 version = meson.project_version()
