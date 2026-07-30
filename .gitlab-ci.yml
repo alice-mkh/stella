@@ -24,7 +24,7 @@ include:
 
   # Linux ARM 64-bit
   - project: 'libretro-infrastructure/ci-templates'
-    file: '/linux-arm64.yml'
+    file: '/linux-aarch64.yml'
 
   # MacOS 64-bit
   - project: 'libretro-infrastructure/ci-templates'
@@ -90,14 +90,11 @@ libretro-build-linux-x64:
     CXXFLAGS: -Wno-deprecated-declarations # Deprecation warnings aren't helpful on the libretro Gitlab
 
 # Linux ARM 64-bit
-libretro-build-linux-arm64:
+libretro-build-linux-aarch64:
   extends:
-    - .libretro-linux-arm64-make-default
+    - .libretro-linux-aarch64-make-default
     - .core-defs
-  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-arm64-ubuntu:backports
   variables:
-    CC: /usr/bin/gcc-12
-    CXX: /usr/bin/g++-12
     CXXFLAGS: -Wno-deprecated-declarations # Deprecation warnings aren't helpful on the libretro Gitlab
 
 # MacOS 64-bit
@@ -123,7 +120,7 @@ android-armeabi-v7a:
     - .libretro-android-jni-armeabi-v7a
     - .core-defs
   variables:
-    NDK_ROOT: /android-sdk-linux/ndk/26.2.11394342
+    NDK_ROOT: /android-sdk-linux/ndk/29.0.14206865
 
 # Android ARMv8a
 android-arm64-v8a:
@@ -131,7 +128,7 @@ android-arm64-v8a:
     - .libretro-android-jni-arm64-v8a
     - .core-defs
   variables:
-    NDK_ROOT: /android-sdk-linux/ndk/26.2.11394342
+    NDK_ROOT: /android-sdk-linux/ndk/29.0.14206865
 
 # Android 64-bit x86
 android-x86_64:
@@ -139,7 +136,7 @@ android-x86_64:
     - .libretro-android-jni-x86_64
     - .core-defs
   variables:
-    NDK_ROOT: /android-sdk-linux/ndk/26.2.11394342
+    NDK_ROOT: /android-sdk-linux/ndk/29.0.14206865
 
 # iOS
 libretro-build-ios-arm64:

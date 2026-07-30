@@ -127,17 +127,21 @@ bool OSystem::initialize(const Settings::Options& options)
     "State directory:    '{}'\n"
     "NVRam directory:    '{}'\n"
     "Persistence:        '{}'\n"
+#ifdef CHEATCODE_SUPPORT
     "Cheat file:         '{}'\n"
+#endif
     "Palette file:       '{}'\n",
     STELLA_VERSION,
     myFeatures,
     myBuildInfo,
-    AsciiFold::toAscii(myBaseDir.getShortPath()),
-    AsciiFold::toAscii(myStateDir.getShortPath()),
-    AsciiFold::toAscii(myNVRamDir.getShortPath()),
+    AsciiFold::toAscii(baseDir().getShortPath()),
+    AsciiFold::toAscii(stateDir().getShortPath()),
+    AsciiFold::toAscii(nvramDir().getShortPath()),
     AsciiFold::toAscii(describePersistence()),
-    AsciiFold::toAscii(myCheatFile.getShortPath()),
-    AsciiFold::toAscii(myPaletteFile.getShortPath())));
+#ifdef CHEATCODE_SUPPORT
+    AsciiFold::toAscii(cheatFile().getShortPath()),
+#endif
+    AsciiFold::toAscii(paletteFile().getShortPath())));
 
   // NOTE: The framebuffer MUST be created before any other object!!!
   // Get relevant information about the video hardware
