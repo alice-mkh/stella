@@ -10,4 +10,4 @@ SourceCode=https://github.com/highscore-emu/stella
 Issues=https://github.com/highscore-emu/stella/issues
 LicensePath=Copyright.txt
 Platforms=Atari2600;
-StateVersion=3
+StateVersion=4
